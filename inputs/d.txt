@@ -1,0 +1,51 @@
+main
+var i, j , a;
+function testphi;
+var a,b,c;
+{
+	let a <- b + 12;
+	if a == 0  then
+		let b <- 1 ;
+		let c <- 1 ;
+		if a == 1 then
+			let c <- 1 
+		else
+			let c <- 2 
+		fi 
+	else 
+		if a == 1 then
+			let b <- 11 
+		else
+			let b <- 12 
+		fi 
+	fi ;
+	let c <- b ;
+	return c
+};
+function x;
+var a,b;
+{
+	let a <- call InputNum;
+	call InputNum;
+	if a == 0 then
+			let i <- i + 1 
+	fi
+};
+{
+	let a <- b + a  * ( b  / b ) ;
+	let a <- 10 + call x ;
+	while i > 0 do 
+		if i <= 0 then
+			let i <- i + call x ;
+			let a <- 11
+		else 
+			let i<- j -1 ;
+			let a <- 12 
+		fi
+	od;
+	let a <- 10 + call InputNum ;
+	call x;
+	call OutputNum(a) ;
+	call OutputNewLine();
+	let j <- i - 4 
+}.

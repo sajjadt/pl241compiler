@@ -1,0 +1,13 @@
+#while - while
+main
+var a,f,d,g,c;
+{
+	#let f <- 1 ; 
+	while a < 2 do
+		#let d <- 1 ;
+		while a > 5 do
+			let a <- 3 
+		od
+	od
+}
+.

@@ -1,0 +1,19 @@
+# if-if
+main
+var a,f,d,g,c;
+{
+	if a < 2 then
+		if a > 5 then
+			let a <- 3 
+		else
+			let a <- 3 
+		fi
+		
+	else
+		let f <- d - g;
+		if f > a then
+			let c <- 2
+		fi
+	fi
+}
+.
