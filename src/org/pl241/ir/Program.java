@@ -2,6 +2,7 @@ package org.pl241.ir;
 
 import java.io.File;
 import java.io.FileNotFoundException;
+import java.io.IOException;
 import java.io.PrintWriter;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -48,10 +49,14 @@ public class Program {
 	}
 	
 	public void process(){
-		
-        
-        visualize("a.dot");
-        for (Function f:functions){
+
+
+		try {
+			visualize("a.dot");
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+		for (Function f:functions){
         	f.computeDominateDependance();
         	f.computeDominatorFrontiers();
         	
@@ -78,12 +83,15 @@ public class Program {
 			}
         	f.rename();
         }
-        
-        
-        visualize("c.dot");
-        
-      
-       
+
+
+		try {
+			visualize("c.dot");
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+
+
 	}
 	
 	
@@ -104,9 +112,10 @@ public class Program {
 	
 
 		
-	public void visualize(String path){
+	public void visualize(String path) throws IOException {
 		boolean first = true ;
 		File file = new File(path);
+		file.createNewFile();
 		try (PrintWriter writer = new PrintWriter(file)) {
 			writer.println("digraph {");
 			for (Function function : functions) {

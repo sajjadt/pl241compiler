@@ -6,44 +6,34 @@ import java.nio.charset.Charset;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.ArrayList;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 public class TokenizerTest {
-
+	private static final Logger LOGGER = Logger.getLogger(ParserTest.class.getName());
 	public static void main(String[] args) {
 		Tokenizer tokenizer = new Tokenizer();
-
-		//String input = " main var a,b,y,i,d;" 
-		//		+ "{" 
-		// + "	let i <- 1;"
-		//+ "	while i > 0 do " 
-		//		+ "		let y <- 1;"
-		//		+ "		let i <- i + 1"
-		//		+ "	od;"
-		//		+ "	let d <- y + b;" 
-		//		+ "}.";
 		try {
-			
-			final File folder = new File("D:\\advComp\\inputs");
+			final File folder = new File("inputs");
 			for (final File fileEntry : folder.listFiles()) {
+
 		        if (fileEntry.isFile()) {
-		        	
 		        	byte[] encoded = Files.readAllBytes(  Paths.get(fileEntry.getPath()));
 					String input = new  String(encoded,  Charset.defaultCharset());
 
-					
-					System.out.println("Tokenizing " + fileEntry.getPath());
+					LOGGER.log( Level.INFO, "Tokenizing " + fileEntry.getPath());
 					tokenizer.tokenize(input.trim());
 
 					for (Token tok : tokenizer.getTokens()) {
-						System.out.println("" + tok.token + "," + tok.sequence);
+						LOGGER.log(Level.FINEST,"" + tok.token + "," + tok.sequence);
 					}
 		        }
 		    }
-			System.out.println("Tokenize test passed");
+			LOGGER.log(Level.INFO,"Tokenizer is done!");
 			
 		} catch (Exception e) {
 			System.out.println(e.getMessage());
-			System.out.println("Tokenizer test failed");
+			LOGGER.log(Level.SEVERE,"Tokenizer test failed");
 		}
 		
 

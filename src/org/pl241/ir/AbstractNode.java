@@ -65,7 +65,7 @@ public class AbstractNode {
 	public static enum NodeType {
 		IMMEDIATE,
 		
-		NEG , 
+		NEG,
 		
 		ADD ,
 		SUB,

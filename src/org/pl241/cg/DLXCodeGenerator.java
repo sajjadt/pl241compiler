@@ -24,13 +24,12 @@ public class DLXCodeGenerator {
 	private final String[] loadstoreSet = {"load" , "store" } ;
 	private final String[] branchSet = { "BLT" , "bra" , "BNE"  , "BEQ" , "BLE" , "BLT" , "BGE" , "BGT"};
 	private final String[] transferSet = {"move"} ;
-	
-	
+
 	private final int memSize = 20000 ;
-	private int stackAddress = 20000 ; // decremeases
-	private int bss = 10000 ; // increases
+	private int stackAddress = 20000 ; // Grows downwards
+	private int BSS = 10000 ; // Grows upwards
 	
-	private Program program ;
+	private Program program;
 	
 	// Contains a map between the function IDs and their address in the memory
 	private HashMap<Integer, Integer> functionAddresses;
@@ -96,8 +95,6 @@ public class DLXCodeGenerator {
 		return memLayout;
 	}
 
-	
-	
 	private void generateFuncBody(Function f) {
 		// local vars
 		// args
@@ -112,13 +109,9 @@ public class DLXCodeGenerator {
 		}
 		return;
 	}
-	
-	
+
 	private void generateCall(){
 		// Set func address
 		
 	}
-	
-	
-	
 }

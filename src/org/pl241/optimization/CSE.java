@@ -22,10 +22,6 @@ public class CSE {
 		
 	}
 	
-	
-	
-	
-	
 	public void fixBlock(BasicBlock block){
 		// Foreach phi function
 		
@@ -126,7 +122,6 @@ public class CSE {
 		{
 			// handle phi functions
 		}
-		
 		
 		// Foreach child in DFT
 		for( BasicBlock iBlock: block.immediateDominants ){

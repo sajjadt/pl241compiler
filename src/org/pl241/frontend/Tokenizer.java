@@ -41,7 +41,6 @@ public class Tokenizer {
 		this.add(">=", Token.GEQ); // !=
 		this.add("<", Token.LESS); // ==
 		this.add(">", Token.GREATER); // ==
-		
 
 		this.add("\\(", Token.OPEN_P); // open 
 		this.add("\\)", Token.CLOSE_P); // close

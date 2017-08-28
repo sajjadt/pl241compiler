@@ -6,48 +6,44 @@ import java.nio.file.Files;
 import java.nio.file.Paths;
 
 import org.pl241.frontend.Parser.ParseTreeNode;
-import org.pl241.ir.BuildIRVisitor;
+import org.pl241.ir.IRBuilderVisitor;
+
+import java.util.logging.ConsoleHandler;
+import java.util.logging.Logger;
+import java.util.logging.Level;
+
 
 public class ParserTest {
+
+	private static final Logger LOGGER = Logger.getLogger(ParserTest.class.getName());
 	public static void main(String[] args) {
 		Tokenizer tokenizer = new Tokenizer();
 		Parser parser = new Parser();
 
-		//String input = "main var a,b,y,i,d; var z,d; " + "{" + "	let i <- 1;"
-		//		+ "	od;" + "	let d <- y + b" + "}.";
-		//
+		LOGGER.addHandler(new ConsoleHandler());
 		try {
-			
-			final File folder = new File("D:\\advComp\\inputs");
+			final File folder = new File("inputs");
 			for (final File fileEntry : folder.listFiles()) {
 		        if (fileEntry.isFile()) {
 		        	
 		        	byte[] encoded = Files.readAllBytes(  Paths.get(fileEntry.getPath()));
 					String input = new  String(encoded,  Charset.defaultCharset());
 
-					
-					System.out.println("Parsing " + fileEntry.getPath());
-					
-					
+					LOGGER.log(Level.INFO,"Parsing " + fileEntry.getPath());
 					tokenizer.tokenize(input.trim());
 					ParseTreeNode root= parser.parse(tokenizer.getTokens());
-					
-					root.accept(new BuildIRVisitor());
-					System.out.println("Done with parsing");
-					
-					
+
+					//root.accept(new IRBuilderVisitor());
 		        }
 		    }
-			System.out.println("Parsing test passed");
-			
-			
+			LOGGER.log( Level.INFO,"Parsing is done!");
 
 		} catch (Exception e) {
 			System.out.println(e.getMessage() );
 			StackTraceElement[] trace = e.getStackTrace() ;
 			for( StackTraceElement element: trace){
 				System.out.println(element.getFileName() + ":" +element.getMethodName()+":"+element.getLineNumber());
-				System.out.println("Parser test failed");
+				LOGGER.log( Level.SEVERE,"Parser test failed");
 			}
 		}
 

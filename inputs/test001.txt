@@ -2,6 +2,5 @@
 main 
 var x, y;
 {
-    
     call OutputNum(y)
 }.

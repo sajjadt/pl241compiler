@@ -24,8 +24,7 @@ public class CP {
 				if( node instanceof MoveNode ){
 					// Find source operand
 					
-					
-					 //TODO array
+					//TODO array
 					
 					String key = ((MoveNode)node).getInputOperands().get(0) ;
 					if ( function.irMap.containsKey( key ) ){
