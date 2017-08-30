@@ -12,8 +12,6 @@ import org.pl241.cg.DLXCodeGenerator;
 import org.pl241.frontend.*;
 import org.pl241.frontend.Parser.ParseTreeNode;
 import org.pl241.ir.IRBuilderVisitor;
-import org.pl241.ir.Function;
-import org.pl241.ir.Program;
 import org.pl241.ra.RegisterAllocator;
 
 public class run
@@ -24,32 +22,37 @@ public class run
         boolean visualize = true;
         boolean optimize = true;
         boolean execute = false;
-        int numRegs = 8;
+        int numRegs = 31;
+		String testName = "test001";
+        String testPath = "inputs/test001.txt";
 
-		String testName = "test005";
-        String testPath = "inputs/test005.txt";
-
+        // Tokenize the input
 		byte[] encoded = Files.readAllBytes(Paths.get(testPath));
 		String input = new String(encoded, Charset.defaultCharset());
-
 		Tokenizer tokenizer = new Tokenizer();
-		Parser parser = new Parser();
-		IRBuilderVisitor visitor = new IRBuilderVisitor();
-
+        Program program;
 		try {
 			tokenizer.tokenize(input.trim());
 		} catch (Exception e) {
 			e.printStackTrace();
 			return;
 		}
-
+        // Parse the input and create IR representation
 		try {
+            Parser parser = new Parser();
+            IRBuilderVisitor visitor = new IRBuilderVisitor();
             ParseTreeNode root = parser.parse(tokenizer.getTokens());
             root.accept(visitor);
-            Program program = visitor.getProgram();
-            // to SSE form
-            //program.process();
 
+            program = visitor.getProgram();
+            program.process();
+        }
+        catch (Exception e) {
+            e.printStackTrace();
+            return;
+        }
+        // Process and optimize the program
+        try {
             if (visualize)
                 program.visualize("cfgs" + File.separator + testName + "_a.dot");
 
@@ -77,16 +80,27 @@ public class run
                     program.visualizeDominatorTree("cfgs" + File.separator + testName + "_dom_tree.dot");
                 }
             }
-
+        }
+        catch (Exception e) {
+            e.printStackTrace();
+            return;
+        }
+        // Allocate registers
+        try {
             for (Function f : program.getFunctions()) {
                 RegisterAllocator allocator = new RegisterAllocator(numRegs, f);
-                allocator.allocate();
-                allocator.resolve();
+                allocator.allocate(true);
+                //allocator.resolve();
+                allocator.printAllocation(f);
             }
-
-
+        }
+        catch (Exception e) {
+            e.printStackTrace();
+        }
+        // Generate program and execute
+        try {
             DLXCodeGenerator generator = new DLXCodeGenerator(program);
-            ArrayList<Integer> mem = generator.generateSampleCode();
+            ArrayList<Integer> mem = generator.generateCode();
 
             if (execute) {
                 DLX.load(mem);

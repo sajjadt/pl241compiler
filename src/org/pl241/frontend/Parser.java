@@ -105,8 +105,6 @@ public class Parser {
 			nodes.addAll( arrayDimStar(parent) );
 		}
 		return nodes;
-		
-		
 	}
 
 	private List<ParseTreeNode> funcDeclStar(ParseTreeNode parent) throws Exception{
@@ -118,7 +116,6 @@ public class Parser {
 			
 			nodes.add( new TerminalNode(parent,  nextToken().sequence )); // func/procedure
 			
-			
 			FuncDeclNode node = new FuncDeclNode(parent,"");
 			node.addChild( new TerminalNode(node,  nextToken().sequence )); //func name			
 			node.addChild(formalParam(node));
@@ -127,9 +124,6 @@ public class Parser {
 			node.addChild( new TerminalNode(node,  nextToken().sequence ));// semicolon
 			nodes.add( node ) ;
 			nodes.addAll( funcDeclStar(parent) );
-			
-			
-
 		}
 		return nodes ;
 	}
@@ -148,7 +142,6 @@ public class Parser {
 			//System.out.println("Arg: " + arg);
 			node.addChildren( identStar(node, "Arg") );
 			node.addChild( new TerminalNode(node,  nextToken().sequence )); // ")"
-			
 		}
 		return node ;
 	}
@@ -192,7 +185,6 @@ public class Parser {
 			return node ;
 			
 		} else if( lookahead.token == Token.CALL ){
-			
 			node.addChild(funcCall(node));
 			return node;
 			
@@ -219,7 +211,6 @@ public class Parser {
 			wnode.addChild( new TerminalNode(wnode,  nextToken().sequence ));// od
 			node.addChild(wnode);
 			return wnode;
-			
 		} else if ( lookahead.token == Token.RETURN ){
 			ReturnStmtNode rnode = new ReturnStmtNode(node, "") ;
 			rnode.addChild( new TerminalNode(rnode,  nextToken().sequence ));// Return
@@ -255,22 +246,16 @@ public class Parser {
 		return node ;
 	}
 	
-	
-	
-	
 	private ParseTreeNode term(ParseTreeNode parent){
 		TermNode node = new TermNode(parent,"");
 		node.addChild( factor(node) );
 		node.addChildren( factorStar(node) );
 		return node ;
 	}
-	
-	
-	
+
 	private List<ParseTreeNode> termStar(ParseTreeNode parent){
 		List<ParseTreeNode> nodes = new  ArrayList<Parser.ParseTreeNode>();
 		if( lookahead.token == Token.PLUS_OR_MINUS ){
-			
 			nodes.add( new TerminalNode(parent,  nextToken().sequence )); // "+" or "-"
 			nodes.add( term(parent) );
 			nodes.addAll( termStar(parent) );
@@ -381,7 +366,7 @@ public class Parser {
 			return this.getClass().getName();
 		}
 		
-		public ParseTreeNode getChild( int index){
+		public ParseTreeNode getChild(int index){
 			return children.get(index);
 		}
 		
@@ -572,23 +557,17 @@ public class Parser {
 	}
 	
 	public  class ExpressionNode extends ParseTreeNode {
-
 		public ExpressionNode(ParseTreeNode parent, String text) {
 			super(parent,text);
-			// TODO Auto-generated constructor stub
 		}
-
 		@Override
 		public void accept(ParseTreeNodeVisitor visitor) {
-			// TODO Auto-generated method stub
 			visitor.enter(this);
 			for(ParseTreeNode node:this.getChildren()){
 				node.accept(visitor);
 			}
 			visitor.exit(this);
 		}
-
-		
 	}
 	
 	public  class TermNode extends ParseTreeNode {
@@ -615,12 +594,10 @@ public class Parser {
 
 		public FactorNode(ParseTreeNode parent, String text) {
 			super(parent,text);
-			// TODO Auto-generated constructor stub
 		}
 
 		@Override
 		public void accept(ParseTreeNodeVisitor visitor) {
-			// TODO Auto-generated method stub
 			visitor.enter(this);
 			for(ParseTreeNode node:this.getChildren()){
 				node.accept(visitor);

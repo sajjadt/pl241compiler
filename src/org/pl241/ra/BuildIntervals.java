@@ -10,19 +10,15 @@ import java.util.Set;
 import org.pl241.ir.AbstractNode;
 import org.pl241.ir.BasicBlock;
 import org.pl241.ir.LoadNode;
-import org.pl241.ir.IONode;
 import org.pl241.ir.ImmediateNode;
-import org.pl241.ir.MoveNode;
 import org.pl241.ir.PhiNode;
 
-import com.sun.swing.internal.plaf.basic.resources.basic_zh_TW;
-
 public class BuildIntervals {
+    // Map from vars to live intervals of vars
 	private Map<String,LiveInterval> intervals;
 	public BuildIntervals(){
 		intervals = new HashMap<String, LiveInterval>();
 	}
-	
 	public Map<String,LiveInterval> getLiveIntervals(){
 		return intervals ;
 	}
@@ -31,7 +27,7 @@ public class BuildIntervals {
 		ListIterator li = blocks.listIterator(blocks.size());
 
 		// Iterate in reverse.
-		while( li.hasPrevious() ) {
+		while (li.hasPrevious()) {
 		    BasicBlock block =  (BasicBlock) li.previous();
 		    
 		    System.out.println("Processin block " + block.getIndex() );
@@ -46,11 +42,9 @@ public class BuildIntervals {
 		    for(BasicBlock successor:block.getSuccessors() ){
 		    	for( AbstractNode node: successor.getNodes() ){
 		    		if( node instanceof PhiNode ){
-		    		
-		    			if(  ((PhiNode)node).inputOf(block) != null ){
-		    				live.add(  ((PhiNode)node).inputOf(block) );
+		    			if (((PhiNode)node).inputOf(block) != null) {
+		    				// TODO new live.add(  ((PhiNode)node).inputOf(block) );
 		    				System.out.println("Phi node: adding " + ((PhiNode)node).inputOf(block));
-		    				
 		    			}
 		    		}
 		    	}
@@ -70,6 +64,8 @@ public class BuildIntervals {
 		    ListIterator ii = block.getNodes().listIterator(block.getNodes().size());
 		    while( ii.hasPrevious() ) {
 			    AbstractNode node =  (AbstractNode) ii.previous();  /// TODO ignoring phi node according to Franz paper
+
+
 			    if( node != null && ( node instanceof LoadNode || node instanceof ImmediateNode || node instanceof PhiNode ) ){
 	    			//System.out.println("Ignoring " + node.toString() );
 	    			continue ;
@@ -86,42 +82,42 @@ public class BuildIntervals {
 			    	if( !  intervals.containsKey(opd) ){
 			    		intervals.put(opd, new LiveInterval(opd));
 			    	}
-			    	intervals.get(opd).setFrom(node.getLineIndex());
-			    	intervals.get(opd).definitionPoint = node.getLineIndex();
-			    	intervals.get(opd).addReference(node.getLineIndex()); // TODO write into counts as a reference?
+			    	intervals.get(opd).setFrom(node.getSourceLocation());
+			    	intervals.get(opd).definitionPoint = node.getSourceLocation();
+			    	intervals.get(opd).addReference(node.getSourceLocation()); // TODO write into counts as a reference?
 			    	live.remove(opd);    	
 			    }
 			    if(  ! node.getInputOperands().isEmpty() ){  
-			    	List<String> opds = node.getInputOperands();
-			    	for(String opd:opds ){
-			    		AbstractNode anode = block.parentFunction.irMap.get(opd);
-			    		if( anode != null ){
-			    			if ( anode instanceof LoadNode ){
-			    				opd = ((LoadNode)anode).memAddress;
-			    			} else if (anode instanceof ImmediateNode) {
+			    	List<AbstractNode> opds = node.getInputOperands();
+			    	for(AbstractNode opd:opds ){
+			    		//AbstractNode anode = block.parentFunction.irMap.get(opd);
+			    		if( opd != null ){
+			    			if ( opd instanceof LoadNode ){
+			    				//TODO new
+								// opd = ((LoadNode)anode).memAddress;
+			    			} else if (opd instanceof ImmediateNode) {
 			    				System.out.println("Ignoring imm " + opd + " @ input side");
 				    			continue ;
 			    			}
 			    			
 			    		}
-				    	if( !  intervals.containsKey(opd) ){
-				    		intervals.put(opd, new LiveInterval(opd));
+				    	if (!intervals.containsKey(opd.uniqueLabel)) {
+				    		intervals.put(opd.uniqueLabel, new LiveInterval(opd.uniqueLabel));
 				    	}
-				    	intervals.get(opd).addRange(block.bFrom, node.getLineIndex());
-				    	intervals.get(opd).addReference(node.getLineIndex());
-				    	live.add(opd);
+				    	intervals.get(opd.uniqueLabel).addRange(block.bFrom, node.getSourceLocation());
+				    	intervals.get(opd.uniqueLabel).addReference(node.getSourceLocation());
+				    	// TODO saji live.add(opd);
 				    	System.out.println("Adding " + opd + " @ input side from " + node.toString());
 			    	}
 			    }
 			    
 		    }
 		    
-		    
 		    // is done in above step
 		    for( AbstractNode node: block.getNodes() ){
 		    if( node instanceof PhiNode ){    	
 	    			live.remove(node.getOutputOperand());
-	    			intervals.get(node.getOutputOperand()).definitionPoint = node.getLineIndex();
+	    			intervals.get(node.getOutputOperand()).definitionPoint = node.getSourceLocation();
 	    		}
 	    	}
 		    
@@ -132,13 +128,9 @@ public class BuildIntervals {
 		    System.out.println( block.getIndex() + ":" +  block.liveIn.toString() );
 		    System.out.println( block.getIndex() + ":" +  intervals.toString() );	
 		}
-		
-		
-		
-		
 	}
 
-	public void dumpIntervals() {
+	public void printIntervals() {
 		for(LiveInterval interval:intervals.values()){
 			System.out.println(interval.varName + " " + interval.toString() );
 		}

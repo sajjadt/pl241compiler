@@ -12,4 +12,9 @@ public class Allocation {
 		this.type = type ;
 		this.address = address ;
 	}
+
+	@Override
+	public String toString() {
+		return "Allocation:{" + type + ", " + address + "}";
+	}
 }

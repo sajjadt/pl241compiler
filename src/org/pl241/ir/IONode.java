@@ -21,9 +21,9 @@ public class IONode extends AbstractNode  {
 		}	
 	
 		
-	public IONode(IOType type , String operand){
+	public IONode(IOType type , AbstractNode operand) {
 		
-		super( ioMap.get(type) );
+		super(ioMap.get(type));
 		_readData = _writeData = false; 
 		if( type.equals(IOType.WRITE) ){
 			operands.add(operand);
@@ -38,7 +38,7 @@ public class IONode extends AbstractNode  {
 	
 	@Override
 	public String toString(){
-		return  "lindex " + lineIndex +  " " + super.label + ": " + operator + " " + operands;
+		return  "lindex " + sourceLocation +  " " + super.uniqueLabel + ": H  " + operands;
 	}
 	
 	public boolean readData(){
@@ -51,7 +51,7 @@ public class IONode extends AbstractNode  {
 	@Override
 	public String getOutputOperand() {
 		if( this._readData ){
-			return super.label ;
+			return super.uniqueLabel;
 		} else {
 			return null; 
 		}

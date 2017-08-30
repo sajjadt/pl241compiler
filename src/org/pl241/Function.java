@@ -1,5 +1,6 @@
-package org.pl241.ir;
+package org.pl241;
 
+import org.pl241.ir.*;
 import org.pl241.ra.Allocation;
 import org.pl241.ra.BuildIntervals;
 import org.pl241.ra.LiveInterval;
@@ -16,43 +17,45 @@ import java.util.Stack;
 
 
 public class Function  {
+
+
+    public Function(){
+        basicBlocks = new ArrayList<>();
+        allocationMap = new HashMap<>();
+        symbolTable = new VarInfoTable();
+        _index = _sindex++;
+        irMap = new HashMap<>();
+        spillIndex = 0 ;
+    }
+
+    // Unique across program
 	public String name;
+
 	public static int _sindex = 0;
 	private int _index;
+
 	public VarInfoTable symbolTable;
-	public List<BasicBlock> blocks; 
+
+	public List<BasicBlock> basicBlocks;
+
+	// TODO: remove irMap as it seems redundant
 	public Map<String,AbstractNode> irMap;
-	public BasicBlock getEntry()
-	{
-		return blocks.get(0);
+	public Map<String, Allocation> allocationMap;
+
+	public BasicBlock getEntryBlock() {
+		return basicBlocks.get(0);
 	}
-	
-	// Retvalues, paramerters
-	// Basic blocks
-	// Scope information
-	
-	private Function outerFunction ;
-	
+
 	private SourceLocation location;
 	public SourceLocation getSourceLocation(){
 		return location;
-	}
-	
-	public boolean isMain(){
-		return false;
 	}
 	
 	public String getName(){
 		return name ;
 	}
 	
-	public Function(){
-		blocks = new ArrayList<BasicBlock>();
-		symbolTable = new VarInfoTable();
-		_index = _sindex++;
-		irMap = new HashMap<String,AbstractNode>();
-		spillIndex = 0 ;
-	}
+
 	
 	public Map<String, LiveInterval> getliveIntervals(){
 		BuildIntervals bin = new BuildIntervals();
@@ -82,12 +85,12 @@ public class Function  {
 
 	
 	public void setBranchTargets(){
-		for( BasicBlock b: this.getBlocks() ){
+		for( BasicBlock b: this.getBasicBlocks() ){
 			for ( AbstractNode node: b.getNodes() ){
-				if ( node instanceof BranchNode  ) { //TODO uncoditioned as well
+				if ( node instanceof BranchNode) { //TODO uncoditioned as well
 					// rewrite address
 					if( ! ((BranchNode)node).isCall )
-						((BranchNode)node).jumpTarget = (b.getSuccessors().get(0)).getEntry().label;
+						((BranchNode)node).jumpTarget = (b.getSuccessors().get(0)).getEntry().uniqueLabel;
 				}
 			}
 		}
@@ -104,19 +107,19 @@ public class Function  {
 			//pw.println("digraph {");
 		} else {
 			pw.println("subgraph " + "cluster" + _index + " {");
-			//pw.println("label=\"" + (main ? "<main> " : "") + toString() + "\\n" + location
+			//pw.println("uniqueLabel=\"" + (main ? "<main> " : "") + toString() + "\\n" + location
             //      + (outerFunction != null ? "\\nouter: " + (outerFunction.getName() == null ? "<main>" : outerFunction.getName()) : "")  +  "\";");
-			pw.println("label=" + getName() );
+			pw.println("uniqueLabel=" + getName() );
 			pw.println("labelloc=\"t\";");
 			pw.println("fontsize=18;");
 		}
 		pw.println("rankdir=\"TD\"");
 		Set<BasicBlock> labels = new HashSet<>();
-		pw.println("BB_entry" + _index + "[shape=none,label=\"\"];");
-		pw.println("BB_entry" + _index + " -> BB" + getEntry().getIndex() 
-				+ " [tailport=s, headport=n, headlabel=\"    " + getEntry().getIndex() + "\"]");
-		labels.add(getEntry());
-		for (BasicBlock b : blocks) {
+		pw.println("BB_entry" + _index + "[shape=none,uniqueLabel=\"\"];");
+		pw.println("BB_entry" + _index + " -> BB" + getEntryBlock().getIndex()
+				+ " [tailport=s, headport=n, headlabel=\"    " + getEntryBlock().getIndex() + "\"]");
+		labels.add(getEntryBlock());
+		for (BasicBlock b : basicBlocks) {
 			b.toDot(pw, false);
 //	        int color_index = 0;
 			for (BasicBlock bs : b.getSuccessors()) {
@@ -159,19 +162,19 @@ public class Function  {
 			//pw.println("digraph {");
 		} else {
 			pw.println("subgraph " + "cluster" + _index + " {");
-			//pw.println("label=\"" + (main ? "<main> " : "") + toString() + "\\n" + location
+			//pw.println("uniqueLabel=\"" + (main ? "<main> " : "") + toString() + "\\n" + location
             //      + (outerFunction != null ? "\\nouter: " + (outerFunction.getName() == null ? "<main>" : outerFunction.getName()) : "")  +  "\";");
-			pw.println("label=" + getName() );
+			pw.println("uniqueLabel=" + getName() );
 			pw.println("labelloc=\"t\";");
 			pw.println("fontsize=18;");
 		}
 		pw.println("rankdir=\"TD\"");
 		Set<BasicBlock> labels = new HashSet<>();
-		pw.println("BB_entry" + _index + "[shape=none,label=\"\"];");
-		pw.println("BB_entry" + _index + " -> BB" + getEntry().getIndex() 
-				+ " [tailport=s, headport=n, headlabel=\"    " + getEntry().getIndex() + "\"]");
-		labels.add(getEntry());
-		for (BasicBlock b : blocks) {
+		pw.println("BB_entry" + _index + "[shape=none,uniqueLabel=\"\"];");
+		pw.println("BB_entry" + _index + " -> BB" + getEntryBlock().getIndex()
+				+ " [tailport=s, headport=n, headlabel=\"    " + getEntryBlock().getIndex() + "\"]");
+		labels.add(getEntryBlock());
+		for (BasicBlock b : basicBlocks) {
 			b.toDomTreeDot(pw);
 //	        int color_index = 0;
 			for (BasicBlock bs : b.immediateDominants ) {
@@ -209,28 +212,28 @@ public class Function  {
 	
 	
 	private void setPredecessors(){
-		 for (BasicBlock i : getBlocks()) {
+		 for (BasicBlock i : getBasicBlocks()) {
 			 for (BasicBlock j : i.getSuccessors()) {
 					 j.addPredecessor(i);
 			 }
 		 }
 	}
 	
-	private List<BasicBlock> getBlocks() {
-		return blocks;
+	private List<BasicBlock> getBasicBlocks() {
+		return basicBlocks;
 	}
 
 	public void computeDominateDependance(){
-		setPredecessors(); //For all basic blocks within the function
+		setPredecessors(); //For all basic basicBlocks within the function
 		
-		for( BasicBlock i : getBlocks()){ // Starting set of dominators
-			if ( i== getEntry() ){
+		for( BasicBlock i : getBasicBlocks()){ // Starting set of dominators
+			if ( i== getEntryBlock() ){
 				i.addDominator(i);
 				i.dominants.add(i);
 			}
 			else {
-				for( BasicBlock j : getBlocks()){
-					//if ( j != getEntry()){
+				for( BasicBlock j : getBasicBlocks()){
+					//if ( j != getEntryBlock()){
 						i.addDominator(j);
 						j.dominants.add(i);
 					//}
@@ -242,8 +245,8 @@ public class Function  {
 		while(change){
 			// Change this with dfs
 			change = false ;
-			for( BasicBlock j : getBlocks()){
-				if ( j != getEntry()){
+			for( BasicBlock j : getBasicBlocks()){
+				if ( j != getEntryBlock()){
 					for( BasicBlock i : j.getPredecessors()){
 						 j.getDominators().remove(j);
 						 j.dominants.remove(j);
@@ -264,23 +267,23 @@ public class Function  {
 	public void computeDominatorTree() throws AnalysisException{
 		//TODO clean the map mess
 		//TODO is screwing dominance information
-		for( BasicBlock b: getBlocks()) {
+		for( BasicBlock b: getBasicBlocks()) {
 			b.dominatorsTemp.addAll(b.dominators);
 		}
-		BasicBlock entryBlock = getEntry() ;
+		BasicBlock entryBlock = getEntryBlock() ;
 		HashSet<BasicBlock> setbl = new HashSet<BasicBlock>();
 		Stack<BasicBlock> sbl = new Stack<BasicBlock>();
 		sbl.push(entryBlock);
 		setbl.add(entryBlock);
 		while(! sbl.isEmpty() ){
 			BasicBlock bl = sbl.pop();
-			for( BasicBlock i : getBlocks()){ // Starting set of dominators
+			for( BasicBlock i : getBasicBlocks()){ // Starting set of dominators
 				if ( i.dominators.contains(bl)){
 					i.removeDominator(bl);
 					
 				}
 			}
-			for( BasicBlock i : getBlocks()){
+			for( BasicBlock i : getBasicBlocks()){
 				
 				if( i.dominators.size() == 1 && i.dominators.contains(i) && setbl.contains(i) == false ){
 					System.out.println("pushing " + i.getIndex() );
@@ -292,7 +295,7 @@ public class Function  {
 				
 			}
 		}
-		for( BasicBlock b: getBlocks()) {
+		for( BasicBlock b: getBasicBlocks()) {
 			b.dominators.clear();
 			b.dominators.addAll(b.dominatorsTemp);
 			b.dominatorsTemp.clear();
@@ -300,7 +303,7 @@ public class Function  {
 		
 	}
 	public void computeDominatorFrontiers(){
-		for( BasicBlock b : getBlocks()){
+		for( BasicBlock b : getBasicBlocks()){
 			for( BasicBlock d: b.getDominators() ){
 				//if( d.getIndex() == b.getIndex() )
 				//	continue;
@@ -324,7 +327,7 @@ public class Function  {
 			Set<BasicBlock> workList = new HashSet<BasicBlock>();
 			Set<BasicBlock> everOnWorkList =  new HashSet<BasicBlock>() ;
 			Set<BasicBlock> alreadyHasPhiFunc =  new HashSet<BasicBlock>() ;
-			for ( BasicBlock b: getBlocks() ){
+			for ( BasicBlock b: getBasicBlocks() ){
 				if( b.hasAssignmentTo(var)){
 					workList.add(b);
 				}
@@ -352,7 +355,7 @@ public class Function  {
 	
 	public void rename()
 	{
-		getEntry().rename();
+		getEntryBlock().rename();
 	}
 
 	public void indexIR(){
@@ -370,7 +373,7 @@ public class Function  {
 		Stack<BasicBlock> stack = new Stack<BasicBlock>();
 		
 		// Pre-order traversal of Dominator tree
-		stack.push(getEntry());
+		stack.push(getEntryBlock());
 		while( ! stack.isEmpty() ){
 			BasicBlock block = stack.pop();
 			blocks.add(block);
@@ -405,27 +408,27 @@ public class Function  {
 		
 		
 		
-		//stack.push(getEntry());
+		//stack.push(getEntryBlock());
 		//while(! stack.isEmpty() ){
 		//	BasicBlock block = stack.pop();
-		//	blocks.add(e);
+		//	basicBlocks.add(e);
 		//}
 		
-		//return blocks;//
+		//return basicBlocks;//
 	}
 	/**
-	 * After indexing, need to set jump targets or add another jump at the end of basic blocks due to that indexing
+	 * After indexing, need to set jump targets or add another jump at the end of basic basicBlocks due to that indexing
 	 */
 	public void addMissingBranches() {
-		for(BasicBlock block:getBlocks()){
+		for(BasicBlock block: getBasicBlocks()){
 			if( block.successors.size() == 1){
 				if ( block.bTo +1  != block.successors.get(0).bFrom ){
 					AbstractNode entry = block.successors.get(0).getEntry() ;
 					if( entry != null )
 					{
 						BranchNode node = new BranchNode();
-						node.jumpTarget =  entry.label ;
-						node.lineIndex = block.bTo ;
+						node.jumpTarget =  entry.uniqueLabel;
+						node.sourceLocation = block.bTo ;
 						block.addNode(node);
 					} else {
 						// TODO empty basicblock
@@ -439,7 +442,7 @@ public class Function  {
 		Allocation moveFrom = null;
 		Allocation moveTo= null ;
 		Map<Allocation,Allocation> mapping = new HashMap<Allocation,Allocation>();
-		for(BasicBlock pred:blocks){
+		for(BasicBlock pred: basicBlocks){
 			for(BasicBlock succ:pred.getSuccessors()){
 				for( LiveInterval interval: intervals.values()){
 					if( interval.isAlive(succ.bFrom)){
@@ -447,7 +450,7 @@ public class Function  {
 							// Find the phi function defining it
 							for(AbstractNode node:succ.getNodes()){
 								if( node instanceof PhiNode && ((PhiNode)node).memAddress == interval.varName ){
-									String operand = ((PhiNode)node).inputOf(pred);
+									AbstractNode operand = ((PhiNode)node).inputOf(pred);
 									// TODO if operand is constant
 									moveFrom = intervals.get(operand).allocatedLocation ; // TODO location of opd at end of the pred
 								}
@@ -472,7 +475,12 @@ public class Function  {
 	}
 	
 	public List<AbstractNode> getExecutableStream(){
-		return null ;
+        List<AbstractNode> executableItems = new ArrayList<>();
+	    List<BasicBlock> orderedBlocks = this.getBlocksInLayoutOrder();
+        for(BasicBlock block:orderedBlocks){
+            executableItems.addAll(block.getNodes());
+        }
+		return executableItems ;
 	}
 	
 	

@@ -8,6 +8,6 @@ public class ImmediateNode extends AbstractNode{
 	}
 	@Override 
 	public String toString(){
-		return  label +": " + operator + " " + value ;
+		return  uniqueLabel +": IMM " + value ;
 	}
 }

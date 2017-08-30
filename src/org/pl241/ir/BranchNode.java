@@ -14,7 +14,7 @@ public class BranchNode extends AbstractNode{
 		conditioned = false ;
 	}
 	
-	public BranchNode(String type, String _operand)
+	public BranchNode(String type, AbstractNode _operand)
 	{
 		super(type);
 		conditioned = true; // TODO
@@ -25,7 +25,7 @@ public class BranchNode extends AbstractNode{
 	@Override
 	public String toString() {
 		// TODO Auto-generated method stub
-		return  "lindex " + lineIndex +  " " + super.label + ": " + operator + " " + operands.toString() + " " +   jumpTarget ;
+		return  "lindex " + sourceLocation +  " " + super.uniqueLabel + ":  BRA " + operands.toString() + " " +   jumpTarget ;
 	}
 	
 	@Override

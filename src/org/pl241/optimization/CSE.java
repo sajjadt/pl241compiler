@@ -1,14 +1,8 @@
 package org.pl241.optimization;
 
 import java.util.HashMap;
-import java.util.Iterator;
 
-import org.pl241.ir.AbstractNode;
-import org.pl241.ir.BasicBlock;
-import org.pl241.ir.LoadNode;
-import org.pl241.ir.Function;
-import org.pl241.ir.MoveNode;
-import org.pl241.ir.PhiNode;
+import org.pl241.Function;
 
 public class CSE {
 	private HashMap<Expression,String> expressionMap;
@@ -17,22 +11,22 @@ public class CSE {
 		expressionMap = new HashMap<Expression,String>();
 		matchMap = new HashMap<String, String>();
 	}
-	public void eliminate(Function function){
-		fixBlock( function.getEntry() );
-		
+	public void apply(Function function){
+		//fixBlock( function.getEntryBlock() );
 	}
-	
+/*
 	public void fixBlock(BasicBlock block){
 		// Foreach phi function
 		
 		
 		// Foreach Statement
 		for( AbstractNode node: block.getNodes() ){
-			if( node.operator.equals("ADD") || node.operator.equals("MUL") ){ ///TODO add more div, ...
+			// TODO NEW 	CAREFULL HERE ADD,MUL BUT LOAD?
+			if(node instanceof ArithmaticNode && ( ((ArithmaticNode)node).operator.equals("ADD") || ((ArithmaticNode)node).operator.equals("MUL")) ){ ///TODO add more div, ...
 				// look for operands
 			
-				String node1Label = node.getOperand1() ;
-				String node2Label = node.getOperand2() ;
+				AbstractNode node1Label = node.getOperandAtIndex(0) ;
+				AbstractNode node2Label = node.getOperandAtIndex(1) ;
 								
 				node.setOperands(node1Label,node2Label);
 				//node.operand1Label = node1Label ;
@@ -48,10 +42,10 @@ public class CSE {
 					operand1 = ((LoadNode)node1).memAddress; // TODO with stride ?
 				} else if ( node1.operator.equals("ADD") || node1.operator.equals("MUL") ){ // TODO 
 					// find it in the matchmap
-					if( matchMap.containsKey(node1.label)){
-						operand1 = matchMap.get(node1.label);
+					if( matchMap.containsKey(node1.uniqueLabel)){
+						operand1 = matchMap.get(node1.uniqueLabel);
 					}else {
-						operand1 = node1.label ;
+						operand1 = node1.uniqueLabel ;
 					}
 				} else{
 					
@@ -60,10 +54,10 @@ public class CSE {
 				if( node2 instanceof LoadNode ){
 					operand2 = ((LoadNode)node2).memAddress; //TODO 
 				} else if ( node2.operator.equals("ADD") || node2.operator.equals("MUL") ){ //TODO
-					if( matchMap.containsKey(node2.label)){
-						operand2 = matchMap.get(node2.label);
+					if( matchMap.containsKey(node2.uniqueLabel)){
+						operand2 = matchMap.get(node2.uniqueLabel);
 					} else {
-						operand2 = node2.label ;
+						operand2 = node2.uniqueLabel ;
 					}
 				} else{
 					
@@ -78,9 +72,9 @@ public class CSE {
 				if( operand1 != null && operand2 != null ){
 					Expression exp = new Expression(operand1,operand2, node.operator);
 					if( expressionMap.containsKey(exp) ){
-						matchMap.put(node.label, expressionMap.get(exp) );
-						System.out.println("1 mm putting " + node.label + ":" + expressionMap.get(exp) );
-						//node.label = expressionMap.get(exp);
+						matchMap.put(node.uniqueLabel, expressionMap.get(exp) );
+						System.out.println("1 mm putting " + node.uniqueLabel + ":" + expressionMap.get(exp) );
+						//node.uniqueLabel = expressionMap.get(exp);
 						node.removed = true ; 
 						node.removeReason = "CSE" ;
 						
@@ -94,13 +88,13 @@ public class CSE {
 						node.setOperands(operand1, operand2);
 						//node.operand1Label = operand1 ;
 						//node.operand2Label = operand2 ;
-						expressionMap.put(exp,node.label);
-						System.out.println("em putting " + exp.operator +"," + exp.op1 +"," + exp.op2 + ":" +  node.label );
-						//matchMap.put(node.label, node.label );
+						expressionMap.put(exp,node.uniqueLabel);
+						System.out.println("em putting " + exp.operator +"," + exp.op1 +"," + exp.op2 + ":" +  node.uniqueLabel );
+						//matchMap.put(node.uniqueLabel, node.uniqueLabel );
 					}
 				}
 				
-			}else if (node instanceof MoveNode  ){
+			}else if (node instanceof MoveNode) {
 				
 				MoveNode mNode = (MoveNode)node;
 				String nodeLable = mNode.getInputOperands().get(0);
@@ -135,5 +129,5 @@ public class CSE {
 				i.remove();
 		}
 	}
-	
+*/
 }

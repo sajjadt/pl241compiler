@@ -1,11 +1,12 @@
 package org.pl241.ir;
 
+import org.pl241.Function;
+
 import java.io.PrintWriter;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.ListIterator;
-import java.util.Map;
 import java.util.Set;
 
 public class BasicBlock {
@@ -61,9 +62,14 @@ public class BasicBlock {
 		}
 		return null ;
 	}
-	
+
+	public AbstractNode getLastNode() {
+		return this.nodes.get(this.nodes.size() - 1);
+	}
+
+	// Return list of live variables
 	public Set<String> getLiveIn(){
-		return liveIn ;
+		return liveIn;
 	}
 	public void addSuccessor(BasicBlock succ) {
 		if (succ == null)
@@ -137,16 +143,16 @@ public class BasicBlock {
 	
 	public void addNode( AbstractNode node ){
 		//if( node  instanceof FetchNode == false ){
-			//if( lineIndex == null ){
-			//	lineIndex = ++_lindex ;
-			// bFrom = lineIndex ;
+			//if( sourceLocation == null ){
+			//	sourceLocation = ++_lindex ;
+			// bFrom = sourceLocation ;
 			// }
-			//node.lineIndex = ++_lindex;
-			//bTo = node.lineIndex ;
+			//node.sourceLocation = ++_lindex;
+			//bTo = node.sourceLocation ;
 		//}
 		
 		nodes.add(node);
-		parentFunction.irMap.put(node.label, node);
+		parentFunction.irMap.put(node.uniqueLabel, node);
 	}
 	
 	public List<AbstractNode> getNodes() {
@@ -170,7 +176,7 @@ public class BasicBlock {
 			pw.println("digraph {");
 			pw.println("rankdir=\"TD\"");
 		}
-		pw.print("BB" + _index + " [shape=record label=\"{");
+		pw.print("BB" + _index + " [shape=record uniqueLabel=\"{");
 		pw.print( "BBL Range: " + bFrom + ":" + bTo + "\n|");
 		pw.print( "TAG: " + tag + "\n|");
 		boolean first = true;
@@ -191,7 +197,7 @@ public class BasicBlock {
 	}
 
 	public void toDomTreeDot(PrintWriter pw) {
-		pw.print("BB" + _index + " [shape=record label=\"{");
+		pw.print("BB" + _index + " [shape=record uniqueLabel=\"{");
 		boolean first = true;
 		pw.println("BBL: " + _index );
 		pw.print('|');
@@ -233,7 +239,7 @@ public class BasicBlock {
 		System.out.println("Phi function for var " + var.name + " added to BBL " + getIndex() );
 		PhiNode phi = new PhiNode(var.name) ;
 		if( this.lineIndex != null )
-			phi.lineIndex = this.lineIndex ;
+			phi.sourceLocation = this.lineIndex ;
 		else {
 			// TODO lineindex for empty block 
 			
@@ -249,12 +255,12 @@ public class BasicBlock {
 			AbstractNode node = li.previous();
 			if (node instanceof MoveNode ){
 				if(  ((MoveNode)node).memAddress.equals(var.name) ){
-					return node.label;
+					return node.uniqueLabel;
 				}
 			}
 			if (node instanceof PhiNode ){
 				if(  ((PhiNode)node).memAddress.equals(var.name) ){
-					return node.label;
+					return node.uniqueLabel;
 				}
 			}
 		}
@@ -300,10 +306,10 @@ public class BasicBlock {
 			}
 			
 			if (node instanceof IONode && ((IONode)node).writeData() ){
-				String src =((IONode)node).getOperand1()  ;
-				String address = Variable.getTopmostName(src);
-				((IONode)node).operands.set(0, address);
-				
+				AbstractNode src =((IONode)node).getOperandAtIndex(0)  ;
+				//String address = Variable.getTopmostName(src);
+				//saji TODO new
+				// ((IONode)node).operands.set(0, new LabelNode(address));
 			}
 			
 		}
@@ -319,11 +325,11 @@ public class BasicBlock {
 					System.out.println("Reading " + name );
 					String newName = Variable.getTopmostName(name) ;
 					System.out.println(newName+" from BBL " + getIndex() ) ;
-					((PhiNode)node).rightOperands.put( getIndex() , newName ) ;
+					((PhiNode)node).rightOperands.put( getIndex() , new LabelNode(newName) ) ;
 				}
 			}
 		}
-		//for( BasicBlock b: parentFunction.blocks ) { 
+		//for( BasicBlock b: parentFunction.basicBlocks ) {
 		//	//TODO better way to point to D.Tree
 			
 		//	if( b.immediateDominants.contains(this) && b.getIndex() != this._index ){
@@ -364,11 +370,11 @@ public class BasicBlock {
 		bTo = lineIndex;
 		for(AbstractNode node: getNodes() ){
 			if( node instanceof PhiNode ){
-				node.lineIndex = lineIndex ;
+				node.sourceLocation = lineIndex ;
 			}
 			else if( node  instanceof LoadNode == false && node  instanceof ImmediateNode == false ){
-				node.lineIndex = ++_lindex ;
-				bTo = node.lineIndex ;
+				node.sourceLocation = ++_lindex ;
+				bTo = node.sourceLocation;
 			}
 		}
 		bTo =  ++_lindex; // For potential branch

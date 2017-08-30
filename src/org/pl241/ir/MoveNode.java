@@ -1,12 +1,11 @@
 package org.pl241.ir;
 
 import java.util.ArrayList;
-import java.util.Map;
 
 public class MoveNode extends AbstractNode {
 	public String memAddress;
 	public ArrayList<Integer> strides;
-	private String data;
+	private AbstractNode data;
 	public String originalMemAddress;
 	public MoveNode( String _memAddress ){
 		super("move");
@@ -14,7 +13,7 @@ public class MoveNode extends AbstractNode {
 		originalMemAddress = _memAddress;
 		strides = new ArrayList<Integer>();
 	}
-	public MoveNode( String _memAddress , ArrayList<Integer>  _strides , String _data){
+	public MoveNode( String _memAddress , ArrayList<Integer>  _strides , AbstractNode _data){
 		this(_memAddress);
 		strides.addAll(_strides);
 		data = _data;
@@ -22,16 +21,16 @@ public class MoveNode extends AbstractNode {
 	}
 	public String toString(){
 		if( strides.size()> 0 ) 
-			return  "lindex " + lineIndex +  " " + super.label + ": " + operator + " " +  memAddress + strides;
+			return  "lindex " + sourceLocation +  " " + super.uniqueLabel + ": " +  memAddress + strides;
 		else
-			return  "lindex " + lineIndex +  " " + super.label + ": " + operator + " " +  memAddress  + " " + data;
+			return  "lindex " + sourceLocation +  " " + super.uniqueLabel + ": " +  memAddress  + " " + data;
 	}
 	
 	@Override
 	public String getOutputOperand(){
 		return memAddress;
 	}
-	public void setRightOperand(String label1) {
+	public void setRightOperand(AbstractNode label1) {
 		data = label1 ;
 		if( operands.size() > 0 )
 			operands.set(0,data);

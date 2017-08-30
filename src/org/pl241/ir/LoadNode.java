@@ -1,7 +1,5 @@
 package org.pl241.ir;
 
-import java.util.ArrayList;
-
 public class LoadNode extends AbstractNode {
 	public String memAddress;
 	public LoadNode( String _memAddress ){
@@ -9,7 +7,7 @@ public class LoadNode extends AbstractNode {
 		memAddress = _memAddress;
 	}
 	public String toString(){
-		return super.label + ": " + operator + " " +  memAddress ;
+		return super.uniqueLabel + ":  LD " +  memAddress ;
 	}
 	@Override
 	public String getOutputOperand(){

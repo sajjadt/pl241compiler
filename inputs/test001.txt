@@ -2,5 +2,7 @@
 main 
 var x, y;
 {
-    call OutputNum(y)
+    call OutputNum(y);
+    call OutputNum(y+x);
+    call OutputNum(22)
 }.
