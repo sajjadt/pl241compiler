@@ -2,24 +2,22 @@ package org.pl241.ir;
 
 public class ReturnNode extends AbstractNode {
 
-	public ReturnNode (String retVal) {
+	public ReturnNode (AbstractNode _returnValue) {
 		super("return");
-		this.retVal = retVal;
+		this.returnValue = _returnValue;
 	}
-	
-	public void setReturnValue (String retVal) {
-		this.retVal = retVal ;
+	public void setReturnValue (AbstractNode _returnValue) {
+		this.returnValue = _returnValue ;
 	}
-	
 	public String toString() {
-		return super.uniqueLabel + ": return , "  +  retVal ;
+		return super.uniqueLabel + ": return , "  +  returnValue ;
 	}
 	@Override
 	public String getOutputOperand() {
 		return null ;
 	}
 
-	private String retVal;
+	private AbstractNode returnValue;
 }
 
 

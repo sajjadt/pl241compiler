@@ -6,11 +6,23 @@ import java.util.Stack;
 
 public class Variable {
 	public String name;
-	public enum VariableType{
-		Integer, Array
+
+	public int numElements() {
+		if (type == VariableType.INTEGER) {
+            return 1;
+        } else {
+		    int total = 1;
+		    for (Integer i: dimensions ) {
+		        total *= i;
+            }
+            return total;
+        }
 	}
-	
-	
+
+	public enum VariableType{
+        INTEGER, ARRAY
+	}
+
 	public VariableType type;
 	public ArrayList<Integer> dimensions;
 	public static HashMap< String, Integer > counters ;

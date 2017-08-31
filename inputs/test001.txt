@@ -2,7 +2,8 @@
 main 
 var x, y;
 {
-    call OutputNum(y);
-    call OutputNum(y+x);
-    call OutputNum(22)
+    let x <- call InputNum();
+    call OutputNum(22);
+    call OutputNum(x+4);
+    call OutputNum(x+y)
 }.

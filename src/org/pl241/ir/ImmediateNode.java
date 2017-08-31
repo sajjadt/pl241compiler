@@ -1,13 +1,16 @@
 package org.pl241.ir;
 
 public class ImmediateNode extends AbstractNode{
-	private String value ;
+	private int value ;
 	public ImmediateNode(String _value){
 		super("Imm");
-		value = _value ;
+		value = Integer.parseInt(_value) ;
 	}
 	@Override 
 	public String toString(){
 		return  uniqueLabel +": IMM " + value ;
 	}
+	public int getValue() {
+	    return value;
+    }
 }

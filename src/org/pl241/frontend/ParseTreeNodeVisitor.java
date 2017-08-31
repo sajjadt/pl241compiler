@@ -21,6 +21,7 @@ import org.pl241.frontend.Parser.VarDeclNode;
 import org.pl241.frontend.Parser.VarNode;
 import org.pl241.frontend.Parser.WhileStmtNode;
 
+
 public interface ParseTreeNodeVisitor
 {
   public void enter(ProgramNode node);

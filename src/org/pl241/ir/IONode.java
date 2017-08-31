@@ -4,26 +4,21 @@ import java.util.HashMap;
 import java.util.Map;
 
 public class IONode extends AbstractNode  {
-	public static enum IOType {
+
+	public enum IOType {
 		READ,
 		WRITE , 	
-		WRITELINE};
+		WRITELINE
+	};
 	
-	private static Map<IOType,String> ioMap;
 	private boolean _readData ;
 	private boolean _writeData ;
-	
-	static {
-		ioMap = new HashMap<IOType, String >();
-		ioMap.put(IOType.READ, "RDD" );
-		ioMap.put(IOType.WRITE, "WRD" );
-		ioMap.put(IOType.WRITELINE, "WRL" );
-		}	
-	
+	public IOType type;
 		
-	public IONode(IOType type , AbstractNode operand) {
-		
-		super(ioMap.get(type));
+	public IONode(IOType _type , AbstractNode operand) {
+
+		super(_type.toString());
+		type = _type;
 		_readData = _writeData = false; 
 		if( type.equals(IOType.WRITE) ){
 			operands.add(operand);
@@ -37,14 +32,14 @@ public class IONode extends AbstractNode  {
 	}
 	
 	@Override
-	public String toString(){
-		return  "lindex " + sourceLocation +  " " + super.uniqueLabel + ": H  " + operands;
+	public String toString() {
+		return uniqueLabel + ": "  ;
 	}
 	
-	public boolean readData(){
+	public boolean readData() {
 		return this._readData;
 	}
-	public boolean writeData(){
+	public boolean writeData() {
 		return this._writeData ;
 	}
 	

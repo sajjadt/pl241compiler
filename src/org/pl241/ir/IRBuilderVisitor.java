@@ -88,13 +88,13 @@ public class IRBuilderVisitor implements ParseTreeNodeVisitor {
 			for( int i = 1 ;i < node.children.size() ; i+=2 ){
 				LOGGER.log( Level.FINEST,"Adding "+ node.children.get(i).getText());
 				if( node.parent instanceof FuncBodyNode ){
-					currentFunction.symbolTable.add( new Variable(node.children.get(i).getText(),VariableType.Integer) );	
+					currentFunction.symbolTable.add( new Variable(node.children.get(i).getText(),VariableType.INTEGER) );
 				}
 				else {
-					mainFunction.symbolTable.add( new Variable(node.children.get(i).getText(),VariableType.Integer) );	
+					mainFunction.symbolTable.add( new Variable(node.children.get(i).getText(),VariableType.INTEGER) );
 				}
 			}
-		} else { // Array
+		} else { // ARRAY
 
 			ArrayList<Integer> dimensions = new ArrayList<Integer>();
 			TypeDeclNode tctx = (TypeDeclNode) node.getChild(0) ;
@@ -105,10 +105,10 @@ public class IRBuilderVisitor implements ParseTreeNodeVisitor {
 			}
 			for( int i = 1 ;i < node.children.size() ; i+=2){
 				if( node.parent instanceof FuncBodyNode ){
-					currentFunction.symbolTable.add( new Variable(node.children.get(i).getText(),VariableType.Array , dimensions) );
+					currentFunction.symbolTable.add( new Variable(node.children.get(i).getText(),VariableType.ARRAY, dimensions) );
 				}
 				else {
-					mainFunction.symbolTable.add( new Variable(node.children.get(i).getText(),VariableType.Array , dimensions) );    					
+					mainFunction.symbolTable.add( new Variable(node.children.get(i).getText(),VariableType.ARRAY, dimensions) );
 				}
 			}
 		}
@@ -225,10 +225,10 @@ public class IRBuilderVisitor implements ParseTreeNodeVisitor {
 			lvalue = true;
 		}
 		if ( node.children.size() > 1 ){
-			// Array
+			// ARRAY
 			ArrayList<Integer> strides = new ArrayList<Integer>();
 			LOGGER.log( Level.FINEST,"pushing 1");
-			expressionStack.push(new LoadNode( node.getChild(0).getText()  ) ) ; // "load Array l:" + lvalue + ctx.getText() ));
+			expressionStack.push(new LoadNode( node.getChild(0).getText()  ) ) ; // "load ARRAY l:" + lvalue + ctx.getText() ));
 		} else {
 			// Var
 			if( lvalue ){
@@ -348,7 +348,7 @@ public class IRBuilderVisitor implements ParseTreeNodeVisitor {
 			bblStack.peek().addNode(new BranchNode());
 		}
 		if (node.parent instanceof ProgramNode) {
-			bblStack.peek().addNode(new AbstractNode("end"));
+			bblStack.peek().addNode(new ReturnNode(null));
 		}
 		currentFunction.basicBlocks.add( bblStack.peek() );
 		bblStack.pop();
@@ -372,7 +372,7 @@ public class IRBuilderVisitor implements ParseTreeNodeVisitor {
 		if( var == null )
 			throw new Exception("Var " + varName + " not found in symbol table");
 		if ( node.children.size() > 1 ){
-			// Array
+			// ARRAY
 			
 			// Caluclate offset
 			int index = 0 ;
@@ -396,7 +396,7 @@ public class IRBuilderVisitor implements ParseTreeNodeVisitor {
 					}
 					tempOffsetCalcNode = offsetCalcNode ;
 					if( offset > 1){
-						offsetCalcNode = new ArithmaticNode(expressionStack.peek(), new ImmediateNode(Integer.toString(offset)), "MUL" ) ;
+						offsetCalcNode = new ArithmeticNode(expressionStack.peek(), new ImmediateNode(Integer.toString(offset)), ArithmeticNode.ArithmeticType.MUL) ;
 						bblStack.peek().addNode( offsetCalcNode );
 					}else {
 						offsetCalcNode =  expressionStack.peek();
@@ -405,7 +405,7 @@ public class IRBuilderVisitor implements ParseTreeNodeVisitor {
 					
 					if( tempOffsetCalcNode != null )
 					{
-						offsetCalcNode = new ArithmaticNode(tempOffsetCalcNode, offsetCalcNode , "ADD" ) ;
+						offsetCalcNode = new ArithmeticNode(tempOffsetCalcNode, offsetCalcNode , ArithmeticNode.ArithmeticType.ADD) ;
 						bblStack.peek().addNode( offsetCalcNode );
 					}
 					
@@ -460,7 +460,7 @@ public class IRBuilderVisitor implements ParseTreeNodeVisitor {
 				LOGGER.log( Level.FINER,"popping a node " + label2 );
 				
 				String operatorText = operator.getText() ;
-				AbstractNode anode = new ArithmaticNode(label1, label2 ,  ArithmaticNode.operatorMap.get(operatorText) );
+				AbstractNode anode = new ArithmeticNode(label1, label2 ,  ArithmeticNode.operatorMap.get(operatorText) );
 				LOGGER.log( Level.FINER,"pushing an operator node " + operator.getText() );
 				expressionStack.push(anode);
 				
@@ -480,7 +480,7 @@ public class IRBuilderVisitor implements ParseTreeNodeVisitor {
 					LOGGER.log( Level.FINER,"popping a node " + op1Label.uniqueLabel);
 					
 					
-					anode = new ArithmaticNode( op1Label , label ,  ArithmaticNode.operatorMap.get(operatorTexts) );
+					anode = new ArithmeticNode( op1Label , label ,  ArithmeticNode.operatorMap.get(operatorTexts) );
 					LOGGER.log( Level.FINER,"pushing an operator node " + operator.getText() );
 					expressionStack.push(anode);
 				}
@@ -505,7 +505,7 @@ public class IRBuilderVisitor implements ParseTreeNodeVisitor {
 				bblStack.peek().addNode( expressionStack.peek() );
 			AbstractNode label2 = expressionStack.pop() ;
 			
-			AbstractNode anode = new ArithmaticNode(label1, label2 ,  ArithmaticNode.operatorMap.get(operator.getText()) );
+			AbstractNode anode = new ArithmeticNode(label1, label2 ,  ArithmeticNode.operatorMap.get(operator.getText()) );
 			LOGGER.log( Level.FINER,"pushing an operator " + operator.getText() );
 			expressionStack.push(anode);
 			li.previous();
@@ -524,7 +524,7 @@ public class IRBuilderVisitor implements ParseTreeNodeVisitor {
 				
 				
 				
-				anode = new ArithmaticNode( op1Label, label ,   ArithmaticNode.operatorMap.get( operator.getText() ) );
+				anode = new ArithmeticNode( op1Label, label ,   ArithmeticNode.operatorMap.get( operator.getText() ) );
 				LOGGER.log( Level.FINER,"pushing an operator " + operator.getText() );
 				expressionStack.push(anode);
 			}	
@@ -552,9 +552,9 @@ public class IRBuilderVisitor implements ParseTreeNodeVisitor {
 		bblStack.peek().addNode( expressionStack.peek() );
 		AbstractNode label2 = expressionStack.pop() ;
 		
-		AbstractNode nNode = new ArithmaticNode(label1, label2 , "cmp" );
+		AbstractNode nNode = new ArithmeticNode(label1, label2 , ArithmeticNode.ArithmeticType.CMP);
 		bblStack.peek().addNode( nNode );
-		bblStack.peek().addNode( new BranchNode( ArithmaticNode.operatorMap.get(node.children.get(1).getText() ), nNode)  );
+		bblStack.peek().addNode( new BranchNode( BranchNode.branchMap.get(node.children.get(1).getText() ), nNode)  );
 		
     	//if ( ctx.parent instanceof WhilestatementContext ){
 		currentFunction.basicBlocks.add( bblStack.peek() );
@@ -622,7 +622,7 @@ public class IRBuilderVisitor implements ParseTreeNodeVisitor {
 			//((StoreNode)des).setValue( exp.uniqueLabel );
 			//bblStack.peek().addNode( des ) ;
 			
-			ReturnNode retNode = new ReturnNode(exp.uniqueLabel);
+			ReturnNode retNode = new ReturnNode(exp);
 			bblStack.peek().addNode(retNode);
 			
 			
@@ -642,7 +642,8 @@ public class IRBuilderVisitor implements ParseTreeNodeVisitor {
 	public void exit(FormalParamNode node) {
 		if( node.children.size() > 2 ){
 			for( int i = 1 ; i < node.children.size(); i+=2){
-				currentFunction.symbolTable.add( new Variable( node.children.get(i).getText() , VariableType.Integer ) );
+				// TODO could they be arrays?
+				currentFunction.symbolTable.add( new Variable( node.children.get(i).getText() , VariableType.INTEGER) );
 			}
 		}
 	}

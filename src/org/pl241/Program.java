@@ -6,6 +6,7 @@ import java.io.IOException;
 import java.io.PrintWriter;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 
 import org.pl241.ir.AnalysisException;
 import org.pl241.ir.BasicBlock;
@@ -25,7 +26,16 @@ public class Program {
 		functions.add(function);
 	}
 
-    // Optimazations
+
+	public Function getMainFunction() {
+	    for (Function f: functions) {
+	        if (Objects.equals(f.name, "main"))
+	            return f;
+        }
+	    return null;
+    }
+
+    // Optimizations
 	public void copyPropagate(){
 		for (Function f:functions){
         	CP cp = new CP();

@@ -109,13 +109,13 @@ public class Function  {
 			pw.println("subgraph " + "cluster" + _index + " {");
 			//pw.println("uniqueLabel=\"" + (main ? "<main> " : "") + toString() + "\\n" + location
             //      + (outerFunction != null ? "\\nouter: " + (outerFunction.getName() == null ? "<main>" : outerFunction.getName()) : "")  +  "\";");
-			pw.println("uniqueLabel=" + getName() );
+			pw.println("label=" + getName() );
 			pw.println("labelloc=\"t\";");
 			pw.println("fontsize=18;");
 		}
 		pw.println("rankdir=\"TD\"");
 		Set<BasicBlock> labels = new HashSet<>();
-		pw.println("BB_entry" + _index + "[shape=none,uniqueLabel=\"\"];");
+		pw.println("BB_entry" + _index + "[shape=none,label=\"\"];");
 		pw.println("BB_entry" + _index + " -> BB" + getEntryBlock().getIndex()
 				+ " [tailport=s, headport=n, headlabel=\"    " + getEntryBlock().getIndex() + "\"]");
 		labels.add(getEntryBlock());
@@ -164,13 +164,13 @@ public class Function  {
 			pw.println("subgraph " + "cluster" + _index + " {");
 			//pw.println("uniqueLabel=\"" + (main ? "<main> " : "") + toString() + "\\n" + location
             //      + (outerFunction != null ? "\\nouter: " + (outerFunction.getName() == null ? "<main>" : outerFunction.getName()) : "")  +  "\";");
-			pw.println("uniqueLabel=" + getName() );
+			pw.println("label=" + getName() );
 			pw.println("labelloc=\"t\";");
 			pw.println("fontsize=18;");
 		}
 		pw.println("rankdir=\"TD\"");
 		Set<BasicBlock> labels = new HashSet<>();
-		pw.println("BB_entry" + _index + "[shape=none,uniqueLabel=\"\"];");
+		pw.println("BB_entry" + _index + "[shape=none,label=\"\"];");
 		pw.println("BB_entry" + _index + " -> BB" + getEntryBlock().getIndex()
 				+ " [tailport=s, headport=n, headlabel=\"    " + getEntryBlock().getIndex() + "\"]");
 		labels.add(getEntryBlock());

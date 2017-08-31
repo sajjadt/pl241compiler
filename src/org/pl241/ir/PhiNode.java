@@ -8,8 +8,7 @@ import java.util.Map;
 public class PhiNode extends AbstractNode {
 	public Map< Integer ,String > rightLabels ; // bbl index, instruction uniqueLabel
 	public Map< Integer, AbstractNode> rightOperands; // bbl index, operands
-	
-	
+
 	public String memAddress;
 	public String originalMemAddress;
 	

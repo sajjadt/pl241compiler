@@ -12,8 +12,8 @@ public class DLXTest {
 
 	public static void main(String[] args){
 		DLXCodeGenerator generator = new DLXCodeGenerator(null);
-		ArrayList<Integer> program = generator.generateSampleCode() ;
-		DLX.load( program );
+		//ArrayList<Integer> program = generator.generateSampleCode() ;
+		//DLX.load( program );
 		try {
 			DLX.execute();
 		} catch (IOException e) {

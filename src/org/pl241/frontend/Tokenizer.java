@@ -3,12 +3,10 @@ import java.util.LinkedList;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-
 public class Tokenizer {
 	
 	private LinkedList<TokenInfo> tokenInfos;
 	private LinkedList<Token> tokens;
-
 	private void registerTokens(){
 		// Keywords
 		this.add("\\,", Token.COMMA); // ==

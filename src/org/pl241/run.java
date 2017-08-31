@@ -21,7 +21,7 @@ public class run
 		// Settings
         boolean visualize = true;
         boolean optimize = true;
-        boolean execute = false;
+        boolean execute = true;
         int numRegs = 31;
 		String testName = "test001";
         String testPath = "inputs/test001.txt";
@@ -100,8 +100,11 @@ public class run
         // Generate program and execute
         try {
             DLXCodeGenerator generator = new DLXCodeGenerator(program);
-            ArrayList<Integer> mem = generator.generateCode();
+            ArrayList<Integer> mem = generator.generateProgram();
 
+            for (int i =0 ;i < 12; i++) {
+                System.out.println(DLX.disassemble(mem.get(i)));
+            }
             if (execute) {
                 DLX.load(mem);
                 System.out.println("MEM:" + mem);

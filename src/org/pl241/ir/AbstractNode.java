@@ -32,12 +32,11 @@ public class AbstractNode {
 
     // Starts from 0
     public AbstractNode getOperandAtIndex(int index) {
-		if( operands.size() > 0 ){
-			return operands.get(0) ;	
+		if (operands.size() > index) {
+			return operands.get(index);
 		}
-		else {
-			return null;
-		}
+
+		return null;
 	}
 
 	public int sourceLocation; // In source code
@@ -50,11 +49,7 @@ public class AbstractNode {
 
 	@Override
 	public String toString() {
-		return  "lindex " + sourceLocation +  " " + uniqueLabel +": "  + operands.toString() ;
-	}
-	public List<AbstractNode> toList() {
-		ArrayList<AbstractNode> list = new ArrayList<AbstractNode>() ;	
-		return list;
+		return  uniqueLabel ;
 	}
 
 	public String getOutputOperand() {

@@ -24,7 +24,7 @@ public class DLX {
 	static int PC, op, a, b, c, format; 
 
 	// emulated memory
-	static final int MemSize = 10000; // bytes in memory (divisible by 4)
+	static final int MemSize = 50000; // bytes in memory (divisible by 4)
 	static int M[] = new int [MemSize/4];
 
 	public static void load(ArrayList<Integer> program ) {
@@ -253,7 +253,6 @@ public class DLX {
 		catch (java.lang.ArrayIndexOutOfBoundsException e ) {
 		  System.out.println( "failed at " + PC*4 + ",   "  + disassemble( M[PC] ) );
 		}
-
 	}
 
 	// Mnemonic-to-Opcode mapping

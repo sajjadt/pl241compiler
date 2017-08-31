@@ -176,9 +176,8 @@ public class BasicBlock {
 			pw.println("digraph {");
 			pw.println("rankdir=\"TD\"");
 		}
-		pw.print("BB" + _index + " [shape=record uniqueLabel=\"{");
-		pw.print( "BBL Range: " + bFrom + ":" + bTo + "\n|");
-		pw.print( "TAG: " + tag + "\n|");
+		pw.print("BB" + _index + " [shape=record label=\"{");
+		pw.print( "BBL Range: " + bFrom + ":" + bTo + ", TAG: " + tag + "\n|");
 		boolean first = true;
 		for (AbstractNode n : getNodes()) {
 			if (first)
@@ -197,7 +196,7 @@ public class BasicBlock {
 	}
 
 	public void toDomTreeDot(PrintWriter pw) {
-		pw.print("BB" + _index + " [shape=record uniqueLabel=\"{");
+		pw.print("BB" + _index + " [shape=record label=\"{");
 		boolean first = true;
 		pw.println("BBL: " + _index );
 		pw.print('|');
