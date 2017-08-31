@@ -22,9 +22,9 @@ public class run
         boolean visualize = true;
         boolean optimize = true;
         boolean execute = true;
-        int numRegs = 31;
-		String testName = "test001";
-        String testPath = "inputs/test001.txt";
+        int numRegs = 16;
+		String testName = "minssa";
+        String testPath = "inputs/minssa.txt";
 
         // Tokenize the input
 		byte[] encoded = Files.readAllBytes(Paths.get(testPath));
@@ -43,41 +43,43 @@ public class run
             IRBuilderVisitor visitor = new IRBuilderVisitor();
             ParseTreeNode root = parser.parse(tokenizer.getTokens());
             root.accept(visitor);
-
             program = visitor.getProgram();
-            program.process();
+            if (visualize)
+                program.visualize("Vis" + File.separator + testName + "_pass_0.dot");
+
         }
         catch (Exception e) {
             e.printStackTrace();
             return;
         }
+
         // Process and optimize the program
         try {
-            if (visualize)
-                program.visualize("cfgs" + File.separator + testName + "_a.dot");
-
             for (Function f : program.getFunctions()) {
                 // both should use the same layout ordering
                 f.indexIR();
                 f.addMissingBranches();
+                f.setBranchTargets();
             }
+
             if (visualize)
-                program.visualize("cfgs" + File.separator + testName + "_b.dot");
+                program.visualize("Vis" + File.separator + testName + "_pass_1.dot");
+
+            program.toSSAForm();
+
+            if (visualize)
+                program.visualize("Vis" + File.separator + testName + "_pass_ssa.dot");
 
             if (optimize) {
                 program.copyPropagate();
                 if (visualize)
-                    program.visualize("cfgs" + File.separator + testName + "_cp.dot");
+                    program.visualize("Vis" + File.separator + testName + "_pass_2_cp.dot");
                 program.cse();
 
-                for (Function f : program.getFunctions()) {
-                    // both should use the same layout ordering
-                    f.indexIR();
-                    f.addMissingBranches();
-                }
+
                 if (visualize) {
-                    program.visualize("cfgs" + File.separator + testName + "_cse.dot");
-                    program.visualizeDominatorTree("cfgs" + File.separator + testName + "_dom_tree.dot");
+                    program.visualize("Vis" + File.separator + testName + "_pass_3_cse.dot");
+                    program.visualizeDominatorTree("Vis" + File.separator + testName + "_dom_tree.dot");
                 }
             }
         }
@@ -102,7 +104,7 @@ public class run
             DLXCodeGenerator generator = new DLXCodeGenerator(program);
             ArrayList<Integer> mem = generator.generateProgram();
 
-            for (int i =0 ;i < 12; i++) {
+            for (int i =0 ;i < 20; i++) {
                 System.out.println(DLX.disassemble(mem.get(i)));
             }
             if (execute) {

@@ -13,11 +13,23 @@ public class BranchNode extends AbstractNode{
     public BranchNode(BranchType _type, AbstractNode _operand) {
         super("bra");
         type = _type;
-        operands.add(_operand) ;
+        operands.add(_operand);
+        takenTarget = null;
+        nonTakenTarget = null;
+
+        takenBlock = null;
+        nonTakenTarget = null;
     }
 
-    public String jumpTarget;
-	public boolean isCall  ;
+    public String takenTarget;
+    public String nonTakenTarget;
+
+
+    public BasicBlock takenBlock;
+    public BasicBlock nonTakenBlock;
+
+
+    public boolean isCall  ;
     public BranchType type;
 
     public enum BranchType {
@@ -56,9 +68,13 @@ public class BranchNode extends AbstractNode{
 	
 	@Override
 	public String toString() {
-		// TODO Auto-generated method stub
-		return  "lindex " + sourceLocation +  " " + super.uniqueLabel + ":  BRA " + operands.toString() + " " +   jumpTarget ;
-	}
+        String ret = super.uniqueLabel + " " + type;
+        if (operands.size()>0)
+            ret += " " + getOperandAtIndex(0).uniqueLabel ;
+        if (takenBlock != null) ret += (", Block " + takenBlock.id);
+        if (nonTakenBlock != null) ret += (", Block " + nonTakenBlock.id);
+	    return ret;
+    }
 	
 	@Override
 	public String getOutputOperand() {

@@ -36,10 +36,11 @@ public class ArithmeticNode extends AbstractNode {
         //branchMap.put("=", ArithmaticType.MOVE );
 
         operatorMapR = new HashMap <ArithmeticType, String>();
-        operatorMapR.put( ArithmeticType.ADD , "ADD" );
+        operatorMapR.put( ArithmeticType.ADD , "+" );
         operatorMapR.put( ArithmeticType.SUB ,"-" );
-        operatorMapR.put( ArithmeticType.MUL , "" );
+        operatorMapR.put( ArithmeticType.MUL , "*" );
         operatorMapR.put( ArithmeticType.DIV ,"/");
+        operatorMapR.put( ArithmeticType.CMP ,"cmp");
     }
 
     public static ArithmeticType toType(String textOperator) {
@@ -47,7 +48,10 @@ public class ArithmeticNode extends AbstractNode {
     }
 
     public String toString() {
-        return  "op: " + operatorMapR.get(operator); //+ super.toString();
+        String operands = this.operands.get(0).uniqueLabel;
+        if (this.operands.size() > 1)
+            operands +=  ", " + this.operands.get(1).uniqueLabel;
+        return super.toString() + " "+ operatorMapR.get(operator) + " " + operands;
     }
 
 }

@@ -10,7 +10,7 @@ public class ReturnNode extends AbstractNode {
 		this.returnValue = _returnValue ;
 	}
 	public String toString() {
-		return super.uniqueLabel + ": return , "  +  returnValue ;
+		return super.toString() + " return=" + returnValue ;
 	}
 	@Override
 	public String getOutputOperand() {

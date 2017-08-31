@@ -12,63 +12,65 @@ public class Variable {
             return 1;
         } else {
 		    int total = 1;
-		    for (Integer i: dimensions ) {
+		    for (Integer i: dimensions) {
 		        total *= i;
             }
             return total;
         }
 	}
 
-	public enum VariableType{
+	public enum VariableType {
         INTEGER, ARRAY
 	}
 
-	public VariableType type;
-	public ArrayList<Integer> dimensions;
-	public static HashMap< String, Integer > counters ;
-	public static HashMap< String, Stack<String> > recentIndices;
+    VariableType type;
+	ArrayList<Integer> dimensions;
+	static HashMap< String, Integer > counters;
+	static HashMap< String, Stack<String> > recentIndices;
 	
 	static {
-		counters = new HashMap<String, Integer>() ;
-		recentIndices = new HashMap< String, Stack<String> > ();
+		counters = new HashMap<>();
+		recentIndices = new HashMap<>();
 	}
-	public Variable(String _name, VariableType _type){
+
+	public Variable(String _name, VariableType _type) {
 		name = _name;
 		type = _type;	
 	}
 	
-	public Variable(String _name, VariableType _type , ArrayList<Integer> _dimensions ){
+	public Variable(String _name, VariableType _type, ArrayList<Integer> _dimensions) {
 		this(_name,_type);
 		dimensions = _dimensions;
 	}
 	
-	public String toString(){
-		return name +" " + type.name() + " ";
+	public String toString() {
+		return name + " " + type.name() + " ";
 	}
 	
-	public static String generateName(String originalName){
-		if ( recentIndices.get(originalName) == null ){
-			recentIndices.put(originalName , new Stack<String>() );
+	public static String generateName(String originalName) {
+		if (recentIndices.get(originalName) == null) {
+			recentIndices.put(originalName, new Stack<>());
 			counters.put(originalName, 0);
 		}
-		int index = counters.get(originalName) + 1 ;
+
+		int index = counters.get(originalName) + 1;
 		counters.put(originalName, index);
-		String name =  originalName + "_"+index ;
+		String name =  originalName + "_"+index;
 		recentIndices.get(originalName).push(name);
 		return name;
 	}
 	
-	public static String getTopmostName(String originalName){
-		if( recentIndices.get(originalName) != null )
-			if( ! recentIndices.get(originalName).isEmpty() )
+	public static String getTopmostName(String originalName) {
+		if (recentIndices.get(originalName) != null)
+			if (!recentIndices.get(originalName).isEmpty())
 				return recentIndices.get(originalName).peek();
 			else 
-				return originalName ;
+				return originalName;
 		else
-			return originalName ;
+			return originalName;
 	}
 	
-	public static String popTopmostName(String originalName){
+	public static String popTopmostName(String originalName) {
 		if (! recentIndices.get(originalName).empty() )
 			return recentIndices.get(originalName).pop();
 		return null;

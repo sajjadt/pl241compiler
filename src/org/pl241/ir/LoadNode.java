@@ -7,7 +7,7 @@ public class LoadNode extends AbstractNode {
 		memAddress = _memAddress;
 	}
 	public String toString() {
-		return super.uniqueLabel + " from " + memAddress ;
+		return super.uniqueLabel + " read-var=" + memAddress ;
 	}
 	@Override
 	public String getOutputOperand() {

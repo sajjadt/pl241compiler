@@ -16,17 +16,18 @@ public class PhiNode extends AbstractNode {
 		super("phi");
 		memAddress = _memAddress;
 		originalMemAddress = _memAddress;
-		rightLabels = new HashMap<Integer,String>();
-		rightOperands = new HashMap<Integer,AbstractNode>();
+		rightLabels = new HashMap<>();
+		rightOperands = new HashMap<>();
 	}
 
 	public String toString() {
 		StringBuilder oSet = new StringBuilder();
 		for (AbstractNode key: rightOperands.values()) {
-			oSet.append(key);
+			oSet.append(key+", ");
 		}
-		return  "lindex " + sourceLocation +  " " + super.uniqueLabel + ":  " + memAddress +  " " + oSet;
+		return super.toString() +   ": [" + sourceLocation  +"]  " + memAddress +  " phi: " + oSet;
 	}
+
 	public AbstractNode inputOf(BasicBlock block) {
 		return rightOperands.get(block.getIndex());
 	}

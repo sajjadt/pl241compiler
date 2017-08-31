@@ -221,22 +221,19 @@ public class IRBuilderVisitor implements ParseTreeNodeVisitor {
 		// Compute relation and add it to current basicblock
 		//bblStack.peek().nodes.add(new AbstractNode("Relation"));
 		boolean lvalue = false;
-		if( node.parent instanceof AssignmentNode ){
+		if (node.parent instanceof AssignmentNode) {
 			lvalue = true;
 		}
-		if ( node.children.size() > 1 ){
+		if (node.children.size() > 1) {
 			// ARRAY
-			ArrayList<Integer> strides = new ArrayList<Integer>();
-			LOGGER.log( Level.FINEST,"pushing 1");
+			ArrayList<Integer> strides = new ArrayList<>();
 			expressionStack.push(new LoadNode( node.getChild(0).getText()  ) ) ; // "load ARRAY l:" + lvalue + ctx.getText() ));
 		} else {
 			// Var
 			if( lvalue ){
 				/// TODO pop stack here?
-				LOGGER.log( Level.FINEST,"pushing 2");
 				expressionStack.push(new MoveNode( node.getChild(0).getText() ) );
 			} else{
-				LOGGER.log( Level.FINEST,"pushing 3");
 				expressionStack.push(new LoadNode( node.getChild(0).getText() ) ) ; // "load Var l:" + lvalue +  ctx.getText() ) );
 			}
 			
@@ -350,7 +347,7 @@ public class IRBuilderVisitor implements ParseTreeNodeVisitor {
 		if (node.parent instanceof ProgramNode) {
 			bblStack.peek().addNode(new ReturnNode(null));
 		}
-		currentFunction.basicBlocks.add( bblStack.peek() );
+		currentFunction.basicBlocks.add(bblStack.peek());
 		bblStack.pop();
 		if (node.parent instanceof ProgramNode) {
 			LOGGER.log( Level.FINE,"Exiting program node");
@@ -578,7 +575,7 @@ public class IRBuilderVisitor implements ParseTreeNodeVisitor {
 		
 		
 		bblStack.peek().addNode( exp ) ;
-		((StoreNode)des).setValue( exp.uniqueLabel);
+		((StoreNode)des).setSrcOperand(exp);
 		bblStack.peek().addNode( des ) ;
 		//bblStack.peek().addNode( new AbstractNode( des.uniqueLabel , exp.uniqueLabel , des.operator ) );
 		
@@ -619,7 +616,7 @@ public class IRBuilderVisitor implements ParseTreeNodeVisitor {
 			
 			
 			bblStack.peek().addNode( exp ) ;
-			//((StoreNode)des).setValue( exp.uniqueLabel );
+			//((StoreNode)des).setSrcOperand( exp.uniqueLabel );
 			//bblStack.peek().addNode( des ) ;
 			
 			ReturnNode retNode = new ReturnNode(exp);
@@ -650,8 +647,6 @@ public class IRBuilderVisitor implements ParseTreeNodeVisitor {
 
 	@Override
 	public void exit(StatementNode node) {
-		// TODO Auto-generated method stub
-
 	}
 
 	@Override
@@ -689,24 +684,29 @@ public class IRBuilderVisitor implements ParseTreeNodeVisitor {
 			
 			anode = new BranchNode() ;
 			((BranchNode)anode).isCall = true ;
-			((BranchNode)anode).jumpTarget = functionName;
+			((BranchNode)anode).takenTarget = functionName;
 
 			bblStack.peek().addNode( anode );
 			currentFunction.basicBlocks.add( bblStack.peek() );
 			bblStack.pop();
 		}
 		else {
+			anode = null;
 			// Special Instructions
 			if( functionName.equals("InputNum") ){
-				anode = new IONode(IOType.READ,null);
+				// Dont add it
+                // it will be handled by assignment rule
+			    anode = new IONode(IOType.READ,null);
 			} else if ( functionName.equals("OutputNum") ){
 				anode = new IONode(IOType.WRITE, bblStack.peek().getLastNode());
+                bblStack.peek().addNode(anode);
 				//TODO new
 				// IOType.WRITE,node.getChild(3) to abstract node as input
 			} else if ( functionName.equals("OutputNewLine") ){
 				anode = new IONode(IOType.WRITELINE,null);
+                bblStack.peek().addNode(anode);
 			}
-			bblStack.peek().addNode(anode);
+
 		}
 
 		if (node.parent instanceof FactorNode) {

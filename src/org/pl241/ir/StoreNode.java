@@ -2,18 +2,22 @@ package org.pl241.ir;
 
 public class StoreNode extends AbstractNode {
 
-	public StoreNode (String _memAddress) {
+	StoreNode(String _memAddress) {
 		super("store");
 		memAddress = _memAddress;
-		
-	}
+        originalMemAddress = memAddress;
+
+    }
 	
-	public void setValue(String value) {
-		this.value = value ;
+	void setSrcOperand(AbstractNode srcOperand) {
+		super.addOperand(srcOperand);
 	}
 	
 	public String toString() {
-		return super.uniqueLabel + "  " + memAddress + " " + value ;
+	    String ret = super.toString();
+		if (operands.size()>0)
+		    ret += memAddress + "=" + getOperandAtIndex(0).uniqueLabel;
+	    return ret;
 	}
 	@Override
 	public String getOutputOperand() {
@@ -21,7 +25,8 @@ public class StoreNode extends AbstractNode {
 	}
 
 	public String memAddress;
-	public String value ;
+    public String originalMemAddress;
+
 }
 
 

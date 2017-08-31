@@ -10,12 +10,20 @@ import java.util.ListIterator;
 import java.util.Set;
 
 public class BasicBlock {
-	public static  int _sindex = 0;
+
+    public String id;
+    private static int counter = 0 ;
+    public static String generateID (String str) {
+        return str + counter++;
+    }
+
+    public static  int _sindex = 0;
 	public static  int _lindex = 0;
 	private int _index;
 	private List<AbstractNode> nodes;
 	public ArrayList<BasicBlock> successors;
 	public ArrayList<BasicBlock> predecessors;
+
 	public HashSet<BasicBlock> dominators; // Blocks that are dominating this
 	public HashSet<BasicBlock> dominatorsTemp;  
 	public HashSet<BasicBlock> immediateDominants;
@@ -50,6 +58,7 @@ public class BasicBlock {
 		loopHeader = false ;
 		
 		liveIn = new HashSet<String>();
+		id = this.generateID("");
 	}
 	
 	
@@ -177,7 +186,7 @@ public class BasicBlock {
 			pw.println("rankdir=\"TD\"");
 		}
 		pw.print("BB" + _index + " [shape=record label=\"{");
-		pw.print( "BBL Range: " + bFrom + ":" + bTo + ", TAG: " + tag + "\n|");
+		pw.print( "Block " + id + "\n|");
 		boolean first = true;
 		for (AbstractNode n : getNodes()) {
 			if (first)
@@ -218,14 +227,19 @@ public class BasicBlock {
 
 	public boolean hasAssignmentTo(Variable var) {
 		// TODO Auto-generated method stub
-		for( AbstractNode node: getNodes()){
-			if (node instanceof MoveNode ){
-				if(  ((MoveNode)node).memAddress.equals(var.name) ){
+		for (AbstractNode node: getNodes()) {
+			if (node instanceof MoveNode) {
+				if (((MoveNode)node).memAddress.equals(var.name)) {
 					return true;
 				}
 			}
-			if (node instanceof PhiNode ){
-				if(  ((PhiNode)node).memAddress.equals(var.name) ){
+			if (node instanceof PhiNode ) {
+				if (((PhiNode)node).memAddress.equals(var.name)) {
+					return true;
+				}
+			}
+			if (node instanceof StoreNode) {
+				if (((StoreNode)node).memAddress.equals(var.name)) {
 					return true;
 				}
 			}
@@ -262,6 +276,11 @@ public class BasicBlock {
 					return node.uniqueLabel;
 				}
 			}
+            if (node instanceof StoreNode ){
+                if(  ((StoreNode)node).memAddress.equals(var.name) ){
+                    return node.uniqueLabel;
+                }
+            }
 		}
 		return "";
 	}
@@ -270,10 +289,9 @@ public class BasicBlock {
 	public void addPhiOperand(Variable leftOperands, String lastAssignment, int bblIndex) {
 		for( AbstractNode node: getNodes()){
 			if (node instanceof PhiNode ){
-				if(  ((PhiNode)node).memAddress.equals(leftOperands.name) ){
+				if (((PhiNode)node).memAddress.equals(leftOperands.name)) {
 					((PhiNode)node).rightLabels.put(bblIndex , lastAssignment ) ;
 					System.out.println("Phi operand @ " + getIndex()  + "for var " + leftOperands.name + " "  + bblIndex + " " + lastAssignment) ;
-					
 				}
 			}
 		}
@@ -289,35 +307,41 @@ public class BasicBlock {
 				((PhiNode)node).memAddress = newName ;
 			}
 		}
-		for( AbstractNode node: getNodes()){
+		for( AbstractNode node: getNodes()) {
 			if (node instanceof MoveNode ){
 				String name = ((MoveNode)node).originalMemAddress;
-				System.out.println("pushing " + name );
-				String newName = Variable.generateName( name ) ;
+				System.out.println("pushing " + name);
+				String newName = Variable.generateName(name);
 				((MoveNode)node).memAddress = newName ;
 				
 			}
 			
-			if (node instanceof LoadNode ){
-				String src =((LoadNode)node).memAddress  ;
+			if (node instanceof LoadNode) {
+				String src =((LoadNode)node).memAddress;
 				String address = Variable.getTopmostName(src);
-				((LoadNode)node).memAddress =  address ;
+				((LoadNode)node).memAddress =  address;
 			}
+
+            if (node instanceof StoreNode) {
+                String name = ((StoreNode)node).originalMemAddress;
+                System.out.println("pushing " + name );
+                String newName = Variable.generateName( name );
+                ((StoreNode)node).memAddress = newName ;
+            }
 			
-			if (node instanceof IONode && ((IONode)node).writeData() ){
-				AbstractNode src =((IONode)node).getOperandAtIndex(0)  ;
+			if (node instanceof IONode && ((IONode)node).writeData()) {
+				AbstractNode src =((IONode)node).getOperandAtIndex(0);
 				//String address = Variable.getTopmostName(src);
 				//saji TODO new
 				// ((IONode)node).operands.set(0, new LabelNode(address));
 			}
-			
 		}
 		
 		for( BasicBlock b: getSuccessors() ){
 			for( AbstractNode node: b.getNodes()){
 				if (node instanceof PhiNode ){
 					//for( Map.Entry<String, String> entry: ((PhiNode)node).operands.entrySet() ){
-					//	entry.setValue( Variable.getTopmostName(entry.getValue()) );
+					//	entry.setSrcOperand( Variable.getTopmostName(entry.getValue()) );
 						
 					//}
 					String name = ((PhiNode)node).originalMemAddress ;
@@ -345,8 +369,7 @@ public class BasicBlock {
 				b.rename();
 			}
 		}
-		
-		
+
 		for( AbstractNode node: getNodes()){
 			if (node instanceof PhiNode  ){
 				String name = ((PhiNode)node).originalMemAddress ;
@@ -361,7 +384,6 @@ public class BasicBlock {
 		}
 	}
 
-
 	public void indexIR() {
 		// index itself
 		lineIndex = ++_lindex; // For potential phis
@@ -371,11 +393,16 @@ public class BasicBlock {
 			if( node instanceof PhiNode ){
 				node.sourceLocation = lineIndex ;
 			}
-			else if( node  instanceof LoadNode == false && node  instanceof ImmediateNode == false ){
+			else if(!(node instanceof LoadNode) && !(node instanceof ImmediateNode)){
 				node.sourceLocation = ++_lindex ;
 				bTo = node.sourceLocation;
 			}
 		}
 		bTo =  ++_lindex; // For potential branch
-	}	
+	}
+
+    @Override
+    public String toString() {
+        return tag;
+    }
 }

@@ -25,7 +25,7 @@ public class AbstractNode {
 
     public AbstractNode(String _label) {
         this();
-        uniqueLabel = generateLabel(_label);
+        uniqueLabel = generateLabel("L");
     }
 
     protected List<AbstractNode> operands ;
@@ -49,7 +49,7 @@ public class AbstractNode {
 
 	@Override
 	public String toString() {
-		return  uniqueLabel ;
+		return sourceLocation + ":  [" + uniqueLabel + "]";
 	}
 
 	public String getOutputOperand() {
@@ -65,6 +65,10 @@ public class AbstractNode {
 
 	public List<AbstractNode> getInputOperands() {
 	    return operands;
+	}
+
+	public void addOperand(AbstractNode node) {
+		operands.add(node);
 	}
 
 }

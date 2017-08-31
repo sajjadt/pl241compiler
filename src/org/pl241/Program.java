@@ -47,35 +47,13 @@ public class Program {
 		for (Function f:functions){
         	CSE cse = new CSE();
         	cse.apply(f);
-        	f.setBranchTargets();
         }
 	}
 
-	public void process() {
-		try {
-			visualize("a.dot");
-		} catch (IOException e) {
-			e.printStackTrace();
-		}
+	public void toSSAForm() {
 		for (Function f : functions) {
 			f.computeDominateDependance();
 			f.computeDominatorFrontiers();
-
-			System.out.println(f.name);
-			if (f.name.equals("main")) {
-				System.out.println("Global Symbol Table" + f.symbolTable.toString());
-			}
-
-			System.out.println(f.symbolTable.toString());
-			for (BasicBlock b : f.basicBlocks) {
-				System.out.println("BBL: " + b.getIndex() + " ");
-				for (BasicBlock df : f.basicBlocks) {
-					if (b.dominatorFrontiers.contains(df)) {
-						System.out.print(df.getIndex() + " ");
-					}
-				}
-				System.out.println("");
-			}
 			f.insertPhiFunction();
 			try {
 				f.computeDominatorTree();

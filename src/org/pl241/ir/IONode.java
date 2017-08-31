@@ -33,7 +33,10 @@ public class IONode extends AbstractNode  {
 	
 	@Override
 	public String toString() {
-		return uniqueLabel + ": "  ;
+	    String ret = super.toString() + " " + type ;
+	    if (type == IOType.WRITE)
+		    ret  += getOperandAtIndex(0).uniqueLabel;
+	    return ret;
 	}
 	
 	public boolean readData() {

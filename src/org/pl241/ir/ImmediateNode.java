@@ -8,7 +8,7 @@ public class ImmediateNode extends AbstractNode{
 	}
 	@Override 
 	public String toString(){
-		return  uniqueLabel +": IMM " + value ;
+		return super.toString() +" Imm=" + value ;
 	}
 	public int getValue() {
 	    return value;

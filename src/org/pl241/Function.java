@@ -85,12 +85,19 @@ public class Function  {
 
 	
 	public void setBranchTargets(){
+	    String target = null;
 		for( BasicBlock b: this.getBasicBlocks() ){
 			for ( AbstractNode node: b.getNodes() ){
 				if ( node instanceof BranchNode) { //TODO uncoditioned as well
 					// rewrite address
-					if( ! ((BranchNode)node).isCall )
-						((BranchNode)node).jumpTarget = (b.getSuccessors().get(0)).getEntry().uniqueLabel;
+					if (!((BranchNode)node).isCall) {
+                        ((BranchNode)node).takenTarget = (b.getSuccessors().get(0)).getEntry().uniqueLabel;
+                        ((BranchNode)node).takenBlock = (b.getSuccessors().get(0));
+                        if (b.getSuccessors().size() > 1) {
+                            ((BranchNode) node).nonTakenTarget = (b.getSuccessors().get(1)).getEntry().uniqueLabel;
+                            ((BranchNode) node).nonTakenBlock = (b.getSuccessors().get(1));
+                        }
+                    }
 				}
 			}
 		}
@@ -353,25 +360,20 @@ public class Function  {
 		}
 	}
 	
-	public void rename()
-	{
+	public void rename() {
 		getEntryBlock().rename();
 	}
 
-	public void indexIR(){
+	public void indexIR() {
 		List<BasicBlock> blocks = getBlocksInLayoutOrder();
-		for( BasicBlock b : blocks ){
+		for (BasicBlock b : blocks) {
 			b.indexIR(); 
 		}
 	}
-	
 
 	public List<BasicBlock> getBlocksInLayoutOrder() {
-		
-		
-		List<BasicBlock> blocks = new ArrayList<BasicBlock>();
-		Stack<BasicBlock> stack = new Stack<BasicBlock>();
-		
+		List<BasicBlock> blocks = new ArrayList<>();
+		Stack<BasicBlock> stack = new Stack<>();
 		// Pre-order traversal of Dominator tree
 		stack.push(getEntryBlock());
 		while( ! stack.isEmpty() ){
@@ -398,42 +400,24 @@ public class Function  {
 					break;
 				}
 			}
-			
-			
-			
-			
-			
 		}
 		return blocks;
-		
-		
-		
-		//stack.push(getEntryBlock());
-		//while(! stack.isEmpty() ){
-		//	BasicBlock block = stack.pop();
-		//	basicBlocks.add(e);
-		//}
-		
-		//return basicBlocks;//
 	}
-	/**
-	 * After indexing, need to set jump targets or add another jump at the end of basic basicBlocks due to that indexing
-	 */
+
+	// After indexing, need to set jump targets or add another jump at the end of basic basicBlocks due to indexing
 	public void addMissingBranches() {
-		for(BasicBlock block: getBasicBlocks()){
-			if( block.successors.size() == 1){
-				if ( block.bTo +1  != block.successors.get(0).bFrom ){
-					AbstractNode entry = block.successors.get(0).getEntry() ;
-					if( entry != null )
-					{
-						BranchNode node = new BranchNode();
-						node.jumpTarget =  entry.uniqueLabel;
-						node.sourceLocation = block.bTo ;
-						block.addNode(node);
-					} else {
-						// TODO empty basicblock
-					}
-				}
+		for (BasicBlock block: getBasicBlocks()) {
+			if (block.successors.size() == 1 && !(block.getLastNode() instanceof  BranchNode)) {
+                AbstractNode entry = block.successors.get(0).getEntry() ;
+                if( entry != null )
+                {
+                    BranchNode node = new BranchNode();
+                    node.takenTarget =  entry.uniqueLabel;
+                    node.sourceLocation = block.bTo ;
+                    block.addNode(node);
+                } else {
+                    // TODO empty basicblock
+                }
 			}
 		}		
 	}
@@ -466,7 +450,6 @@ public class Function  {
 				}
 			}
 		}
-		
 	}
 	
 	private int spillIndex = 0 ; 
@@ -482,8 +465,6 @@ public class Function  {
         }
 		return executableItems ;
 	}
-	
-	
 }
 	
 	

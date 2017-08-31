@@ -32,6 +32,9 @@ public class DLXCodeGenerator {
             case ADD:
                 instructions.add(DLX.assemble(DLX.ADDI, destAllocation.address, src1Allocation.address, immValue));
                 break;
+            case SUB:
+                instructions.add(DLX.assemble(DLX.SUBI, destAllocation.address, src1Allocation.address, immValue));
+                break;
             case MUL:
                 instructions.add(DLX.assemble(DLX.MULI, destAllocation.address, src1Allocation.address, immValue));
                 break;
@@ -45,7 +48,8 @@ public class DLXCodeGenerator {
             //    instructions.add(DLX.assemble(DLX.MULI, destAllocation.address, src1Allocation.address,-1));
             //    break;
             default:
-                break;
+                throw new Error("Unsupported op " + operation);
+                //break;
         }
         return instructions;
     }
@@ -64,6 +68,9 @@ public class DLXCodeGenerator {
             case ADD:
                 instructions.add(DLX.assemble(DLX.ADD, destAllocation.address, src1Allocation.address, src2Allocation.address));
                 break;
+            case SUB:
+                instructions.add(DLX.assemble(DLX.SUB, destAllocation.address, src1Allocation.address, src2Allocation.address));
+                break;
             case MUL:
                 instructions.add(DLX.assemble(DLX.MUL, destAllocation.address, src1Allocation.address, src2Allocation.address));
                 break;
@@ -77,7 +84,7 @@ public class DLXCodeGenerator {
                 instructions.add(DLX.assemble(DLX.MULI, destAllocation.address, src1Allocation.address,-1));
                 break;
             default:
-                break;
+                throw new Error("Unsupported op " + operation);
         }
         return instructions;
     }
@@ -92,32 +99,16 @@ public class DLXCodeGenerator {
     //
     // high address
     ////////////////////////////////////////////////////////////
-    private ArrayList<Integer> generateFuncBody(Function f) {
-        HashMap<String, Integer> localVarMap = new HashMap<>();
-        Integer temp;
+
+    private ArrayList<Integer> generateBlock(Function f, BasicBlock b, HashMap<String, Integer> localVarMap) {
+
+        System.out.println("Generating block: " + b);
+        System.out.println();
+
         ArrayList<Integer> instructions = new ArrayList<>();
-        int displacement = 0;
-        System.out.println("Generating code for function: " + f.name);
-
-
-        // Allocate space for local vars (no need to initialize)
-        // Also use this table keeps displacement of vars in regard of SP
-        // Variables could be inside local function frame or global table
-        for (Variable var: f.symbolTable.getVars()) {
-            localVarMap.put(var.name, displacement);
-            displacement += -1 * var.numElements();
-        }
-
-        // Save SP in FrameP for user access to variables
-        temp = DLX.assemble(DLX.ADD, this.FRAMEP, this.SP, 0);
-        instructions.add(temp);
-
-        // Make room for local variables
-        instructions.add(DLX.assemble(DLX.ADDI, this.SP, this.SP, displacement));
-
         Allocation allocation = null;
         // Handle instructions
-        for( AbstractNode ins : f.getExecutableStream()) {
+        for( AbstractNode ins : b.getNodes()) {
             if (ins instanceof LoadNode) {
                 System.out.println("Generating load: " + ins.toString());
 
@@ -184,10 +175,26 @@ public class DLXCodeGenerator {
                         break;
                 }
             } else if (ins instanceof StoreNode) {
-                if (Objects.equals(f.name, "main")) {
+                System.out.println("Generating store: " + ins.toString());
 
+                // Source of write instruction
+                // x <- imm : move imm value into temp
+                if (ins.getOperandAtIndex(0) instanceof  ImmediateNode) {
+                    instructions.add(DLX.assemble(DLX.ADDI, this.TEMP_REGISTER, this.ZERO, ((ImmediateNode) ins.getOperandAtIndex(0)).getValue()));
+                    allocation = new Allocation(Allocation.Type.REGISTER, TEMP_REGISTER);
                 } else {
-                    // Load from Stack
+                    allocation = f.allocationMap.get(ins.getOperandAtIndex(0).uniqueLabel);
+                }
+                assert allocation.type == Allocation.Type.REGISTER;
+                // TODO use temp register for memory allocated vars
+
+                if (localVarMap.containsKey(((StoreNode) ins).memAddress)) {
+                    instructions.add(DLX.assemble(DLX.STW, allocation.address, this.FRAMEP, localVarMap.get(((StoreNode) ins).memAddress)));
+                } else if (globalVarMap.containsKey(((StoreNode) ins).memAddress)) {
+                    instructions.add(DLX.assemble(DLX.ADDI, this.TEMP_REGISTER, this.ZERO, BSS));
+                    instructions.add(DLX.assemble(DLX.STW, allocation.address, this.TEMP_REGISTER, globalVarMap.get(((StoreNode) ins).memAddress)));
+                } else {
+                    throw new Error("variable not found in both local and global map");
                 }
             } else if (ins instanceof ReturnNode) {
                 if (Objects.equals(f.name, "main")) {
@@ -195,20 +202,68 @@ public class DLXCodeGenerator {
                     // Restore SP
                     instructions.add(DLX.assemble(DLX.ADD, this.SP, this.FRAMEP, 0));
                     // Return
-                    this.memLayout.add(DLX.assemble(DLX.RET, 0));
+                    instructions.add(DLX.assemble(DLX.RET, 0));
                 } else {
                     System.out.println("Normal return added.");
                     // Restore SP
                     instructions.add(DLX.assemble(DLX.ADD, this.SP, this.FRAMEP, 0));
                     // Return
-                    this.memLayout.add(DLX.assemble(DLX.RET, this.RA));
+                    instructions.add(DLX.assemble(DLX.RET, this.RA));
                 }
             } else if (ins instanceof BranchNode) {
-
+                int offsest = 0;
+                System.out.println("Generating for branch : " + ins.toString());
+                switch (((BranchNode) ins).type) {
+                    case BEQ:
+                        break;
+                    case BGE:
+                        break;
+                    case BLE:
+                        break;
+                    case BNE:
+                        break;
+                    case BRA:
+                        break;
+                    case BLT:
+                        allocation = f.allocationMap.get(ins.getOperandAtIndex(0).uniqueLabel);
+                        assert allocation.type == Allocation.Type.REGISTER;
+                        System.out.println("Branch target is :" + ((BranchNode) ins).takenTarget);
+                        //instructions.add(DLX.assemble(DLX.BLT, allocation.address, 0));
+                        break;
+                }
             } else {
                 System.out.println("Ignoring gen.code for abstract : " + ins.toString());
             }
         }
+        return instructions;
+    }
+    private ArrayList<Integer> generateFuncBody(Function f) {
+        HashMap<String, Integer> localVarMap = new HashMap<>();
+        Integer temp;
+        ArrayList<Integer> instructions = new ArrayList<>();
+        int displacement = 0;
+        System.out.println("Generating code for function: " + f.name);
+
+
+        // Allocate space for local vars (no need to initialize)
+        // Also use this table keeps displacement of vars in regard of SP
+        // Variables could be inside local function frame or global table
+        for (Variable var: f.symbolTable.getVars()) {
+            localVarMap.put(var.name, displacement);
+            displacement += -1 * var.numElements();
+        }
+
+        // Save SP in FrameP for user access to variables
+        temp = DLX.assemble(DLX.ADD, this.FRAMEP, this.SP, 0);
+        instructions.add(temp);
+
+        // Make room for local variables
+        instructions.add(DLX.assemble(DLX.ADDI, this.SP, this.SP, displacement));
+
+        for (BasicBlock block: f.getBlocksInLayoutOrder()) {
+            instructions.addAll(generateBlock(f, block, localVarMap));
+        }
+
         return instructions;
     }
 
