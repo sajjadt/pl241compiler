@@ -3,7 +3,7 @@ package org.pl241.ir;
 public class StoreNode extends AbstractNode {
 
 	StoreNode(String _memAddress) {
-		super("store");
+		super();
 		memAddress = _memAddress;
         originalMemAddress = memAddress;
 
@@ -16,10 +16,10 @@ public class StoreNode extends AbstractNode {
 	public String toString() {
 	    String ret = super.toString();
 		if (operands.size()>0)
-		    ret += memAddress + "=" + getOperandAtIndex(0).uniqueLabel;
+		    ret += memAddress + "=" + getOperandAtIndex(0).nodeId;
 	    return ret;
 	}
-	@Override
+
 	public String getOutputOperand() {
 		return null ;
 	}

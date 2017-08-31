@@ -3,7 +3,7 @@ package org.pl241.ir;
 public class ReturnNode extends AbstractNode {
 
 	public ReturnNode (AbstractNode _returnValue) {
-		super("return");
+		super();
 		this.returnValue = _returnValue;
 	}
 	public void setReturnValue (AbstractNode _returnValue) {
@@ -12,7 +12,7 @@ public class ReturnNode extends AbstractNode {
 	public String toString() {
 		return super.toString() + " return=" + returnValue ;
 	}
-	@Override
+
 	public String getOutputOperand() {
 		return null ;
 	}

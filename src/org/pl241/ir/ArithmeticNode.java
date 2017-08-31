@@ -7,7 +7,7 @@ public class ArithmeticNode extends AbstractNode {
 
     public enum ArithmeticType {
         NEG,
-        ADD ,
+        ADD,
         ADDA,
         SUB,
         MUL,
@@ -15,15 +15,23 @@ public class ArithmeticNode extends AbstractNode {
         CMP
     }
 
-    public ArithmeticType operator;
-
     public ArithmeticNode(AbstractNode _operand1, AbstractNode _operand2 , ArithmeticType _operator) {
         super(_operand1, _operand2);
         operator = _operator;
     }
 
+    public static ArithmeticType toType(String textOperator) {
+        return operatorMap.get(textOperator);
+    }
 
+    public String toString() {
+        String operands = this.operands.get(0).nodeId;
+        if (this.operands.size() > 1)
+            operands +=  ", " + this.operands.get(1).nodeId;
+        return super.toString() + " "+ operatorMapR.get(operator) + " " + operands;
+    }
 
+    public ArithmeticType operator;
     public static Map<String, ArithmeticType> operatorMap ;
     public static Map<ArithmeticType,String> operatorMapR ;
     static {
@@ -42,16 +50,4 @@ public class ArithmeticNode extends AbstractNode {
         operatorMapR.put( ArithmeticType.DIV ,"/");
         operatorMapR.put( ArithmeticType.CMP ,"cmp");
     }
-
-    public static ArithmeticType toType(String textOperator) {
-        return operatorMap.get(textOperator);
-    }
-
-    public String toString() {
-        String operands = this.operands.get(0).uniqueLabel;
-        if (this.operands.size() > 1)
-            operands +=  ", " + this.operands.get(1).uniqueLabel;
-        return super.toString() + " "+ operatorMapR.get(operator) + " " + operands;
-    }
-
 }

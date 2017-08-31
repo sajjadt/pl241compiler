@@ -3,13 +3,13 @@ package org.pl241.ir;
 public class LoadNode extends AbstractNode {
 	public String memAddress;
 	public LoadNode(String _memAddress) {
-		super("load");
+		super();
 		memAddress = _memAddress;
 	}
 	public String toString() {
-		return super.uniqueLabel + " read-var=" + memAddress ;
+		return super.nodeId + " read-var=" + memAddress ;
 	}
-	@Override
+
 	public String getOutputOperand() {
 		return null ;
 	}

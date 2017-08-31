@@ -161,7 +161,7 @@ public class BasicBlock {
 		//}
 		
 		nodes.add(node);
-		parentFunction.irMap.put(node.uniqueLabel, node);
+		parentFunction.irMap.put(node.nodeId, node);
 	}
 	
 	public List<AbstractNode> getNodes() {
@@ -210,7 +210,7 @@ public class BasicBlock {
 		pw.println("BBL: " + _index );
 		pw.print('|');
 		for (AbstractNode n : getNodes()) {
-			if( n instanceof MoveNode || n instanceof LoadNode ){
+			if( n instanceof CopyNode || n instanceof LoadNode ){
 				if (first)
 					first = false;
 				else
@@ -228,8 +228,8 @@ public class BasicBlock {
 	public boolean hasAssignmentTo(Variable var) {
 		// TODO Auto-generated method stub
 		for (AbstractNode node: getNodes()) {
-			if (node instanceof MoveNode) {
-				if (((MoveNode)node).memAddress.equals(var.name)) {
+			if (node instanceof CopyNode) {
+				if (((CopyNode)node).memAddress.equals(var.name)) {
 					return true;
 				}
 			}
@@ -266,19 +266,19 @@ public class BasicBlock {
 		ListIterator<AbstractNode> li = nodes.listIterator(nodes.size());
 		while( li.hasPrevious() ){
 			AbstractNode node = li.previous();
-			if (node instanceof MoveNode ){
-				if(  ((MoveNode)node).memAddress.equals(var.name) ){
-					return node.uniqueLabel;
+			if (node instanceof CopyNode){
+				if(  ((CopyNode)node).memAddress.equals(var.name) ){
+					return node.nodeId;
 				}
 			}
 			if (node instanceof PhiNode ){
 				if(  ((PhiNode)node).memAddress.equals(var.name) ){
-					return node.uniqueLabel;
+					return node.nodeId;
 				}
 			}
             if (node instanceof StoreNode ){
                 if(  ((StoreNode)node).memAddress.equals(var.name) ){
-                    return node.uniqueLabel;
+                    return node.nodeId;
                 }
             }
 		}
@@ -308,11 +308,11 @@ public class BasicBlock {
 			}
 		}
 		for( AbstractNode node: getNodes()) {
-			if (node instanceof MoveNode ){
-				String name = ((MoveNode)node).originalMemAddress;
+			if (node instanceof CopyNode){
+				String name = ((CopyNode)node).originalMemAddress;
 				System.out.println("pushing " + name);
 				String newName = Variable.generateName(name);
-				((MoveNode)node).memAddress = newName ;
+				((CopyNode)node).memAddress = newName ;
 				
 			}
 			
@@ -376,8 +376,8 @@ public class BasicBlock {
 				Variable.popTopmostName(name);
 				System.out.println("popping " + name );
 			}
-			if (node instanceof MoveNode  ){
-				String name = ((MoveNode)node).originalMemAddress ;
+			if (node instanceof CopyNode){
+				String name = ((CopyNode)node).originalMemAddress ;
 				Variable.popTopmostName(name);
 				System.out.println("popping " + name );
 			}

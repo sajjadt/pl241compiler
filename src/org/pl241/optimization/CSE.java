@@ -42,10 +42,10 @@ public class CSE {
 					operand1 = ((LoadNode)node1).memAddress; // TODO with stride ?
 				} else if ( node1.operator.equals("ADD") || node1.operator.equals("MUL") ){ // TODO 
 					// find it in the matchmap
-					if( matchMap.containsKey(node1.uniqueLabel)){
-						operand1 = matchMap.get(node1.uniqueLabel);
+					if( matchMap.containsKey(node1.nodeId)){
+						operand1 = matchMap.get(node1.nodeId);
 					}else {
-						operand1 = node1.uniqueLabel ;
+						operand1 = node1.nodeId ;
 					}
 				} else{
 					
@@ -54,10 +54,10 @@ public class CSE {
 				if( node2 instanceof LoadNode ){
 					operand2 = ((LoadNode)node2).memAddress; //TODO 
 				} else if ( node2.operator.equals("ADD") || node2.operator.equals("MUL") ){ //TODO
-					if( matchMap.containsKey(node2.uniqueLabel)){
-						operand2 = matchMap.get(node2.uniqueLabel);
+					if( matchMap.containsKey(node2.nodeId)){
+						operand2 = matchMap.get(node2.nodeId);
 					} else {
-						operand2 = node2.uniqueLabel ;
+						operand2 = node2.nodeId ;
 					}
 				} else{
 					
@@ -72,9 +72,9 @@ public class CSE {
 				if( operand1 != null && operand2 != null ){
 					Expression exp = new Expression(operand1,operand2, node.operator);
 					if( expressionMap.containsKey(exp) ){
-						matchMap.put(node.uniqueLabel, expressionMap.get(exp) );
-						System.out.println("1 mm putting " + node.uniqueLabel + ":" + expressionMap.get(exp) );
-						//node.uniqueLabel = expressionMap.get(exp);
+						matchMap.put(node.nodeId, expressionMap.get(exp) );
+						System.out.println("1 mm putting " + node.nodeId + ":" + expressionMap.get(exp) );
+						//node.nodeId = expressionMap.get(exp);
 						node.removed = true ; 
 						node.removeReason = "CSE" ;
 						
@@ -88,9 +88,9 @@ public class CSE {
 						node.setOperands(operand1, operand2);
 						//node.operand1Label = operand1 ;
 						//node.operand2Label = operand2 ;
-						expressionMap.put(exp,node.uniqueLabel);
-						System.out.println("em putting " + exp.operator +"," + exp.op1 +"," + exp.op2 + ":" +  node.uniqueLabel );
-						//matchMap.put(node.uniqueLabel, node.uniqueLabel );
+						expressionMap.put(exp,node.nodeId);
+						System.out.println("em putting " + exp.operator +"," + exp.op1 +"," + exp.op2 + ":" +  node.nodeId );
+						//matchMap.put(node.nodeId, node.nodeId );
 					}
 				}
 				

@@ -12,7 +12,7 @@ public class RandomAllocator {
                         (node instanceof IONode && ((IONode) node).type== IONode.IOType.READ )||
                 node instanceof LoadNode ) // TODO : what kind of nodes need to get allocated to regs
                 {
-                    function.allocationMap.put(node.uniqueLabel, new Allocation(Allocation.Type.REGISTER, regIndex));
+                    function.allocationMap.put(node.nodeId, new Allocation(Allocation.Type.REGISTER, regIndex));
                     regIndex += 1;
                 }
             }

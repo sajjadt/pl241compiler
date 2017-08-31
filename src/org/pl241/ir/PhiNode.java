@@ -6,14 +6,14 @@ import java.util.List;
 import java.util.Map;
 
 public class PhiNode extends AbstractNode {
-	public Map< Integer ,String > rightLabels ; // bbl index, instruction uniqueLabel
+	public Map< Integer ,String > rightLabels ; // bbl index, instruction nodeId
 	public Map< Integer, AbstractNode> rightOperands; // bbl index, operands
 
 	public String memAddress;
 	public String originalMemAddress;
 	
 	public PhiNode (String _memAddress) {
-		super("phi");
+		super();
 		memAddress = _memAddress;
 		originalMemAddress = _memAddress;
 		rightLabels = new HashMap<>();
@@ -32,11 +32,11 @@ public class PhiNode extends AbstractNode {
 		return rightOperands.get(block.getIndex());
 	}
 
-	@Override
 	public String getOutputOperand() {
 		// TODO Auto-generated method stub
 		return memAddress;
 	}
+
 	@Override
 	public List<AbstractNode> getInputOperands() {
 	    return new ArrayList<AbstractNode> (rightOperands.values());

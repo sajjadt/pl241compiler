@@ -24,6 +24,7 @@ public class BuildIntervals {
 	}
 	
 	public void build(List <BasicBlock> blocks){
+		/*
 		ListIterator li = blocks.listIterator(blocks.size());
 
 		// Iterate in reverse.
@@ -101,11 +102,11 @@ public class BuildIntervals {
 			    			}
 			    			
 			    		}
-				    	if (!intervals.containsKey(opd.uniqueLabel)) {
-				    		intervals.put(opd.uniqueLabel, new LiveInterval(opd.uniqueLabel));
+				    	if (!intervals.containsKey(opd.nodeId)) {
+				    		intervals.put(opd.nodeId, new LiveInterval(opd.nodeId));
 				    	}
-				    	intervals.get(opd.uniqueLabel).addRange(block.bFrom, node.getSourceLocation());
-				    	intervals.get(opd.uniqueLabel).addReference(node.getSourceLocation());
+				    	intervals.get(opd.nodeId).addRange(block.bFrom, node.getSourceLocation());
+				    	intervals.get(opd.nodeId).addReference(node.getSourceLocation());
 				    	// TODO saji live.add(opd);
 				    	System.out.println("Adding " + opd + " @ input side from " + node.toString());
 			    	}
@@ -128,6 +129,7 @@ public class BuildIntervals {
 		    System.out.println( block.getIndex() + ":" +  block.liveIn.toString() );
 		    System.out.println( block.getIndex() + ":" +  intervals.toString() );	
 		}
+		*/
 	}
 
 	public void printIntervals() {

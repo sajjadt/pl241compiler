@@ -91,10 +91,10 @@ public class Function  {
 				if ( node instanceof BranchNode) { //TODO uncoditioned as well
 					// rewrite address
 					if (!((BranchNode)node).isCall) {
-                        ((BranchNode)node).takenTarget = (b.getSuccessors().get(0)).getEntry().uniqueLabel;
+                        ((BranchNode)node).takenTarget = (b.getSuccessors().get(0)).getEntry().nodeId;
                         ((BranchNode)node).takenBlock = (b.getSuccessors().get(0));
                         if (b.getSuccessors().size() > 1) {
-                            ((BranchNode) node).nonTakenTarget = (b.getSuccessors().get(1)).getEntry().uniqueLabel;
+                            ((BranchNode) node).nonTakenTarget = (b.getSuccessors().get(1)).getEntry().nodeId;
                             ((BranchNode) node).nonTakenBlock = (b.getSuccessors().get(1));
                         }
                     }
@@ -114,7 +114,7 @@ public class Function  {
 			//pw.println("digraph {");
 		} else {
 			pw.println("subgraph " + "cluster" + _index + " {");
-			//pw.println("uniqueLabel=\"" + (main ? "<main> " : "") + toString() + "\\n" + location
+			//pw.println("nodeId=\"" + (main ? "<main> " : "") + toString() + "\\n" + location
             //      + (outerFunction != null ? "\\nouter: " + (outerFunction.getName() == null ? "<main>" : outerFunction.getName()) : "")  +  "\";");
 			pw.println("label=" + getName() );
 			pw.println("labelloc=\"t\";");
@@ -169,7 +169,7 @@ public class Function  {
 			//pw.println("digraph {");
 		} else {
 			pw.println("subgraph " + "cluster" + _index + " {");
-			//pw.println("uniqueLabel=\"" + (main ? "<main> " : "") + toString() + "\\n" + location
+			//pw.println("nodeId=\"" + (main ? "<main> " : "") + toString() + "\\n" + location
             //      + (outerFunction != null ? "\\nouter: " + (outerFunction.getName() == null ? "<main>" : outerFunction.getName()) : "")  +  "\";");
 			pw.println("label=" + getName() );
 			pw.println("labelloc=\"t\";");
@@ -412,7 +412,7 @@ public class Function  {
                 if( entry != null )
                 {
                     BranchNode node = new BranchNode();
-                    node.takenTarget =  entry.uniqueLabel;
+                    node.takenTarget =  entry.nodeId;
                     node.sourceLocation = block.bTo ;
                     block.addNode(node);
                 } else {

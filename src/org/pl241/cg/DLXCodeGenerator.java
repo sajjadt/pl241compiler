@@ -113,7 +113,7 @@ public class DLXCodeGenerator {
                 System.out.println("Generating load: " + ins.toString());
 
                 // Destination of load instruction
-                allocation = f.allocationMap.get(ins.uniqueLabel);
+                allocation = f.allocationMap.get(ins.nodeId);
                 assert allocation.type == Allocation.Type.REGISTER;
                 // TODO use temp register for memory allocated vars
 
@@ -131,9 +131,9 @@ public class DLXCodeGenerator {
                 AbstractNode second = ins.getOperandAtIndex(1);
 
 
-                Allocation destAllocation = f.allocationMap.get(ins.uniqueLabel);
-                Allocation src1Allocation = f.allocationMap.get(first.uniqueLabel);
-                Allocation src2Allocation = f.allocationMap.get(second.uniqueLabel);
+                Allocation destAllocation = f.allocationMap.get(ins.nodeId);
+                Allocation src1Allocation = f.allocationMap.get(first.nodeId);
+                Allocation src2Allocation = f.allocationMap.get(second.nodeId);
 
                 if (first instanceof ImmediateNode) {
                     if (second instanceof ImmediateNode) {
@@ -161,14 +161,14 @@ public class DLXCodeGenerator {
                             instructions.add(DLX.assemble(DLX.ADDI, this.TEMP_REGISTER, this.ZERO, ((ImmediateNode)node).getValue()));
                             instructions.add(DLX.assemble(DLX.WRD, this.TEMP_REGISTER));
                         } else {
-                            allocation = f.allocationMap.get(node.uniqueLabel);
+                            allocation = f.allocationMap.get(node.nodeId);
                             // Write parameter must be inside register. Otherwise it has to be moved into temp register first.
                             assert allocation.type == Allocation.Type.REGISTER;
                             instructions.add(DLX.assemble(DLX.WRD, allocation.address));
                         }
                         break;
                     case READ:
-                        allocation = f.allocationMap.get(ins.uniqueLabel);
+                        allocation = f.allocationMap.get(ins.nodeId);
                         // Read target must be a register. Otherwise temp register can be used..
                         assert allocation.type == Allocation.Type.REGISTER;
                         instructions.add(DLX.assemble(DLX.RDI, allocation.address));
@@ -183,7 +183,7 @@ public class DLXCodeGenerator {
                     instructions.add(DLX.assemble(DLX.ADDI, this.TEMP_REGISTER, this.ZERO, ((ImmediateNode) ins.getOperandAtIndex(0)).getValue()));
                     allocation = new Allocation(Allocation.Type.REGISTER, TEMP_REGISTER);
                 } else {
-                    allocation = f.allocationMap.get(ins.getOperandAtIndex(0).uniqueLabel);
+                    allocation = f.allocationMap.get(ins.getOperandAtIndex(0).nodeId);
                 }
                 assert allocation.type == Allocation.Type.REGISTER;
                 // TODO use temp register for memory allocated vars
@@ -225,7 +225,7 @@ public class DLXCodeGenerator {
                     case BRA:
                         break;
                     case BLT:
-                        allocation = f.allocationMap.get(ins.getOperandAtIndex(0).uniqueLabel);
+                        allocation = f.allocationMap.get(ins.getOperandAtIndex(0).nodeId);
                         assert allocation.type == Allocation.Type.REGISTER;
                         System.out.println("Branch target is :" + ((BranchNode) ins).takenTarget);
                         //instructions.add(DLX.assemble(DLX.BLT, allocation.address, 0));

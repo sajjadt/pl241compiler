@@ -232,7 +232,7 @@ public class IRBuilderVisitor implements ParseTreeNodeVisitor {
 			// Var
 			if( lvalue ){
 				/// TODO pop stack here?
-				expressionStack.push(new MoveNode( node.getChild(0).getText() ) );
+				expressionStack.push(new CopyNode( node.getChild(0).getText() ) );
 			} else{
 				expressionStack.push(new LoadNode( node.getChild(0).getText() ) ) ; // "load Var l:" + lvalue +  ctx.getText() ) );
 			}
@@ -415,11 +415,11 @@ public class IRBuilderVisitor implements ParseTreeNodeVisitor {
 			bblStack.peek().addNode( calcAddress );
 			if( lvalue ){
 				LOGGER.log( Level.FINEST,"pushing StoreNode-calcAddress" );
-				expressionStack.push(new StoreNode(calcAddress.uniqueLabel) );
+				expressionStack.push(new StoreNode(calcAddress.nodeId) );
 			
 			} else{
 				LOGGER.log( Level.FINEST,"pushing LoadNode-calcAddress" );
-				expressionStack.push(new LoadNode( calcAddress.uniqueLabel) ) ;
+				expressionStack.push(new LoadNode( calcAddress.nodeId) ) ;
 			}
 			
 		} else {
@@ -468,13 +468,13 @@ public class IRBuilderVisitor implements ParseTreeNodeVisitor {
 					if( expressionStack.peek() instanceof BranchNode == false )
 						bblStack.peek().addNode( expressionStack.peek() );
 					AbstractNode label = expressionStack.pop();
-					LOGGER.log( Level.FINER,"popping a node " + label.uniqueLabel);
+					LOGGER.log( Level.FINER,"popping a node " + label.nodeId);
 					String operatorTexts = operator.getText() ;
 					
 					if( expressionStack.peek() instanceof BranchNode == false )
 						bblStack.peek().addNode( expressionStack.peek() );
 					AbstractNode op1Label = expressionStack.pop();
-					LOGGER.log( Level.FINER,"popping a node " + op1Label.uniqueLabel);
+					LOGGER.log( Level.FINER,"popping a node " + op1Label.nodeId);
 					
 					
 					anode = new ArithmeticNode( op1Label , label ,  ArithmeticNode.operatorMap.get(operatorTexts) );
@@ -517,7 +517,7 @@ public class IRBuilderVisitor implements ParseTreeNodeVisitor {
 				if( expressionStack.peek() instanceof BranchNode == false )
 					bblStack.peek().addNode( expressionStack.peek() );
 				AbstractNode op1Label = expressionStack.pop() ;
-				LOGGER.log( Level.FINER,"popping a node " + op1Label.uniqueLabel);
+				LOGGER.log( Level.FINER,"popping a node " + op1Label.nodeId);
 				
 				
 				
@@ -577,9 +577,9 @@ public class IRBuilderVisitor implements ParseTreeNodeVisitor {
 		bblStack.peek().addNode( exp ) ;
 		((StoreNode)des).setSrcOperand(exp);
 		bblStack.peek().addNode( des ) ;
-		//bblStack.peek().addNode( new AbstractNode( des.uniqueLabel , exp.uniqueLabel , des.operator ) );
+		//bblStack.peek().addNode( new AbstractNode( des.nodeId , exp.nodeId , des.operator ) );
 		
-		//System.out.println(des.uniqueLabel + exp.uniqueLabel);
+		//System.out.println(des.nodeId + exp.nodeId);
 		
 		//bblStack.peek().addNode( expressionStack.peek() );
 		//AbstractNode anode = expressionStack.peek() ;
@@ -616,7 +616,7 @@ public class IRBuilderVisitor implements ParseTreeNodeVisitor {
 			
 			
 			bblStack.peek().addNode( exp ) ;
-			//((StoreNode)des).setSrcOperand( exp.uniqueLabel );
+			//((StoreNode)des).setSrcOperand( exp.nodeId );
 			//bblStack.peek().addNode( des ) ;
 			
 			ReturnNode retNode = new ReturnNode(exp);
