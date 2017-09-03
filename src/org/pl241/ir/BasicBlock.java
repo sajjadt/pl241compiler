@@ -71,7 +71,10 @@ public class BasicBlock {
 	}
 
 	public AbstractNode getLastNode() {
-		return this.nodes.get(this.nodes.size() - 1);
+	    if (nodes.size() > 0)
+		    return this.nodes.get(this.nodes.size() - 1);
+	    else
+	        return null;
 	}
 
 	// Return list of live variables

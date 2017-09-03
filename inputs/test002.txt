@@ -36,7 +36,7 @@ var i, j, e;
 	let y <- 0;
 	let z <- 0;
 	
-	call bar( x, z );
+	call bar( x, z +1 );
 	let c <- call foo;
 	
 	call OutputNum(c)

@@ -26,7 +26,7 @@ public class IONode extends AbstractNode  {
     public String toString() {
         String ret = super.toString() + " " + type ;
         if (type == IOType.WRITE)
-            ret  += getOperandAtIndex(0).nodeId;
+            ret  += getOperandAtIndex(0).getOutputOperand();
         return ret;
     }
 

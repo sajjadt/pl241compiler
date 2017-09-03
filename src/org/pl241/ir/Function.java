@@ -350,6 +350,12 @@ public class Function  {
                 node.takenBlock = block.successors.get(0);
                 block.addNode(node);
 			}
+
+			// Return statement for procedures (they have no return)
+            if (block.successors.size() == 0 && !(block.getLastNode() instanceof ReturnNode)) {
+                ReturnNode node = new ReturnNode(null);
+                block.addNode(node);
+            }
 		}		
 	}
 

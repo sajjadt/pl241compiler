@@ -44,10 +44,6 @@ public class IRBuilderVisitor implements ParseTreeNodeVisitor {
 	private Program program;
 	private Function mainFunction;
 
-
-	private boolean isCalling = false;
-	private FunctionCallNode currentCall = null;
-
 	public IRBuilderVisitor() {
 		bblStack = new Stack<>();
 		expressionStack = new Stack<>();
@@ -443,21 +439,6 @@ public class IRBuilderVisitor implements ParseTreeNodeVisitor {
                 LOGGER.log( Level.FINER,"pushing an operator node " + operator.getText() );
                 expressionStack.push(anode);
             }
-
-
-            // expressions as inputs for function call
-            // i.e. foo(x + 1)
-            if (isCalling) {
-                System.out.println("");
-
-            }
-
-        } else{
-            // Single operator expressions
-            // i.e. foo(x, y)
-            if (isCalling) {
-                System.out.println("");
-            }
         }
 	}
 
@@ -541,14 +522,23 @@ public class IRBuilderVisitor implements ParseTreeNodeVisitor {
 		//bblStack.peek().addNode( expressionStack.peek() );
 		//System.out.println("poping");
 		
-		AbstractNode exp = expressionStack.pop() ;
-		AbstractNode des = expressionStack.pop() ;
+		AbstractNode exp = expressionStack.pop();
+		AbstractNode des = expressionStack.pop();
 
 		LOGGER.log( Level.FINE,"popping des " + des );
 		LOGGER.log( Level.FINE,"pushing exp " + exp );
-		
-		
-		bblStack.peek().addNode( exp ) ;
+
+
+		assert des instanceof StoreNode;
+        //if (exp instanceof  FunctionCallNode)
+        //    exp.nodeId =
+
+
+        // Function call has been added to the previous block
+		if (!(exp instanceof FunctionCallNode))
+		    bblStack.peek().addNode( exp ) ;
+
+
 		((StoreNode)des).setSrcOperand(exp);
 		bblStack.peek().addNode( des ) ;
 		//bblStack.peek().addNode( new AbstractNode( des.nodeId , exp.nodeId , des.operator ) );
@@ -616,10 +606,7 @@ public class IRBuilderVisitor implements ParseTreeNodeVisitor {
 	public void exit(StatementNode node) {}
 
 	@Override
-	public void enter(FuncCallNode node) {
-	    System.out.println("Entered CAll");
-        this.isCalling = true;
-	}
+	public void enter(FuncCallNode node) {}
 
 	@Override
 	public void exit(FuncCallNode node) {
@@ -631,7 +618,6 @@ public class IRBuilderVisitor implements ParseTreeNodeVisitor {
 
         if (!specialCall) {
             callNode = new FunctionCallNode(functionName);
-            currentCall = (FunctionCallNode) callNode;
         }
 
         // Handle Args( as Expressions on the Stack )
@@ -641,9 +627,10 @@ public class IRBuilderVisitor implements ParseTreeNodeVisitor {
 				AbstractNode aanode =  expressionStack.pop();
 				bblStack.peek().addNode(aanode);
 
-				if (!specialCall) {
+				// Adds operands for function calls
+                // Write takes one parameter which will be handled later
+				if (!specialCall)
 				    callNode.addOperand(aanode);
-                }
 			}
 		}
 
