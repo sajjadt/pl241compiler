@@ -12,9 +12,20 @@ public class ImmediateNode extends AbstractNode{
 		return super.toString() + " Imm=" + value;
 	}
 
+    @Override
+    public boolean isExecutable() {
+        return false;
+    }
+
 	public int getValue() {
 	    return value;
     }
 
-	private int value;
+    @Override
+    public String displayId() {
+        return String.valueOf(value);
+    }
+
+    private int value;
+
 }

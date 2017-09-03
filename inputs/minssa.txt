@@ -9,5 +9,7 @@ var a,b,y,i,d;
 		let y <- y + d;
 		let i <- i - 1
 	od;
+
+
 	call OutputNum(y)
 }.

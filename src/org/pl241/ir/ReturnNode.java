@@ -10,14 +10,20 @@ public class ReturnNode extends AbstractNode {
 		this.returnValue = _returnValue ;
 	}
 	public String toString() {
-		return super.toString() + " return=" + returnValue ;
+		return super.toString() + " return " + returnValue ;
 	}
 
 	public String getOutputOperand() {
-		return null ;
+	        return null;
 	}
 
 	private AbstractNode returnValue;
+
+
+    @Override
+    public boolean isExecutable() {
+        return true;
+    }
 }
 
 

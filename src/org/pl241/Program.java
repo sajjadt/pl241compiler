@@ -9,7 +9,7 @@ import java.util.List;
 import java.util.Objects;
 
 import org.pl241.ir.AnalysisException;
-import org.pl241.ir.BasicBlock;
+import org.pl241.ir.Function;
 import org.pl241.optimization.CP;
 import org.pl241.optimization.CSE;
 
@@ -43,18 +43,18 @@ public class Program {
         }
         
 	}
-	public void cse(){
-		for (Function f:functions){
+	public void cse() {
+		for (Function f: functions) {
         	CSE cse = new CSE();
         	cse.apply(f);
         }
 	}
 
 	public void toSSAForm() {
-		for (Function f : functions) {
+		for (Function f: functions) {
 			f.computeDominateDependance();
 			f.computeDominatorFrontiers();
-			f.insertPhiFunction();
+			f.insertPhiFunctions();
 			try {
 				f.computeDominatorTree();
 			} catch (AnalysisException e) {
@@ -73,8 +73,8 @@ public class Program {
 			writer.println("digraph {");
 			for (Function function : functions) {
 	            String n = function.getName();
-	            String name = n ; // function.getSourceLocation().getFileName().replace('/', '.').replace('\\', '.').replace(':', '.') + 
-	            	//	"." + n + ".line" + function.getSourceLocation().getLineNumber();
+	            String name = n ; // function.getSourceIndex().getFileName().replace('/', '.').replace('\\', '.').replace(':', '.') +
+	            	//	"." + n + ".line" + function.getSourceIndex().getLineNumber();
 	            function.toDot(writer, false, false );
 	        }
 			writer.println("}");
@@ -90,8 +90,8 @@ public class Program {
 			writer.println("digraph {");
 			for (Function function : functions) {
 	            String n = function.getName();
-	            String name = n ; // function.getSourceLocation().getFileName().replace('/', '.').replace('\\', '.').replace(':', '.') + 
-	            	//	"." + n + ".line" + function.getSourceLocation().getLineNumber();
+	            String name = n ; // function.getSourceIndex().getFileName().replace('/', '.').replace('\\', '.').replace(':', '.') +
+	            	//	"." + n + ".line" + function.getSourceIndex().getLineNumber();
 	            function.domToDot(writer, false, false );
 	        }
 			writer.println("}");
@@ -100,8 +100,8 @@ public class Program {
 		}
 	}
 
-	public void indexIR(){
-		for(Function foo:functions){
+	public void indexIR() {
+		for(Function foo:functions) {
 			foo.indexIR();
 		}
 	}

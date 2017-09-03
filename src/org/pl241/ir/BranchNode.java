@@ -23,20 +23,22 @@ public class BranchNode extends AbstractNode{
         super();
         type = _type;
         operands.add(_operand);
-        takenTarget = null;
-        nonTakenTarget = null;
-
         takenBlock = null;
-        nonTakenTarget = null;
+        nonTakenBlock = null;
     }
 
     @Override
     public String toString() {
-        String ret = super.nodeId + " " + type;
-        if (operands.size()>0)
-            ret += " " + getOperandAtIndex(0).nodeId;
-        if (takenBlock != null) ret += (", Block " + takenBlock.id);
-        if (nonTakenBlock != null) ret += (", Block " + nonTakenBlock.id);
+        String ret = super.toString() + " " + type;
+
+        if (isCall) {
+            ret += ("(" + callTarget + ")");
+        } else {
+            if (operands.size() > 0)
+                ret += " " + getOperandAtIndex(0).nodeId;
+            if (takenBlock != null) ret += (", Block " + takenBlock.id);
+            if (nonTakenBlock != null) ret += (", Block " + nonTakenBlock.id);
+        }
         return ret;
     }
 
@@ -47,13 +49,26 @@ public class BranchNode extends AbstractNode{
             return true;
     }
 
-    public String takenTarget;
-    public String nonTakenTarget;
+
+    @Override
+    public String getOutputOperand() {
+        return null;
+    }
+
+    @Override
+    public boolean hasOutputRegister() {
+        return false;
+    }
+    @Override
+    public boolean isExecutable() {
+        return true;
+    }
 
     public BasicBlock takenBlock;
     public BasicBlock nonTakenBlock;
 
-    public boolean isCall  ;
+    boolean isCall;
+    public String callTarget;
     public BranchType type;
 
     public static Map<String, BranchType> branchMap;

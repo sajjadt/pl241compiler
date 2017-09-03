@@ -1,16 +1,10 @@
 package org.pl241.optimization;
 
 public class Expression {
-	// 
-	public Object op1 ;
-	public Object op2 ;
-	public String operator ;
-	//public String label;
-	
-	
-	public Expression(Object _op1, Object _op2 , String _operator){
-		op1 = _op1 ;
-		op2 = _op2 ;
+
+	public Expression(Object _op1, Object _op2, String _operator){
+		op1 = _op1;
+		op2 = _op2;
 		operator = _operator;
 	}
 	
@@ -23,9 +17,9 @@ public class Expression {
 		if( getClass() != obj.getClass() )
 			return false;
 		Expression other = (Expression)obj;
-		if( other.operator.equals(operator) && (  
-				(other.op1.equals(op1) && other.op2.equals(op2) ) ||
-				(other.op2.equals(op1) && other.op1.equals(op2) ) ) ){
+		if (other.operator.equals(operator) &&
+                ((other.op1.equals(op1) && other.op2.equals(op2)) ||
+                        (other.op2.equals(op1) && other.op1.equals(op2)))) {
 			return true;
 		}
 		return false;
@@ -37,4 +31,8 @@ public class Expression {
 		hash = 7 * hash + this.operator.hashCode();
 		return hash;
 	}
+
+    private Object op1;
+    private Object op2;
+    private String operator;
 }

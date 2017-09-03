@@ -6,7 +6,7 @@ import java.util.HashMap;
 import java.util.Objects;
 
 import org.pl241.ir.*;
-import org.pl241.Function;
+import org.pl241.ir.Function;
 import org.pl241.Program;
 import org.pl241.ra.Allocation;
 public class DLXCodeGenerator {
@@ -19,7 +19,7 @@ public class DLXCodeGenerator {
     }
 
 
-    public ArrayList<Integer> generateImmArithmetic(ArithmeticNode.ArithmeticType operation,
+    private ArrayList<Integer> generateImmArithmetic(ArithmeticNode.ArithmeticType operation,
                                                     Allocation destAllocation,
                                                     Allocation src1Allocation,
                                                     int immValue) {
@@ -54,7 +54,7 @@ public class DLXCodeGenerator {
         return instructions;
     }
 
-    public ArrayList<Integer> generateRegisterArithmetic(ArithmeticNode.ArithmeticType operation,
+    private ArrayList<Integer> generateRegisterArithmetic(ArithmeticNode.ArithmeticType operation,
                                       Allocation destAllocation,
                                       Allocation src1Allocation,
                                       Allocation src2Allocation) {
@@ -105,23 +105,24 @@ public class DLXCodeGenerator {
         System.out.println("Generating block: " + b);
         System.out.println();
 
+
         ArrayList<Integer> instructions = new ArrayList<>();
         Allocation allocation = null;
         // Handle instructions
-        for( AbstractNode ins : b.getNodes()) {
+        for (AbstractNode ins : b.getNodes()) {
             if (ins instanceof LoadNode) {
                 System.out.println("Generating load: " + ins.toString());
 
                 // Destination of load instruction
-                allocation = f.allocationMap.get(ins.nodeId);
+                allocation = ins.allocation;
                 assert allocation.type == Allocation.Type.REGISTER;
                 // TODO use temp register for memory allocated vars
 
-                if (localVarMap.containsKey(((LoadNode) ins).memAddress)) {
-                    instructions.add(DLX.assemble(DLX.LDW, allocation.address, this.FRAMEP, localVarMap.get(((LoadNode) ins).memAddress)));
-                } else if (globalVarMap.containsKey(((LoadNode) ins).memAddress)) {
+                if (localVarMap.containsKey(((LoadNode) ins).variableId)) {
+                    instructions.add(DLX.assemble(DLX.LDW, allocation.address, this.FRAMEP, localVarMap.get(((LoadNode) ins).variableId)));
+                } else if (globalVarMap.containsKey(((LoadNode) ins).variableId)) {
                     instructions.add(DLX.assemble(DLX.ADDI, this.TEMP_REGISTER, this.ZERO, BSS));
-                    instructions.add(DLX.assemble(DLX.LDW, allocation.address, this.TEMP_REGISTER, globalVarMap.get(((LoadNode) ins).memAddress)));
+                    instructions.add(DLX.assemble(DLX.LDW, allocation.address, this.TEMP_REGISTER, globalVarMap.get(((LoadNode) ins).variableId)));
                 } else {
                     throw new Error("variable not found in both local and global map");
                 }
@@ -131,9 +132,9 @@ public class DLXCodeGenerator {
                 AbstractNode second = ins.getOperandAtIndex(1);
 
 
-                Allocation destAllocation = f.allocationMap.get(ins.nodeId);
-                Allocation src1Allocation = f.allocationMap.get(first.nodeId);
-                Allocation src2Allocation = f.allocationMap.get(second.nodeId);
+                Allocation destAllocation = ins.allocation;
+                Allocation src1Allocation = first.allocation;
+                Allocation src2Allocation = second.allocation;
 
                 if (first instanceof ImmediateNode) {
                     if (second instanceof ImmediateNode) {
@@ -148,27 +149,26 @@ public class DLXCodeGenerator {
                 } else {
                     instructions.addAll(generateRegisterArithmetic(((ArithmeticNode) ins).operator, destAllocation, src1Allocation, src2Allocation));
                 }
-            }
-            else if (ins instanceof IONode) {
+            } else if (ins instanceof IONode) {
                 System.out.println("Generating code for io: " + ins.toString());
-                switch (((IONode)ins).type) {
+                switch (((IONode) ins).type) {
                     case WRITELINE:
                         instructions.add(DLX.assemble(DLX.WRL));
                         break;
                     case WRITE:
                         AbstractNode node = ins.getOperandAtIndex(0);
-                        if (node instanceof  ImmediateNode) {
-                            instructions.add(DLX.assemble(DLX.ADDI, this.TEMP_REGISTER, this.ZERO, ((ImmediateNode)node).getValue()));
+                        if (node instanceof ImmediateNode) {
+                            instructions.add(DLX.assemble(DLX.ADDI, this.TEMP_REGISTER, this.ZERO, ((ImmediateNode) node).getValue()));
                             instructions.add(DLX.assemble(DLX.WRD, this.TEMP_REGISTER));
                         } else {
-                            allocation = f.allocationMap.get(node.nodeId);
+                            allocation = node.allocation;
                             // Write parameter must be inside register. Otherwise it has to be moved into temp register first.
                             assert allocation.type == Allocation.Type.REGISTER;
                             instructions.add(DLX.assemble(DLX.WRD, allocation.address));
                         }
                         break;
                     case READ:
-                        allocation = f.allocationMap.get(ins.nodeId);
+                        allocation = ins.allocation;
                         // Read target must be a register. Otherwise temp register can be used..
                         assert allocation.type == Allocation.Type.REGISTER;
                         instructions.add(DLX.assemble(DLX.RDI, allocation.address));
@@ -179,11 +179,11 @@ public class DLXCodeGenerator {
 
                 // Source of write instruction
                 // x <- imm : move imm value into temp
-                if (ins.getOperandAtIndex(0) instanceof  ImmediateNode) {
+                if (ins.getOperandAtIndex(0) instanceof ImmediateNode) {
                     instructions.add(DLX.assemble(DLX.ADDI, this.TEMP_REGISTER, this.ZERO, ((ImmediateNode) ins.getOperandAtIndex(0)).getValue()));
                     allocation = new Allocation(Allocation.Type.REGISTER, TEMP_REGISTER);
                 } else {
-                    allocation = f.allocationMap.get(ins.getOperandAtIndex(0).nodeId);
+                    allocation = ins.getOperandAtIndex(0).allocation;
                 }
                 assert allocation.type == Allocation.Type.REGISTER;
                 // TODO use temp register for memory allocated vars
@@ -196,6 +196,7 @@ public class DLXCodeGenerator {
                 } else {
                     throw new Error("variable not found in both local and global map");
                 }
+
             } else if (ins instanceof ReturnNode) {
                 if (Objects.equals(f.name, "main")) {
                     System.out.println("Program exit added.");
@@ -225,9 +226,9 @@ public class DLXCodeGenerator {
                     case BRA:
                         break;
                     case BLT:
-                        allocation = f.allocationMap.get(ins.getOperandAtIndex(0).nodeId);
+                        allocation = ins.getOperandAtIndex(0).allocation;
                         assert allocation.type == Allocation.Type.REGISTER;
-                        System.out.println("Branch target is :" + ((BranchNode) ins).takenTarget);
+                        System.out.println("Branch target is :" + ((BranchNode) ins).callTarget);
                         //instructions.add(DLX.assemble(DLX.BLT, allocation.address, 0));
                         break;
                 }
@@ -237,6 +238,7 @@ public class DLXCodeGenerator {
         }
         return instructions;
     }
+
     private ArrayList<Integer> generateFuncBody(Function f) {
         HashMap<String, Integer> localVarMap = new HashMap<>();
         Integer temp;
@@ -248,6 +250,7 @@ public class DLXCodeGenerator {
         // Allocate space for local vars (no need to initialize)
         // Also use this table keeps displacement of vars in regard of SP
         // Variables could be inside local function frame or global table
+        // TODO: modify according to Stack allocation
         for (Variable var: f.symbolTable.getVars()) {
             localVarMap.put(var.name, displacement);
             displacement += -1 * var.numElements();
@@ -282,7 +285,7 @@ public class DLXCodeGenerator {
         return instructions;
     }
 
-    public ArrayList<Integer> generateProgram(){
+    public ArrayList<Integer> generateProgram() {
 
         // Initialize globalMap
         // Global index keeps track of variables on HEAP
@@ -294,7 +297,6 @@ public class DLXCodeGenerator {
             globalIndex += 1 * var.numElements();
         }
 
-
         // Other initializations go here!
         int currentIndex;
         // Set SP
@@ -305,10 +307,9 @@ public class DLXCodeGenerator {
         currentIndex = jumpToMainIndex + 1;
 
         // Generate functions
-        for(Function f:program.getFunctions()){
+        for (Function f: program.getFunctions()) {
             ArrayList<Integer> body = generateFuncBody(f);
             memLayout.subList(currentIndex, currentIndex + body.size()).clear();
-            // Although DLX is byte addressable, simulator is word addressable
             functionMap.put(f.name, currentIndex);
             memLayout.addAll(currentIndex, body);
             currentIndex += body.size();

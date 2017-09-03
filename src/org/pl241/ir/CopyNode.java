@@ -21,9 +21,9 @@ public class CopyNode extends AbstractNode {
 	@Override
 	public String toString(){
 		if( strides.size()> 0 ) 
-			return  "lindex " + sourceLocation +  " " + super.nodeId + ": " +  memAddress + strides;
+			return  "lindex " + sourceIndex +  " " + super.nodeId + ": " +  memAddress + strides;
 		else
-			return  "lindex " + sourceLocation +  " " + super.nodeId + ": " +  memAddress  + " " + data;
+			return  "lindex " + sourceIndex +  " " + super.nodeId + ": " +  memAddress  + " " + data;
 	}
 	
 	public String getOutputOperand(){

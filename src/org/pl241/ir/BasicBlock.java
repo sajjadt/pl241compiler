@@ -1,7 +1,5 @@
 package org.pl241.ir;
 
-import org.pl241.Function;
-
 import java.io.PrintWriter;
 import java.util.ArrayList;
 import java.util.HashSet;
@@ -118,6 +116,7 @@ public class BasicBlock {
 	public HashSet<BasicBlock> getDominators() {
 		return dominators;
 	}
+
 	/**
 	 * Adds a Predecessor.
 	 */
@@ -151,17 +150,7 @@ public class BasicBlock {
 	}
 	
 	public void addNode( AbstractNode node ){
-		//if( node  instanceof FetchNode == false ){
-			//if( sourceLocation == null ){
-			//	sourceLocation = ++_lindex ;
-			// bFrom = sourceLocation ;
-			// }
-			//node.sourceLocation = ++_lindex;
-			//bTo = node.sourceLocation ;
-		//}
-		
 		nodes.add(node);
-		parentFunction.irMap.put(node.nodeId, node);
 	}
 	
 	public List<AbstractNode> getNodes() {
@@ -185,24 +174,48 @@ public class BasicBlock {
 			pw.println("digraph {");
 			pw.println("rankdir=\"TD\"");
 		}
+
 		pw.print("BB" + _index + " [shape=record label=\"{");
-		pw.print( "Block " + id + "\n|");
-		boolean first = true;
-		for (AbstractNode n : getNodes()) {
-			if (first)
-				first = false;
-			else
-				pw.print('|');
-			pw.print( n.toString() );
-		//	if (n.isDead()) 
-		//		pw.print('$');
+        pw.print( "Block " + id + "\n");
+
+		for (AbstractNode n: getNodes()) {
+            if (n.isExecutable())
+			    pw.print('|' + n.toString());
+
 		}
+
 		pw.print("}\" ] " + "\n");
+
 		if (standalone) {
 			pw.println("}");
 			pw.close();
 		}
 	}
+
+
+    public void toAllocDot(PrintWriter pw, boolean standalone) {
+        if (standalone) {
+            pw.println("digraph {");
+            pw.println("rankdir=\"TD\"");
+        }
+
+        pw.print("BB" + _index + " [shape=record label=\"{");
+        pw.print( "Block " + id + "\n");
+
+        for (AbstractNode n: getNodes()) {
+            if (n.isExecutable())
+                pw.print('|' + n.toString());
+
+        }
+
+        pw.print("}\" ] " + "\n");
+
+        if (standalone) {
+            pw.println("}");
+            pw.close();
+        }
+    }
+
 
 	public void toDomTreeDot(PrintWriter pw) {
 		pw.print("BB" + _index + " [shape=record label=\"{");
@@ -217,16 +230,14 @@ public class BasicBlock {
 					pw.print('|');
 				pw.print( n.toString() );
 			}
-			
-		//	if (n.isDead()) 
-		//		pw.print('$');
+			if (n.removed)
+				pw.print('$');
 		}
 		pw.print("}\" ] " + "\n");
 	}
 
 
 	public boolean hasAssignmentTo(Variable var) {
-		// TODO Auto-generated method stub
 		for (AbstractNode node: getNodes()) {
 			if (node instanceof CopyNode) {
 				if (((CopyNode)node).memAddress.equals(var.name)) {
@@ -234,7 +245,7 @@ public class BasicBlock {
 				}
 			}
 			if (node instanceof PhiNode ) {
-				if (((PhiNode)node).memAddress.equals(var.name)) {
+				if (((PhiNode)node).variableName.equals(var.name)) {
 					return true;
 				}
 			}
@@ -252,7 +263,7 @@ public class BasicBlock {
 		System.out.println("Phi function for var " + var.name + " added to BBL " + getIndex() );
 		PhiNode phi = new PhiNode(var.name) ;
 		if( this.lineIndex != null )
-			phi.sourceLocation = this.lineIndex ;
+			phi.sourceIndex = this.lineIndex ;
 		else {
 			// TODO lineindex for empty block 
 			
@@ -262,7 +273,6 @@ public class BasicBlock {
 
 
 	public String lastAssignment(Variable var) {
-		// TODO Auto-generated method stub
 		ListIterator<AbstractNode> li = nodes.listIterator(nodes.size());
 		while( li.hasPrevious() ){
 			AbstractNode node = li.previous();
@@ -272,7 +282,7 @@ public class BasicBlock {
 				}
 			}
 			if (node instanceof PhiNode ){
-				if(  ((PhiNode)node).memAddress.equals(var.name) ){
+				if(  ((PhiNode)node).variableName.equals(var.name) ){
 					return node.nodeId;
 				}
 			}
@@ -286,11 +296,22 @@ public class BasicBlock {
 	}
 
 
+	public AbstractNode getPhiOperand(String variableName, int bblIndex) {
+        for (AbstractNode node: getNodes()) {
+            if (node instanceof PhiNode) {
+                if (((PhiNode)node).variableName.equals(variableName)) {
+                    return ((PhiNode) node).rightOperands.get(bblIndex);
+                }
+            }
+        }
+        return null;
+    }
+
 	public void addPhiOperand(Variable leftOperands, String lastAssignment, int bblIndex) {
-		for( AbstractNode node: getNodes()){
-			if (node instanceof PhiNode ){
-				if (((PhiNode)node).memAddress.equals(leftOperands.name)) {
-					((PhiNode)node).rightLabels.put(bblIndex , lastAssignment ) ;
+		for (AbstractNode node: getNodes()) {
+			if (node instanceof PhiNode) {
+				if (((PhiNode)node).variableName.equals(leftOperands.name)) {
+					((PhiNode)node).rightLabels.put(bblIndex , lastAssignment);
 					System.out.println("Phi operand @ " + getIndex()  + "for var " + leftOperands.name + " "  + bblIndex + " " + lastAssignment) ;
 				}
 			}
@@ -301,31 +322,31 @@ public class BasicBlock {
 		// Foreache phi block
 		for( AbstractNode node: getNodes() ){
 			if (node instanceof PhiNode ){
-				String name = ((PhiNode)node).originalMemAddress;
+				String name = ((PhiNode)node).originalVarName;
 				System.out.println("pushing " + name );
-				String newName = Variable.generateName( name ) ;
-				((PhiNode)node).memAddress = newName ;
+				String newName = Variable.generateNewName( name ) ;
+				((PhiNode)node).variableName = newName ;
 			}
 		}
 		for( AbstractNode node: getNodes()) {
 			if (node instanceof CopyNode){
 				String name = ((CopyNode)node).originalMemAddress;
 				System.out.println("pushing " + name);
-				String newName = Variable.generateName(name);
+				String newName = Variable.generateNewName(name);
 				((CopyNode)node).memAddress = newName ;
 				
 			}
 			
 			if (node instanceof LoadNode) {
-				String src =((LoadNode)node).memAddress;
+				String src =((LoadNode)node).variableId;
 				String address = Variable.getTopmostName(src);
-				((LoadNode)node).memAddress =  address;
+				((LoadNode)node).variableId =  address;
 			}
 
             if (node instanceof StoreNode) {
                 String name = ((StoreNode)node).originalMemAddress;
                 System.out.println("pushing " + name );
-                String newName = Variable.generateName( name );
+                String newName = Variable.generateNewName( name );
                 ((StoreNode)node).memAddress = newName ;
             }
 			
@@ -344,7 +365,7 @@ public class BasicBlock {
 					//	entry.setSrcOperand( Variable.getTopmostName(entry.getValue()) );
 						
 					//}
-					String name = ((PhiNode)node).originalMemAddress ;
+					String name = ((PhiNode)node).originalVarName;
 					System.out.println("Reading " + name );
 					String newName = Variable.getTopmostName(name) ;
 					System.out.println(newName+" from BBL " + getIndex() ) ;
@@ -372,7 +393,7 @@ public class BasicBlock {
 
 		for( AbstractNode node: getNodes()){
 			if (node instanceof PhiNode  ){
-				String name = ((PhiNode)node).originalMemAddress ;
+				String name = ((PhiNode)node).originalVarName;
 				Variable.popTopmostName(name);
 				System.out.println("popping " + name );
 			}
@@ -384,21 +405,17 @@ public class BasicBlock {
 		}
 	}
 
-	public void indexIR() {
-		// index itself
-		lineIndex = ++_lindex; // For potential phis
-		bFrom = lineIndex ;
-		bTo = lineIndex;
-		for(AbstractNode node: getNodes() ){
-			if( node instanceof PhiNode ){
-				node.sourceLocation = lineIndex ;
-			}
-			else if(!(node instanceof LoadNode) && !(node instanceof ImmediateNode)){
-				node.sourceLocation = ++_lindex ;
-				bTo = node.sourceLocation;
+	public int indexIR(int index) {
+	    System.out.println("Indexing Basic block " + this.id + " from index " + index);
+        bFrom = index;
+		for (AbstractNode node: getNodes()) {
+			if (node.isExecutable()) {
+				node.sourceIndex = index;
+				index += 2; // Makes room for spills
 			}
 		}
-		bTo =  ++_lindex; // For potential branch
+		bTo = index; // For potential branch
+        return bTo;
 	}
 
     @Override

@@ -1,13 +1,16 @@
 package org.pl241.ir;
 
+import org.pl241.ra.Allocation;
+
 import java.util.*;
 public class AbstractNode {
 
     public AbstractNode() {
         nodeId = generateId("L");
-        removed = false ;
-        sourceLocation = 1 ;
+        removed = false;
+        sourceIndex = -1;
         operands = new ArrayList<>();
+        allocation = null;
     }
 
     public AbstractNode(AbstractNode operand1, AbstractNode operand2) {
@@ -23,13 +26,45 @@ public class AbstractNode {
 		return null;
 	}
 
+    public void setOperandAtIndex(int index, AbstractNode node) {
+        if (operands.size() > index)
+            operands.set(index, node);
+        else
+            throw new Error("no operands at index" + index);
+    }
+
+    public String getOutputOperand() {
+        return null;
+    }
+    public void setAllocation(Allocation allocation) {
+        this.allocation = allocation;
+    }
+
     static String generateId (String str) {
         return str + counter++;
     }
 
     @Override
     public String toString() {
-        return sourceLocation + ":  [" + nodeId + "]";
+        String ret = "";
+
+        if (sourceIndex != -1)
+            ret = sourceIndex + ":";
+
+        ret += "[" + nodeId + "]";
+
+        if (allocation != null)
+                ret += allocation.toString();
+        return ret;
+    }
+
+    public boolean accessVariable(String variableId) {
+        return false;
+    }
+
+    // Show compact representation of node in CFGs
+    public String displayId() {
+        return nodeId;
     }
 
     public List<AbstractNode> getInputOperands() {
@@ -41,11 +76,24 @@ public class AbstractNode {
 
     protected List<AbstractNode> operands ;
     public String nodeId;
-    public int sourceLocation; // In source code
-	public boolean removed ;
-	public String removeReason ;
-	public int getSourceLocation() {
-		return sourceLocation;
+
+    public int sourceIndex; // In source code
+
+    public boolean removed;
+	public String removeReason;
+
+
+	public int getSourceIndex() {
+		return sourceIndex;
 	}
     private static int counter = 0;
+	public Allocation allocation;
+
+    // These function should be overriden by executable nodes
+    public boolean isExecutable() {
+        return false;
+    }
+    public boolean hasOutputRegister() {
+        return  false;
+    }
 }

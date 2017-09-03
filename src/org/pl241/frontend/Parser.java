@@ -400,12 +400,10 @@ public class Parser {
 
 		public ProgramNode(ParseTreeNode parent,String text) {
 			super(parent,text);
-			// TODO Auto-generated constructor stub
 		}
 
 		@Override
 		public void accept(ParseTreeNodeVisitor visitor) {
-			// TODO Auto-generated method stub
 			visitor.enter(this);
 			for(ParseTreeNode node:this.getChildren()){
 				node.accept(visitor);
@@ -421,12 +419,10 @@ public class Parser {
 
 		public VarNode(ParseTreeNode parent, String text) {
 			super(parent, text);
-			// TODO Auto-generated constructor stub
 		}
 
 		@Override
 		public void accept(ParseTreeNodeVisitor visitor) {
-			// TODO Auto-generated method stub
 			visitor.enter(this);
 			for(ParseTreeNode node:this.getChildren()){
 				node.accept(visitor);
@@ -446,7 +442,6 @@ public class Parser {
 
 		@Override
 		public void accept(ParseTreeNodeVisitor visitor) {
-			// TODO Auto-generated method stub
 			visitor.enter(this);
 			for(ParseTreeNode node:this.getChildren()){
 				node.accept(visitor);
@@ -464,7 +459,6 @@ public class Parser {
 
 		@Override
 		public void accept(ParseTreeNodeVisitor visitor) {
-			// TODO Auto-generated method stub
 			visitor.enter(this);
 			for(ParseTreeNode node:this.getChildren()){
 				node.accept(visitor);
@@ -481,7 +475,6 @@ public class Parser {
 
 		@Override
 		public void accept(ParseTreeNodeVisitor visitor) {
-			// TODO Auto-generated method stub
 			visitor.enter(this);
 			for(ParseTreeNode node:this.getChildren()){
 				node.accept(visitor);
@@ -501,7 +494,6 @@ public class Parser {
 
 		@Override
 		public void accept(ParseTreeNodeVisitor visitor) {
-			// TODO Auto-generated method stub
 			visitor.enter(this);
 			for(ParseTreeNode node:this.getChildren()){
 				node.accept(visitor);
@@ -534,12 +526,10 @@ public class Parser {
 
 		public DesignatorNode(ParseTreeNode parent, String text) {
 			super(parent,text);
-			// TODO Auto-generated constructor stub
 		}
 
 		@Override
 		public void accept(ParseTreeNodeVisitor visitor) {
-			// TODO Auto-generated method stub
 			visitor.enter(this);
 			for(ParseTreeNode node:this.getChildren()){
 				node.accept(visitor);
@@ -547,7 +537,6 @@ public class Parser {
 			try {
 				visitor.exit(this);
 			} catch (Exception e) {
-				// TODO Auto-generated catch block
 				e.printStackTrace();
 			}
 		}
@@ -573,12 +562,10 @@ public class Parser {
 
 		public TermNode(ParseTreeNode parent, String text) {
 			super(parent,text);
-			// TODO Auto-generated constructor stub
 		}
 
 		@Override
 		public void accept(ParseTreeNodeVisitor visitor) {
-			// TODO Auto-generated method stub
 			visitor.enter(this);
 			for(ParseTreeNode node:this.getChildren()){
 				node.accept(visitor);
@@ -611,117 +598,89 @@ public class Parser {
 
 		public RelationNode(ParseTreeNode parent, String text) {
 			super(parent,text);
-			// TODO Auto-generated constructor stub
 		}
 
 		@Override
 		public void accept(ParseTreeNodeVisitor visitor) {
-			// TODO Auto-generated method stub
 			visitor.enter(this);
 			for(ParseTreeNode node:this.getChildren()){
 				node.accept(visitor);
 			}
 			visitor.exit(this);
 		}
-
-
-		
 	}
 	
 	public  class AssignmentNode extends ParseTreeNode {
 
 		public AssignmentNode(ParseTreeNode parent,String text) {
 			super(parent,text);
-			// TODO Auto-generated constructor stub
 		}
 
 		@Override
 		public void accept(ParseTreeNodeVisitor visitor) {
-			// TODO Auto-generated method stub
 			visitor.enter(this);
 			for(ParseTreeNode node:this.getChildren()){
 				node.accept(visitor);
 			}
 			visitor.exit(this);
 		}
-
-		
-		
 	}
 	
 	public  class FuncCallNode extends ParseTreeNode {
 
 		public FuncCallNode(ParseTreeNode parent, String text) {
 			super(parent,text);
-			// TODO Auto-generated constructor stub
 		}
 
 		@Override
 		public void accept(ParseTreeNodeVisitor visitor) {
-			// TODO Auto-generated method stub
 			visitor.enter(this);
 			for(ParseTreeNode node:this.getChildren()){
 				node.accept(visitor);
 			}
 			visitor.exit(this);
 		}
-	
-		
 	}
 	
 	public  class WhileStmtNode extends ParseTreeNode {
 
 		public WhileStmtNode(ParseTreeNode parent, String text) {
 			super(parent,text);
-			// TODO Auto-generated constructor stub
 		}
-
 	
 		@Override
 		public void accept(ParseTreeNodeVisitor visitor) {
-			// TODO Auto-generated method stub
 			visitor.enter(this);
 			for(ParseTreeNode node:this.getChildren()){
 				node.accept(visitor);
 			}
 			visitor.exit(this);
 		}
-
-		
-
 	}
 	
 	public  class IfStmtNode extends ParseTreeNode {
 
 		public IfStmtNode(ParseTreeNode parent, String text) {
 			super(parent,text);
-			// TODO Auto-generated constructor stub
 		}
 
 		@Override
 		public void accept(ParseTreeNodeVisitor visitor) {
-			// TODO Auto-generated method stub
 			visitor.enter(this);
 			for(ParseTreeNode node:this.getChildren()){
 				node.accept(visitor);
 			}
 			visitor.exit(this);
 		}
-
-		
 	}
-	
 	
 	public class ReturnStmtNode extends ParseTreeNode {
 		public ReturnStmtNode(ParseTreeNode parent, String text) {
-		
-		super(parent,text);
-			// TODO Auto-generated constructor stub
+			super(parent,text);
 		}
 
 		@Override
 		public void accept(ParseTreeNodeVisitor visitor) {
-			// TODO Auto-generated method stub
 			visitor.enter(this);
 			for(ParseTreeNode node:this.getChildren()){
 				node.accept(visitor);
@@ -734,59 +693,48 @@ public class Parser {
 
 		public FuncBodyNode(ParseTreeNode parent, String text) {
 			super(parent,text);
-			// TODO Auto-generated constructor stub
 		}
 
 		@Override
 		public void accept(ParseTreeNodeVisitor visitor) {
-			// TODO Auto-generated method stub
 			visitor.enter(this);
 			for(ParseTreeNode node:this.getChildren()){
 				node.accept(visitor);
 			}
 			visitor.exit(this);
 		}
-
-		
-
 	}
 	
 	public  class FormalParamNode extends ParseTreeNode {
 
 		public FormalParamNode(ParseTreeNode parent, String text) {
 			super(parent,text);
-			// TODO Auto-generated constructor stub
 		}
 
 		@Override
 		public void accept(ParseTreeNodeVisitor visitor) {
-			// TODO Auto-generated method stub
 			visitor.enter(this);
 			for(ParseTreeNode node:this.getChildren()){
 				node.accept(visitor);
 			}
 			visitor.exit(this);
 		}
-
 	}
 	
 	public  class StatementNode extends ParseTreeNode {
 
 		public StatementNode(ParseTreeNode parent, String text) {
 			super(parent,text);
-			// TODO Auto-generated constructor stub
 		}
 
 		@Override
 		public void accept(ParseTreeNodeVisitor visitor) {
-			// TODO Auto-generated method stub
 			visitor.enter(this);
 			for(ParseTreeNode node:this.getChildren()){
 				node.accept(visitor);
 			}
 			visitor.exit(this);
 		}
-
 	}
 	
 	public  class TerminalNode extends ParseTreeNode {
@@ -796,8 +744,6 @@ public class Parser {
 		
 		@Override
 		public void accept(ParseTreeNodeVisitor visitor) {
-			// TODO Auto-generated method stub
-			
 		}
 	}
 	

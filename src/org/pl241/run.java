@@ -6,12 +6,15 @@ import java.nio.charset.Charset;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.ArrayList;
+import java.util.HashMap;
 
 import org.pl241.cg.DLX;
 import org.pl241.cg.DLXCodeGenerator;
 import org.pl241.frontend.*;
 import org.pl241.frontend.Parser.ParseTreeNode;
+import org.pl241.ir.Function;
 import org.pl241.ir.IRBuilderVisitor;
+import org.pl241.ra.LiveInterval;
 import org.pl241.ra.RegisterAllocator;
 
 public class run
@@ -20,11 +23,13 @@ public class run
 	{
 		// Settings
         boolean visualize = true;
-        boolean optimize = true;
-        boolean execute = true;
+        boolean optimize = false;
+        boolean allocateRegisters = false;
+        boolean genCode = false;
+        boolean execute = false;
         int numRegs = 16;
-		String testName = "minssa";
-        String testPath = "inputs/minssa.txt";
+		String testName = "test002";
+        String testPath = "inputs/test002.txt";
 
         // Tokenize the input
 		byte[] encoded = Files.readAllBytes(Paths.get(testPath));
@@ -34,6 +39,7 @@ public class run
 		try {
 			tokenizer.tokenize(input.trim());
 		} catch (Exception e) {
+            System.out.println(e.getMessage());
 			e.printStackTrace();
 			return;
 		}
@@ -44,11 +50,10 @@ public class run
             ParseTreeNode root = parser.parse(tokenizer.getTokens());
             root.accept(visitor);
             program = visitor.getProgram();
-            if (visualize)
-                program.visualize("Vis" + File.separator + testName + "_pass_0.dot");
 
         }
         catch (Exception e) {
+            System.out.println(e.getMessage());
             e.printStackTrace();
             return;
         }
@@ -56,68 +61,79 @@ public class run
         // Process and optimize the program
         try {
             for (Function f : program.getFunctions()) {
-                // both should use the same layout ordering
-                f.indexIR();
-                f.addMissingBranches();
+                f.insertBranches();
                 f.setBranchTargets();
             }
-
             if (visualize)
-                program.visualize("Vis" + File.separator + testName + "_pass_1.dot");
+                program.visualize("Vis" + File.separator + testName + "_pass_0.dot");
 
             program.toSSAForm();
+            program.indexIR();
 
-            if (visualize)
-                program.visualize("Vis" + File.separator + testName + "_pass_ssa.dot");
+            if (visualize) {
+                program.visualize("Vis" + File.separator + testName + "_pass_1_ssa.dot");
+                program.visualizeDominatorTree("Vis" + File.separator + testName + "_dom_tree.dot");
+            }
 
             if (optimize) {
+
                 program.copyPropagate();
                 if (visualize)
                     program.visualize("Vis" + File.separator + testName + "_pass_2_cp.dot");
+
                 program.cse();
-
-
-                if (visualize) {
+                if (visualize)
                     program.visualize("Vis" + File.separator + testName + "_pass_3_cse.dot");
-                    program.visualizeDominatorTree("Vis" + File.separator + testName + "_dom_tree.dot");
-                }
             }
         }
         catch (Exception e) {
+            System.out.println(e.getMessage());
             e.printStackTrace();
             return;
         }
+
         // Allocate registers
         try {
-            for (Function f : program.getFunctions()) {
-                RegisterAllocator allocator = new RegisterAllocator(numRegs, f);
-                allocator.allocate(true);
-                //allocator.resolve();
-                allocator.printAllocation(f);
-            }
-        }
-        catch (Exception e) {
-            e.printStackTrace();
-        }
-        // Generate program and execute
-        try {
-            DLXCodeGenerator generator = new DLXCodeGenerator(program);
-            ArrayList<Integer> mem = generator.generateProgram();
+		    if (allocateRegisters) {
+                RegisterAllocator allocator = new RegisterAllocator(numRegs);
 
-            for (int i =0 ;i < 20; i++) {
-                System.out.println(DLX.disassemble(mem.get(i)));
+                for (Function f : program.getFunctions()) {
+
+                    // Allocates registers/spills virtual registers
+                    // Returns splitted intervals with allocatin information
+                    HashMap<String, ArrayList<LiveInterval>> intervals = allocator.allocate(f);
+
+                    // Works on intervals
+                    // Insert additional moves if necessary into f basic blocks
+                    allocator.resolve(f, intervals);
+                    allocator.toPhysical(f, intervals);
+                }
+
+                if (visualize)
+                    program.visualize("Vis" + File.separator + testName + "_pass_4_ra.dot");
             }
-            if (execute) {
+
+            ArrayList<Integer> mem = new ArrayList<>();
+            if (allocateRegisters && genCode) {
+                DLXCodeGenerator generator = new DLXCodeGenerator(program);
+                mem = generator.generateProgram();
+                for (int i =0 ;i < 20; i++) {
+                    System.out.println(DLX.disassemble(mem.get(i)));
+                }
+            }
+            if (genCode && execute) {
                 DLX.load(mem);
                 System.out.println("MEM:" + mem);
                 System.out.println("Executing on DLX");
                 DLX.execute();
             }
+
         }
         catch (Exception e) {
-			e.printStackTrace();
-		}
-		System.out.println("Done with parsing");
-
+		    System.out.println(e.getMessage());
+            e.printStackTrace();
+            return;
+        }
+		System.out.println("Done...");
 	}
 }

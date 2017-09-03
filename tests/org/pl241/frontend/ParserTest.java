@@ -36,7 +36,7 @@ public class ParserTest {
 					//root.accept(new IRBuilderVisitor());
 		        }
 		    }
-			LOGGER.log( Level.INFO,"Parsing is done!");
+			LOGGER.log( Level.INFO,"Parsing is done successfully!");
 
 		} catch (Exception e) {
 			System.out.println(e.getMessage() );

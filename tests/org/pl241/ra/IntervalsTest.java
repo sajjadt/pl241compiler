@@ -5,8 +5,8 @@ import org.pl241.ra.LiveInterval;
 public class IntervalsTest {
 	public static void main(String[] args) {
 		// Crate an interval
-		LiveInterval int1 = new LiveInterval("v1");
-		LiveInterval int2 = new LiveInterval("v2");
+		LiveInterval int1 = new LiveInterval("v1", false);
+		LiveInterval int2 = new LiveInterval("v2", false);
 		
 		
 		int1.addRange(7, 11);

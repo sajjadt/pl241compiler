@@ -25,7 +25,6 @@ public class CFGBuildTest {
 		        	byte[] encoded = Files.readAllBytes(  Paths.get(fileEntry.getPath()));
 					String input = new  String(encoded,  Charset.defaultCharset());
 
-					
 					System.out.println("Parsing " + fileEntry.getPath());
 
 					tokenizer.tokenize(input.trim());

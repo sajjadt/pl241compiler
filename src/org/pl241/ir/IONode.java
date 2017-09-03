@@ -48,4 +48,14 @@ public class IONode extends AbstractNode  {
 	private boolean _readData ;
 	private boolean _writeData ;
 	public IOType type;
+
+
+    @Override
+    public boolean hasOutputRegister() {
+        return _readData;
+    }
+    @Override
+    public boolean isExecutable() {
+        return true;
+    }
 }

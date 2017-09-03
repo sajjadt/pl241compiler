@@ -22,6 +22,7 @@ public class IRBuilderTest {
 
 		LOGGER.addHandler(new ConsoleHandler());
 		try {
+
 			final File folder = new File("inputs");
 			for (final File fileEntry : folder.listFiles()) {
 		        if (fileEntry.isFile()) {
@@ -39,9 +40,9 @@ public class IRBuilderTest {
 			LOGGER.log( Level.INFO,"Parsing test passed");
 
 		} catch (Exception e) {
-			System.out.println(e.getMessage() );
-			StackTraceElement[] trace = e.getStackTrace() ;
-			for( StackTraceElement element: trace){
+			System.out.println(e.getMessage());
+			StackTraceElement[] trace = e.getStackTrace();
+			for (StackTraceElement element: trace) {
 				System.out.println(element.getFileName() + ":" +element.getMethodName()+":"+element.getLineNumber());
 				LOGGER.log( Level.SEVERE,"Parser test failed");
 			}

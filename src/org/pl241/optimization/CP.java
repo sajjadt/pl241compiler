@@ -5,7 +5,7 @@ import java.util.Iterator;
 import java.util.Map;
 
 import org.pl241.ir.*;
-import org.pl241.Function;
+import org.pl241.ir.Function;
 
 public class CP {
 
@@ -22,7 +22,7 @@ public class CP {
                     if (tnode instanceof LoadNode) {
 
                         String src = ((StoreNode) node).memAddress;
-                        String dst = ((LoadNode) tnode).memAddress;
+                        String dst = ((LoadNode) tnode).variableId;
 
                         System.out.println("Copy detected from " + src + " to " + dst);
 
@@ -49,6 +49,7 @@ public class CP {
             }
         }
 
+        // Replace
         for (BasicBlock block : function.basicBlocks) {
             for (AbstractNode node : block.getNodes()) {
 
@@ -62,15 +63,16 @@ public class CP {
                 }
 
 			    else if (node.getInputOperands().size() > 0) {
-                    for (AbstractNode inode: node.getInputOperands()) {
-                        if (copyTable.containsKey(inode.nodeId)) {
-                           // ((PhiNode)node).rightOperands.put(key, copyTable.get(label));
+                    int index = 0;
+                    for (AbstractNode inputNode: node.getInputOperands()) {
+                        if (inputNode instanceof LoadNode) {
+                            if (copyTable.containsKey(((LoadNode) inputNode).variableId)) {
+                                System.out.println("Replace " + inputNode + " with" + copyTable.get(((LoadNode) inputNode).variableId));
+                                ((LoadNode) inputNode).variableId = copyTable.get(((LoadNode) inputNode).variableId);
+                            }
                         }
+                        ++index;
                     }
-                   // if (copyTable.containsKey(varName)) {
-                        // TODO saji
-                        // ((LoadNode) node).memAddress = copyTable.get(varName);
-                    //}
                 }
 
             }

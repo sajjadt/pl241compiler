@@ -24,16 +24,21 @@ public class ArithmeticNode extends AbstractNode {
         return operatorMap.get(textOperator);
     }
 
+
+    public boolean isSymmetric () {
+        return operator == ArithmeticType.ADD || operator == ArithmeticType.MUL;
+    }
+
     public String toString() {
-        String operands = this.operands.get(0).nodeId;
+        String operands = this.operands.get(0).displayId();
         if (this.operands.size() > 1)
-            operands +=  ", " + this.operands.get(1).nodeId;
+            operands +=  ", " + this.operands.get(1).displayId();
         return super.toString() + " "+ operatorMapR.get(operator) + " " + operands;
     }
 
     public ArithmeticType operator;
-    public static Map<String, ArithmeticType> operatorMap ;
-    public static Map<ArithmeticType,String> operatorMapR ;
+    public static Map<String, ArithmeticType> operatorMap;
+    public static Map<ArithmeticType,String> operatorMapR;
     static {
         operatorMap = new HashMap<>();
 
@@ -41,13 +46,26 @@ public class ArithmeticNode extends AbstractNode {
         operatorMap.put("-", ArithmeticType.SUB );
         operatorMap.put("*", ArithmeticType.MUL );
         operatorMap.put("/", ArithmeticType.DIV );
-        //branchMap.put("=", ArithmaticType.MOVE );
 
-        operatorMapR = new HashMap <ArithmeticType, String>();
+        operatorMapR = new HashMap <>();
         operatorMapR.put( ArithmeticType.ADD , "+" );
         operatorMapR.put( ArithmeticType.SUB ,"-" );
         operatorMapR.put( ArithmeticType.MUL , "*" );
         operatorMapR.put( ArithmeticType.DIV ,"/");
         operatorMapR.put( ArithmeticType.CMP ,"cmp");
     }
+
+    @Override
+    public String getOutputOperand() {
+        return nodeId;
+    }
+    @Override
+    public boolean hasOutputRegister() {
+        return true;
+    }
+    @Override
+    public boolean isExecutable() {
+        return true;
+    }
+
 }
