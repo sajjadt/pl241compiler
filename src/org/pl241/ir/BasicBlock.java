@@ -249,19 +249,21 @@ public class BasicBlock {
 		}
 
 		for( AbstractNode node: getNodes()) {
+
+		    // LHS
 			if (node instanceof LoadNode) {
-				String src =((LoadNode)node).variableId;
+				String src = ((LoadNode)node).variableId;
 				String address = Variable.getTopmostName(src);
-				((LoadNode)node).variableId =  address;
+				((LoadNode)node).variableId = address;
 			}
 
+			// RHS
             if (node instanceof StoreNode) {
                 String name = ((StoreNode)node).originalMemAddress;
-                System.out.println("pushing " + name );
-                String newName = Variable.generateNewName( name );
-                ((StoreNode)node).memAddress = newName ;
+                String newName = Variable.generateNewName(name);
+                ((StoreNode)node).memAddress = newName;
             }
-			
+
 			if (node instanceof IONode && ((IONode)node).writeData()) {
 				AbstractNode src =((IONode)node).getOperandAtIndex(0);
 				//String address = Variable.getTopmostName(src);
@@ -270,36 +272,37 @@ public class BasicBlock {
 			}
 		}
 		
-		for( BasicBlock b: getSuccessors() ){
-			for( AbstractNode node: b.getNodes()){
-				if (node instanceof PhiNode ){
+		for (BasicBlock b: getSuccessors()) {
+			for (AbstractNode node: b.getNodes()) {
+				if (node instanceof PhiNode) {
 					String name = ((PhiNode)node).originalVarName;
-					System.out.println("Reading " + name );
-					String newName = Variable.getTopmostName(name) ;
-					System.out.println(newName+" from BBL " + getIndex() ) ;
-					((PhiNode)node).rightOperands.put( getIndex() , new LabelNode(newName) ) ;
+					System.out.println("Reading " + name);
+					String newName = Variable.getTopmostName(name);
+					System.out.println(newName + " from BBL " + getIndex());
+					((PhiNode)node).rightOperands.put( getIndex() ,new LabelNode(newName));
 				}
 			}
 		}
 
-		for( BasicBlock b: immediateDominants ) {
-			if(  b.getIndex() != this._index ){
-				System.out.println("Renaming block " + b._index );
+		for (BasicBlock b: immediateDominants) {
+			if (b.getIndex() != this._index)
 				b.rename();
-			}
 		}
 
 		for (AbstractNode node: getNodes()) {
-			if (node instanceof PhiNode ) {
+			if (node instanceof PhiNode) {
 				String name = ((PhiNode)node).originalVarName;
 				Variable.popTopmostName(name);
 			}
+            if (node instanceof StoreNode) {
+                String name = ((StoreNode)node).originalMemAddress;
+                Variable.popTopmostName(name);
+            }
 		}
 	}
 
 	public int indexIR(int index) {
-	    System.out.println("Indexing Basic block " + this.id + " from index " + index);
-        bFrom = index;
+	    bFrom = index;
 		for (AbstractNode node: getNodes()) {
 			if (node.isExecutable()) {
 				node.sourceIndex = index;

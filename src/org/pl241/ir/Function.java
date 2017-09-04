@@ -203,6 +203,14 @@ public class Function  {
 	}
 	
 	public void insertPhiFunctions() {
+
+
+	    List<Variable> vars = new ArrayList<>();
+	    vars.addAll(parameters.getVars());
+	    vars.addAll(localVariables.getVars());
+	    // TODO global vars as well??
+        // TODO must be unique?
+
 		for (Variable var: localVariables.getVars()) {
 			System.out.println("Checking var " + var.name);
 
