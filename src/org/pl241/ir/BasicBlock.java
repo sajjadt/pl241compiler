@@ -197,12 +197,13 @@ public class BasicBlock {
 
 
 	public void toDomTreeDot(PrintWriter pw) {
+
 		pw.print("BB" + _index + " [shape=record label=\"{");
 		boolean first = true;
-		pw.println("BBL: " + _index );
+		pw.println("BBL: " + _index);
 		pw.print('|');
-		for (AbstractNode n : getNodes()) {
-			if( n instanceof CopyNode || n instanceof LoadNode ){
+		for (AbstractNode n: getNodes()) {
+			if(n instanceof LoadNode) {
 				if (first)
 					first = false;
 				else
@@ -218,21 +219,13 @@ public class BasicBlock {
 
 	public boolean hasAssignmentTo(Variable var) {
 		for (AbstractNode node: getNodes()) {
-			if (node instanceof CopyNode) {
-				if (((CopyNode)node).memAddress.equals(var.name)) {
+			if (node instanceof PhiNode )
+				if (((PhiNode)node).variableName.equals(var.name))
 					return true;
-				}
-			}
-			if (node instanceof PhiNode ) {
-				if (((PhiNode)node).variableName.equals(var.name)) {
+
+			if (node instanceof StoreNode)
+				if (((StoreNode)node).memAddress.equals(var.name))
 					return true;
-				}
-			}
-			if (node instanceof StoreNode) {
-				if (((StoreNode)node).memAddress.equals(var.name)) {
-					return true;
-				}
-			}
 		}
 		return false;
 	}
@@ -241,7 +234,7 @@ public class BasicBlock {
 	public void addPhiNode(Variable var) {
 		System.out.println("Phi function for var " + var.name + " added to BBL " + getIndex() );
 		PhiNode phi = new PhiNode(var.name) ;
-		if( this.lineIndex != null )
+		if (this.lineIndex != null)
 			phi.sourceIndex = this.lineIndex ;
 		else {
 		}
@@ -253,21 +246,12 @@ public class BasicBlock {
 		ListIterator<AbstractNode> li = nodes.listIterator(nodes.size());
 		while( li.hasPrevious() ){
 			AbstractNode node = li.previous();
-			if (node instanceof CopyNode){
-				if(  ((CopyNode)node).memAddress.equals(var.name) ){
+			if (node instanceof PhiNode)
+				if (((PhiNode)node).variableName.equals(var.name))
 					return node.nodeId;
-				}
-			}
-			if (node instanceof PhiNode ){
-				if(  ((PhiNode)node).variableName.equals(var.name) ){
-					return node.nodeId;
-				}
-			}
-            if (node instanceof StoreNode ){
-                if(  ((StoreNode)node).memAddress.equals(var.name) ){
+            if (node instanceof StoreNode)
+                if (((StoreNode)node).memAddress.equals(var.name))
                     return node.nodeId;
-                }
-            }
 		}
 		return "";
 	}
@@ -275,11 +259,9 @@ public class BasicBlock {
 
 	public AbstractNode getPhiOperand(String variableName, int bblIndex) {
         for (AbstractNode node: getNodes()) {
-            if (node instanceof PhiNode) {
-                if (((PhiNode)node).variableName.equals(variableName)) {
+            if (node instanceof PhiNode)
+                if (((PhiNode)node).variableName.equals(variableName))
                     return ((PhiNode) node).rightOperands.get(bblIndex);
-                }
-            }
         }
         return null;
     }
@@ -306,14 +288,6 @@ public class BasicBlock {
 			}
 		}
 		for( AbstractNode node: getNodes()) {
-			if (node instanceof CopyNode){
-				String name = ((CopyNode)node).originalMemAddress;
-				System.out.println("pushing " + name);
-				String newName = Variable.generateNewName(name);
-				((CopyNode)node).memAddress = newName ;
-				
-			}
-			
 			if (node instanceof LoadNode) {
 				String src =((LoadNode)node).variableId;
 				String address = Variable.getTopmostName(src);
@@ -350,34 +324,19 @@ public class BasicBlock {
 				}
 			}
 		}
-		//for( BasicBlock b: parentFunction.basicBlocks ) {
-		//	//TODO better way to point to D.Tree
-			
-		//	if( b.immediateDominants.contains(this) && b.getIndex() != this._index ){
-		//		System.out.println("Renaming block " + b._index );
-		//		b.rename();
-		//	}
-		//}
-		
+
 		for( BasicBlock b: immediateDominants ) { 
 			//TODO better way to point to D.Tree
-			
 			if(  b.getIndex() != this._index ){
 				System.out.println("Renaming block " + b._index );
 				b.rename();
 			}
 		}
 
-		for( AbstractNode node: getNodes()){
-			if (node instanceof PhiNode  ){
+		for (AbstractNode node: getNodes()) {
+			if (node instanceof PhiNode ) {
 				String name = ((PhiNode)node).originalVarName;
 				Variable.popTopmostName(name);
-				System.out.println("popping " + name );
-			}
-			if (node instanceof CopyNode){
-				String name = ((CopyNode)node).originalMemAddress ;
-				Variable.popTopmostName(name);
-				System.out.println("popping " + name );
 			}
 		}
 	}

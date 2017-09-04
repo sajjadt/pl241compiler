@@ -203,7 +203,7 @@ public class IRBuilderVisitor implements ParseTreeNodeVisitor {
 			// Var
 			if( lvalue ){
 				/// TODO pop stack here?
-				expressionStack.push(new CopyNode( node.getChild(0).getText() ) );
+				//expressionStack.push(new CopyNode( node.getChild(0).getText() ) );
 			} else{
 				expressionStack.push(new LoadNode( node.getChild(0).getText() ) ) ; // "load Var l:" + lvalue +  ctx.getText() ) );
 			}
