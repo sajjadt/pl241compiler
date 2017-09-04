@@ -1,0 +1,14 @@
+# Modification of test 17
+main
+var a, b, c, d, e;
+{
+	let a <- 1;
+	let d <- 0;
+	let d <- a;
+	let c <- 4 * b;
+	if c > b then
+		let d <- b + 2
+	fi;
+	let e <- a + b
+}
+.

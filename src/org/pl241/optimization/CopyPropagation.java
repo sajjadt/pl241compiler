@@ -7,7 +7,7 @@ import java.util.Map;
 import org.pl241.ir.*;
 import org.pl241.ir.Function;
 
-public class CP {
+public class CopyPropagation {
 
 
     public void apply(Function function) {
@@ -19,12 +19,10 @@ public class CP {
                 if (node instanceof StoreNode) {
                     // Find source operand
                     AbstractNode tnode = node.getOperandAtIndex(0);
-                    if (tnode instanceof LoadNode) {
 
+                    if (tnode instanceof LoadNode) {
                         String src = ((StoreNode) node).memAddress;
                         String dst = ((LoadNode) tnode).variableId;
-
-                        System.out.println("Copy detected from " + src + " to " + dst);
 
                         if (copyTable.containsKey(dst))
                             copyTable.put(src, copyTable.get(dst));
@@ -41,10 +39,8 @@ public class CP {
                 AbstractNode node = i.next();
                 if (node.removed) {
                     // Load nodes have no effect
-                    if (!(node instanceof LoadNode)) {
-                        System.out.println("Removing node " + node);
+                    if (!(node instanceof LoadNode))
                         i.remove();
-                    }
                 }
             }
         }
@@ -56,8 +52,8 @@ public class CP {
                 if (node instanceof PhiNode) { // rhs phi
                      for (int key: ((PhiNode)node).rightOperands.keySet()) {
                         AbstractNode label = ((PhiNode)node).rightOperands.get(key);
-                        if (copyTable.containsKey(label)) {
-                            //((PhiNode)node).rightOperands.put(key, copyTable.get(label));
+                        if (copyTable.containsKey(((LabelNode)label).getLabel())) {
+                            ((PhiNode)node).rightOperands.put(key, new LabelNode(copyTable.get(((LabelNode) label).getLabel())));
                         }
                     }
                 }

@@ -10,4 +10,7 @@ public class LabelNode extends AbstractNode{
     public String toString(){
         return label;
     }
+    public String getLabel() {
+        return label;
+    }
 }

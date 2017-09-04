@@ -10,7 +10,7 @@ import java.util.Objects;
 
 import org.pl241.ir.AnalysisException;
 import org.pl241.ir.Function;
-import org.pl241.optimization.CP;
+import org.pl241.optimization.CopyPropagation;
 import org.pl241.optimization.CSE;
 
 public class Program {
@@ -38,7 +38,7 @@ public class Program {
     // Optimizations
 	public void copyPropagate(){
 		for (Function f:functions){
-        	CP cp = new CP();
+        	CopyPropagation cp = new CopyPropagation();
         	cp.apply(f);
         }
         
