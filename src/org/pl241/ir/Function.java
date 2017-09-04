@@ -136,7 +136,7 @@ public class Function  {
 //				pw.print(", color=" + color);
 				if (!labels.contains(bs)) {
 					labels.add(bs);
-					pw.print(", headlabel=\"      " + bs.getIndex() /*+ (bs.hasOrder() ? "[" +bs.getOrder() + "]" : "")*/ +"\"");
+					//pw.print(", headlabel=\"      " + bs.getIndex() /*+ (bs.hasOrder() ? "[" +bs.getOrder() + "]" : "")*/ +"\"");
 				}
 				pw.println("]");
 			}

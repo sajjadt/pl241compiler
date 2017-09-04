@@ -52,14 +52,17 @@ public class Program {
 
 	public void toSSAForm() {
 		for (Function f: functions) {
+		    
 			f.computeDominateDependance();
 			f.computeDominatorFrontiers();
 			f.insertPhiFunctions();
+
 			try {
-				f.computeDominatorTree();
-			} catch (AnalysisException e) {
+                f.computeDominatorTree();
+            } catch (AnalysisException e) {
 				e.printStackTrace();
 			}
+
 			f.rename();
 		}
 	}

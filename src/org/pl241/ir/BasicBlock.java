@@ -171,48 +171,9 @@ public class BasicBlock {
 		}
 	}
 
-
-    public void toAllocDot(PrintWriter pw, boolean standalone) {
-        if (standalone) {
-            pw.println("digraph {");
-            pw.println("rankdir=\"TD\"");
-        }
-
-        pw.print("BB" + _index + " [shape=record label=\"{");
-        pw.print( "Block " + id + "\n");
-
-        for (AbstractNode n: getNodes()) {
-            if (n.isExecutable())
-                pw.print('|' + n.toString());
-
-        }
-
-        pw.print("}\" ] " + "\n");
-
-        if (standalone) {
-            pw.println("}");
-            pw.close();
-        }
-    }
-
-
 	public void toDomTreeDot(PrintWriter pw) {
-
 		pw.print("BB" + _index + " [shape=record label=\"{");
-		boolean first = true;
-		pw.println("BBL: " + _index);
-		pw.print('|');
-		for (AbstractNode n: getNodes()) {
-			if(n instanceof LoadNode) {
-				if (first)
-					first = false;
-				else
-					pw.print('|');
-				pw.print( n.toString() );
-			}
-			if (n.removed)
-				pw.print('$');
-		}
+        pw.print( "Block " + id + "\n");
 		pw.print("}\" ] " + "\n");
 	}
 
@@ -278,15 +239,15 @@ public class BasicBlock {
 	}
 	
 	public void rename(){
-		// Foreache phi block
-		for( AbstractNode node: getNodes() ){
-			if (node instanceof PhiNode ){
+		// For each phi block
+		for (AbstractNode node: getNodes()) {
+			if (node instanceof PhiNode) {
 				String name = ((PhiNode)node).originalVarName;
-				System.out.println("pushing " + name );
-				String newName = Variable.generateNewName( name ) ;
-				((PhiNode)node).variableName = newName ;
+				String newName = Variable.generateNewName(name);
+				((PhiNode)node).variableName = newName;
 			}
 		}
+
 		for( AbstractNode node: getNodes()) {
 			if (node instanceof LoadNode) {
 				String src =((LoadNode)node).variableId;
@@ -312,10 +273,6 @@ public class BasicBlock {
 		for( BasicBlock b: getSuccessors() ){
 			for( AbstractNode node: b.getNodes()){
 				if (node instanceof PhiNode ){
-					//for( Map.Entry<String, String> entry: ((PhiNode)node).operands.entrySet() ){
-					//	entry.setSrcOperand( Variable.getTopmostName(entry.getValue()) );
-						
-					//}
 					String name = ((PhiNode)node).originalVarName;
 					System.out.println("Reading " + name );
 					String newName = Variable.getTopmostName(name) ;
@@ -325,8 +282,7 @@ public class BasicBlock {
 			}
 		}
 
-		for( BasicBlock b: immediateDominants ) { 
-			//TODO better way to point to D.Tree
+		for( BasicBlock b: immediateDominants ) {
 			if(  b.getIndex() != this._index ){
 				System.out.println("Renaming block " + b._index );
 				b.rename();
