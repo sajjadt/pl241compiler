@@ -1,12 +1,7 @@
 package org.pl241.ir;
 
 import java.io.PrintWriter;
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Set;
-import java.util.Stack;
+import java.util.*;
 
 
 public class Function  {
@@ -46,17 +41,9 @@ public class Function  {
 	
 	
 	public void toDot(PrintWriter pw, boolean standalone, boolean main) {
-//      List<String> colors = Collections.newList();
-//      colors.add("black");
-//      colors.add("red1");
-//      colors.add("green1");
-//      colors.add("blue1");
-		if (standalone) {
-			//pw.println("digraph {");
-		} else {
+
+		if (!standalone) {
 			pw.println("subgraph " + "cluster" + _index + " {");
-			//pw.println("nodeId=\"" + (main ? "<main> " : "") + toString() + "\\n" + location
-            //      + (outerFunction != null ? "\\nouter: " + (outerFunction.getName() == null ? "<main>" : outerFunction.getName()) : "")  +  "\";");
 			pw.println("label=" + getName() );
 			pw.println("labelloc=\"t\";");
 			pw.println("fontsize=18;");
@@ -69,31 +56,16 @@ public class Function  {
 		labels.add(getEntryBlock());
 		for (BasicBlock b : basicBlocks) {
 			b.toDot(pw, false);
-//	        int color_index = 0;
 			for (BasicBlock bs : b.getSuccessors()) {
-//              String color = colors.get(color_index);
-//              color_index = (color_index + 1) % colors.size();
 				pw.print("BB" + b.getIndex() + " -> BB" + bs.getIndex() 
 						+ " [tailport=s, headport=n");
-//				pw.print(", color=" + color);
-				if (!labels.contains(bs)) {
+
+				if (!labels.contains(bs))
 					labels.add(bs);
-					pw.print(", headlabel=\"      " + bs.getIndex() /*+ (bs.hasOrder() ? "[" +bs.getOrder() + "]" : "")*/ +"\"");
-				}
+
 				pw.println("]");
 			}
-			//BasicBlock ex = b.getExceptionHandler();
-			/////if (ex != null && b.canThrowExceptions()) {
-				// if (ex != null && ex != b) {
-			////	pw.print("BB" + b.getIndex() + " -> BB" + ex.getIndex() 
-			//			+ " [tailport=s, headport=n, color=gray");
-			//	if (!labels.contains(ex)) {
-			//		labels.add(ex);
-			//		pw.print(", headlabel=\"      " + ex.getIndex() +"\"");
-			//	}
-			//	pw.println("]");
-			//}
-		}
+        }
 		pw.println("}");
 		if (standalone) {
 			pw.flush();
@@ -101,21 +73,13 @@ public class Function  {
 	}
 	
 	public void domToDot(PrintWriter pw, boolean standalone, boolean main) {
-//      List<String> colors = Collections.newList();
-//      colors.add("black");
-//      colors.add("red1");
-//      colors.add("green1");
-//      colors.add("blue1");
-		if (standalone) {
-			//pw.println("digraph {");
-		} else {
+		if (!standalone) {
 			pw.println("subgraph " + "cluster" + _index + " {");
-			//pw.println("nodeId=\"" + (main ? "<main> " : "") + toString() + "\\n" + location
-            //      + (outerFunction != null ? "\\nouter: " + (outerFunction.getName() == null ? "<main>" : outerFunction.getName()) : "")  +  "\";");
 			pw.println("label=" + getName() );
 			pw.println("labelloc=\"t\";");
 			pw.println("fontsize=18;");
 		}
+
 		pw.println("rankdir=\"TD\"");
 		Set<BasicBlock> labels = new HashSet<>();
 		pw.println("BB_entry" + _index + "[shape=none,label=\"\"];");
@@ -124,33 +88,16 @@ public class Function  {
 		labels.add(getEntryBlock());
 		for (BasicBlock b : basicBlocks) {
 			b.toDomTreeDot(pw);
-//	        int color_index = 0;
 			for (BasicBlock bs : b.immediateDominants ) {
 				if ( bs.getIndex() ==  b.getIndex() )
 					continue;
-				
-//              String color = colors.get(color_index);
-//              color_index = (color_index + 1) % colors.size();
-				pw.print("BB" + b.getIndex() + " -> BB" + bs.getIndex() 
+				pw.print("BB" + b.getIndex() + " -> BB" + bs.getIndex()
 						+ " [tailport=s, headport=n");
-//				pw.print(", color=" + color);
-				if (!labels.contains(bs)) {
+
+				if (!labels.contains(bs))
 					labels.add(bs);
-					//pw.print(", headlabel=\"      " + bs.getIndex() /*+ (bs.hasOrder() ? "[" +bs.getOrder() + "]" : "")*/ +"\"");
-				}
 				pw.println("]");
 			}
-			//BasicBlock ex = b.getExceptionHandler();
-			/////if (ex != null && b.canThrowExceptions()) {
-				// if (ex != null && ex != b) {
-			////	pw.print("BB" + b.getIndex() + " -> BB" + ex.getIndex() 
-			//			+ " [tailport=s, headport=n, color=gray");
-			//	if (!labels.contains(ex)) {
-			//		labels.add(ex);
-			//		pw.print(", headlabel=\"      " + ex.getIndex() +"\"");
-			//	}
-			//	pw.println("]");
-			//}
 		}
 		pw.println("}");
 		if (standalone) {
@@ -158,13 +105,10 @@ public class Function  {
 		}
 	}
 	
-	
 	private void setPredecessors() {
-		 for (BasicBlock i: getBasicBlocks()) {
-			 for (BasicBlock j: i.getSuccessors()) {
+		 for (BasicBlock i: getBasicBlocks())
+			 for (BasicBlock j: i.getSuccessors())
                  j.addPredecessor(i);
-			 }
-		 }
 	}
 	
 	private List<BasicBlock> getBasicBlocks() {
@@ -248,8 +192,6 @@ public class Function  {
 	public void computeDominatorFrontiers() {
 		for (BasicBlock b : getBasicBlocks()) {
 			for (BasicBlock d: b.getDominators()) {
-				//if( d.getIndex() == b.getIndex() )
-				//	continue;
 				for (BasicBlock f: b.getSuccessors()) {
 					if (b.dominators.contains(d)) {
 						if (!f.dominators.contains(d) || d.getIndex() == f.getIndex())
@@ -372,18 +314,18 @@ public class Function  {
     }
 
     public void printVarInfo() {
-        if (name=="main")
+        if (Objects.equals(name, "main"))
             System.out.println("Global vars");
         else
             System.out.println(name + " local vars");
-        for (Variable var: localVariables.getVars()) {
+
+        for (Variable var: localVariables.getVars())
             System.out.println(var.toString());
-        }
-        if (parameters.getVars().size() > 0){
+
+        if (parameters.getVars().size() > 0) {
             System.out.println(name + " parameters");
-            for (Variable var: parameters.getVars()) {
+            for (Variable var : parameters.getVars())
                 System.out.println(var.toString());
-            }
         }
     }
 
@@ -392,12 +334,10 @@ public class Function  {
 
     public static int _sindex = 0;
     private int _index;
-
     public VarInfoTable localVariables;
     public VarInfoTable parameters;
 
     public List<BasicBlock> basicBlocks;
-
 }
 	
 	
