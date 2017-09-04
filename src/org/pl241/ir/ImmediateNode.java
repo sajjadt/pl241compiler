@@ -26,6 +26,10 @@ public class ImmediateNode extends AbstractNode{
         return String.valueOf(value);
     }
 
-    private int value;
+    private Integer value;
 
+    @Override
+    public String getOutputOperand() {
+        return value.toString();
+    }
 }
