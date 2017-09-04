@@ -9,36 +9,6 @@ import java.util.Set;
 
 public class BasicBlock {
 
-    public String id;
-    private static int counter = 0 ;
-    public static String generateID (String str) {
-        return str + counter++;
-    }
-
-    public static  int _sindex = 0;
-	public static  int _lindex = 0;
-	private int _index;
-	private List<AbstractNode> nodes;
-	public ArrayList<BasicBlock> successors;
-	public ArrayList<BasicBlock> predecessors;
-
-	public HashSet<BasicBlock> dominators; // Blocks that are dominating this
-	public HashSet<BasicBlock> dominatorsTemp;  
-	public HashSet<BasicBlock> immediateDominants;
-	public HashSet<BasicBlock> dominants; // Blocks this one is dominating
-	public HashSet<BasicBlock> dominatorFrontiers;
-	public Function parentFunction;
-	
-	
-	public boolean loopHeader ;
-	public boolean loopBody ;
-	public Set<String> liveIn ;
-	
-	public int bFrom ;
-	public int bTo ;
-	
-	private Integer lineIndex; // a lineindex used for phi nodes
-	
 	public BasicBlock(Function _parentFunction, String _tag){
 		nodes = new ArrayList<AbstractNode>();
 		successors = new ArrayList<BasicBlock>();
@@ -76,6 +46,12 @@ public class BasicBlock {
 	    else
 	        return null;
 	}
+
+	public static void reset () {
+        counter = 0;
+        _sindex = 0;
+        _lindex = 0;
+    }
 
 	// Return list of live variables
 	public Set<String> getLiveIn(){
@@ -268,8 +244,6 @@ public class BasicBlock {
 		if( this.lineIndex != null )
 			phi.sourceIndex = this.lineIndex ;
 		else {
-			// TODO lineindex for empty block 
-			
 		}
 		nodes.add(0,phi);	
 	}
@@ -425,4 +399,36 @@ public class BasicBlock {
     public String toString() {
         return tag;
     }
+
+
+
+	public String id;
+	private static int counter = 0 ;
+	public static String generateID (String str) {
+		return str + counter++;
+	}
+
+	public static  int _sindex = 0;
+	public static  int _lindex = 0;
+	private int _index;
+	private List<AbstractNode> nodes;
+	public ArrayList<BasicBlock> successors;
+	public ArrayList<BasicBlock> predecessors;
+
+	public HashSet<BasicBlock> dominators; // Blocks that are dominating this
+	public HashSet<BasicBlock> dominatorsTemp;
+	public HashSet<BasicBlock> immediateDominants;
+	public HashSet<BasicBlock> dominants; // Blocks this one is dominating
+	public HashSet<BasicBlock> dominatorFrontiers;
+	public Function parentFunction;
+
+
+	public boolean loopHeader ;
+	public boolean loopBody ;
+	public Set<String> liveIn ;
+
+	public int bFrom ;
+	public int bTo ;
+
+	private Integer lineIndex; // a lineindex used for phi nodes
 }

@@ -33,6 +33,10 @@ public class AbstractNode {
             throw new Error("no operands at index" + index);
     }
 
+    public static void reset() {
+        counter = 0;
+    }
+
     public String getOutputOperand() {
         return null;
     }

@@ -28,8 +28,8 @@ public class run
         boolean genCode = false;
         boolean execute = false;
         int numRegs = 16;
-		String testName = "test003";
-        String testPath = "inputs/test003.txt";
+		String testName = "test008";
+        String testPath = "inputs/test008.txt";
 
         // Tokenize the input
 		byte[] encoded = Files.readAllBytes(Paths.get(testPath));

@@ -84,5 +84,10 @@ public class Variable {
 		recentIndices = new HashMap<>();
 	}
 
+	public static void reset() {
+	    counters.clear();
+	    recentIndices.clear();
+    }
+
     public String name;
 }
