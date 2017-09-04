@@ -398,20 +398,20 @@ public class IRBuilderVisitor implements ParseTreeNodeVisitor {
             ListIterator<ParseTreeNode> li =  node.children.listIterator(node.children.size());
             li.previous();
             ParseTreeNode operator = li.previous();
-            if( expressionStack.peek() instanceof BranchNode == false )
+            if(!(expressionStack.peek() instanceof BranchNode) &&
+                    !(expressionStack.peek() instanceof FunctionCallNode))
                 bblStack.peek().addNode( expressionStack.peek() );
 
             AbstractNode label1 = expressionStack.pop() ;
-            LOGGER.log( Level.FINER,"popping a node " + label1 );
-            if(!(expressionStack.peek() instanceof BranchNode))
+
+            if(!(expressionStack.peek() instanceof BranchNode) &&
+                    !(expressionStack.peek() instanceof FunctionCallNode))
                 bblStack.peek().addNode( expressionStack.peek() );
 
             AbstractNode label2 = expressionStack.pop() ;
-            LOGGER.log( Level.FINER,"popping a node " + label2 );
 
             String operatorText = operator.getText() ;
             AbstractNode anode = new ArithmeticNode(label1, label2 ,  ArithmeticNode.operatorMap.get(operatorText) );
-            LOGGER.log( Level.FINER,"pushing an operator node " + operator.getText() );
             expressionStack.push(anode);
 
             li.previous();
@@ -421,17 +421,13 @@ public class IRBuilderVisitor implements ParseTreeNodeVisitor {
                 if(!(expressionStack.peek() instanceof BranchNode))
                     bblStack.peek().addNode( expressionStack.peek() );
                 AbstractNode label = expressionStack.pop();
-                LOGGER.log( Level.FINER,"popping a node " + label.nodeId);
                 String operatorTexts = operator.getText() ;
 
                 if(!(expressionStack.peek() instanceof BranchNode))
                     bblStack.peek().addNode( expressionStack.peek() );
                 AbstractNode op1Label = expressionStack.pop();
-                LOGGER.log( Level.FINER,"popping a node " + op1Label.nodeId);
-
 
                 anode = new ArithmeticNode( op1Label , label ,  ArithmeticNode.operatorMap.get(operatorTexts) );
-                LOGGER.log( Level.FINER,"pushing an operator node " + operator.getText() );
                 expressionStack.push(anode);
             }
         }
@@ -439,56 +435,47 @@ public class IRBuilderVisitor implements ParseTreeNodeVisitor {
 
 	@Override
 	public void exit(TermNode node) {
-		
-		if( node.children.size() > 2 ){  // Process two or more factors
+		if (node.children.size() > 2) {  // Process two or more factors
 			ListIterator<ParseTreeNode> li =  node.children.listIterator(node.children.size());
 			li.previous(); //term already on stack
 			ParseTreeNode operator = li.previous();
-			if( expressionStack.peek() instanceof BranchNode == false )
-				bblStack.peek().addNode( expressionStack.peek() );
+
+			if (!(expressionStack.peek() instanceof BranchNode) &&
+                    !(expressionStack.peek() instanceof FunctionCallNode))
+				bblStack.peek().addNode(expressionStack.peek());
 			AbstractNode label1 = expressionStack.pop() ;
 			
-			if( expressionStack.peek() instanceof BranchNode == false )
-				bblStack.peek().addNode( expressionStack.peek() );
-			AbstractNode label2 = expressionStack.pop() ;
+			if (!(expressionStack.peek() instanceof BranchNode) &&
+                    !(expressionStack.peek() instanceof FunctionCallNode))
+				bblStack.peek().addNode(expressionStack.peek());
+			AbstractNode label2 = expressionStack.pop();
 			
-			AbstractNode anode = new ArithmeticNode(label1, label2 ,  ArithmeticNode.operatorMap.get(operator.getText()) );
-			LOGGER.log( Level.FINER,"pushing an operator " + operator.getText() );
+			AbstractNode anode = new ArithmeticNode(label1, label2, ArithmeticNode.operatorMap.get(operator.getText()));
 			expressionStack.push(anode);
 			li.previous();
-			while( li.hasPrevious() ){
+
+			while (li.hasPrevious()) {
 				operator =li.previous();
 				li.previous();
-				if( expressionStack.peek() instanceof BranchNode == false )
-					bblStack.peek().addNode( expressionStack.peek() );
+
+				if (!(expressionStack.peek() instanceof BranchNode))
+					bblStack.peek().addNode(expressionStack.peek());
 				AbstractNode label = expressionStack.pop() ;
 				
-				
-				if( expressionStack.peek() instanceof BranchNode == false )
-					bblStack.peek().addNode( expressionStack.peek() );
-				AbstractNode op1Label = expressionStack.pop() ;
-				LOGGER.log( Level.FINER,"popping a node " + op1Label.nodeId);
-				
-				
-				
-				anode = new ArithmeticNode( op1Label, label ,   ArithmeticNode.operatorMap.get( operator.getText() ) );
-				LOGGER.log( Level.FINER,"pushing an operator " + operator.getText() );
-				expressionStack.push(anode);
-			}	
-			
-		}
+				if (!(expressionStack.peek() instanceof BranchNode))
+					bblStack.peek().addNode( expressionStack.peek());
+				AbstractNode op1Label = expressionStack.pop();
 
+				anode = new ArithmeticNode(op1Label, label, ArithmeticNode.operatorMap.get(operator.getText()));
+				expressionStack.push(anode);
+			}
+		}
 	}
 
 	@Override
 	public void exit(FactorNode node) {
-		if ( node.children.size() == 1 && node.children.get(0) instanceof TerminalNode )
-		{
-			LOGGER.log( Level.FINE,"pushing an immediate " + node.children.get(0).getText() );
+		if (node.children.size() == 1 && node.children.get(0) instanceof TerminalNode)
 			expressionStack.push( new ImmediateNode(node.children.get(0).getText()));
-		}
-		
-		
 	}
 
 	@Override
