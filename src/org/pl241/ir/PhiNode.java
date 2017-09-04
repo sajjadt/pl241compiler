@@ -44,4 +44,11 @@ public class PhiNode extends AbstractNode {
 	public List<AbstractNode> getInputOperands() {
 	    return new ArrayList<AbstractNode> (rightOperands.values());
 	}
+
+    @Override
+    public boolean isExecutable() {
+        return true;
+    }
+
+
 }

@@ -105,4 +105,10 @@ public class Program {
 			foo.indexIR();
 		}
 	}
+
+    public void printVarInfo() {
+        for(Function foo:functions) {
+            foo.printVarInfo();
+        }
+    }
 }

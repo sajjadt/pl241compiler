@@ -1,7 +1,5 @@
 package org.pl241.ir;
 
-import org.pl241.ir.*;
-
 import java.io.PrintWriter;
 import java.util.ArrayList;
 import java.util.HashSet;
@@ -16,7 +14,8 @@ public class Function  {
 
     public Function(){
         basicBlocks = new ArrayList<>();
-        symbolTable = new VarInfoTable();
+        localVariables = new VarInfoTable();
+        parameters = new VarInfoTable();
         _index = _sindex++;
     }
 
@@ -262,7 +261,7 @@ public class Function  {
 	}
 	
 	public void insertPhiFunctions() {
-		for (Variable var: symbolTable.getVars()) {
+		for (Variable var: localVariables.getVars()) {
 			System.out.println("Checking var " + var.name);
 
 			Set<BasicBlock> workList = new HashSet<>();
@@ -345,7 +344,9 @@ public class Function  {
 	// Insert branches to end of basic blocks
     public void insertBranches() {
 		for (BasicBlock block: getBasicBlocks()) {
-			if (block.successors.size() == 1 && !(block.getLastNode() instanceof BranchNode)) {
+			if (block.successors.size() == 1
+                    && !(block.getLastNode() instanceof BranchNode)
+                    && !(block.getLastNode() instanceof ReturnNode)) {
                 BranchNode node = new BranchNode();
                 node.takenBlock = block.successors.get(0);
                 block.addNode(node);
@@ -359,8 +360,32 @@ public class Function  {
 		}		
 	}
 
+    public void removeUnreachableFlowEdges() {
+        for (BasicBlock block: getBasicBlocks()) {
+            if (block.successors.size() == 1
+                    && (block.getLastNode() instanceof ReturnNode)) {
+                block.taken = null;
+                block.fallThrough = null;
+                block.successors.clear();
+            }
+        }
+    }
 
-
+    public void printVarInfo() {
+        if (name=="main")
+            System.out.println("Global vars");
+        else
+            System.out.println(name + " local vars");
+        for (Variable var: localVariables.getVars()) {
+            System.out.println(var.toString());
+        }
+        if (parameters.getVars().size() > 0){
+            System.out.println(name + " parameters");
+            for (Variable var: parameters.getVars()) {
+                System.out.println(var.toString());
+            }
+        }
+    }
 
     // Unique across program
     public String name;
@@ -368,7 +393,9 @@ public class Function  {
     public static int _sindex = 0;
     private int _index;
 
-    public VarInfoTable symbolTable;
+    public VarInfoTable localVariables;
+    public VarInfoTable parameters;
+
     public List<BasicBlock> basicBlocks;
 
 }

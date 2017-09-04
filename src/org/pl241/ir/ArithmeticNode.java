@@ -8,14 +8,13 @@ public class ArithmeticNode extends AbstractNode {
     public enum ArithmeticType {
         NEG,
         ADD,
-        ADDA,
         SUB,
         MUL,
         DIV,
         CMP
     }
 
-    public ArithmeticNode(AbstractNode _operand1, AbstractNode _operand2 , ArithmeticType _operator) {
+    public ArithmeticNode(AbstractNode _operand1, AbstractNode _operand2, ArithmeticType _operator) {
         super(_operand1, _operand2);
         operator = _operator;
     }

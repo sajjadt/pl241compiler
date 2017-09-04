@@ -8,14 +8,22 @@ public class IONode extends AbstractNode  {
         WRITELINE
     };
 
-    public IONode(IOType _type , AbstractNode operand) {
+    public IONode() {
         super();
-        type = _type;
+    }
+
+    public IONode(IOType type , AbstractNode operand) {
+        super();
+        setParams(type, operand);
+    }
+
+    public void setParams(IOType type , AbstractNode operand) {
+        this.type = type;
         _readData = _writeData = false;
-        if( type.equals(IOType.WRITE) ){
+        if (type.equals(IOType.WRITE)) {
             operands.add(operand);
         }
-        if ( type.equals(IOType.READ) ){
+        if (type.equals(IOType.READ)) {
             _readData = true;
         } else if( type.equals(IOType.WRITE)) {
             _writeData = true;
@@ -24,9 +32,11 @@ public class IONode extends AbstractNode  {
 
     @Override
     public String toString() {
-        String ret = super.toString() + " " + type ;
+        String ret = super.toString() + " ";
         if (type == IOType.WRITE)
-            ret  += getOperandAtIndex(0).getOutputOperand();
+            ret  += (type + "(" + getOperandAtIndex(0).getOutputOperand() + ")");
+        else
+            ret  += (type + "()");
         return ret;
     }
 

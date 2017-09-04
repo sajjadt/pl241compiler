@@ -33,7 +33,10 @@ public class Variable {
 	}
 
     public String toString() {
-        return name + " " + type.name() + " ";
+        String ret = name + " " + type.name() + " ";
+        if (dimensions != null)
+            ret += dimensions.toString();
+        return ret;
     }
 
     static String generateNewName(String originalName) {
@@ -66,6 +69,7 @@ public class Variable {
         return null;
     }
 
+
     public ArrayList<Integer> getDimensions() {
 	    return dimensions;
     }
@@ -73,8 +77,8 @@ public class Variable {
     private VariableType type;
 	private ArrayList<Integer> dimensions;
 
-	private static HashMap< String, Integer > counters;
-	private static HashMap< String, Stack<String> > recentIndices;
+	private static HashMap<String, Integer> counters;
+	private static HashMap<String, Stack<String>> recentIndices;
 	static {
 		counters = new HashMap<>();
 		recentIndices = new HashMap<>();

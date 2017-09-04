@@ -63,7 +63,9 @@ public class run
             for (Function f : program.getFunctions()) {
                 f.insertBranches();
                 f.setBranchTargets();
+                f.removeUnreachableFlowEdges();
             }
+
             if (visualize)
                 program.visualize("Vis" + File.separator + testName + "_pass_0.dot");
 
@@ -74,6 +76,10 @@ public class run
                 program.visualize("Vis" + File.separator + testName + "_pass_1_ssa.dot");
                 program.visualizeDominatorTree("Vis" + File.separator + testName + "_dom_tree.dot");
             }
+
+
+            program.printVarInfo();
+
 
             if (optimize) {
 

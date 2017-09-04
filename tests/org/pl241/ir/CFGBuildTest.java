@@ -34,8 +34,21 @@ public class CFGBuildTest {
 					root.accept(visitor);
 					System.out.println("Done with parsing");
 					Program program = visitor.getProgram();
-					program.visualize(desFolder.getPath() + File.separator + fileEntry.getName() + ".dot");
-					
+
+                    for (Function f : program.getFunctions()) {
+                        f.insertBranches();
+                        f.setBranchTargets();
+                        f.removeUnreachableFlowEdges();
+                    }
+
+                    program.toSSAForm();
+                    program.indexIR();
+
+                    String testName = fileEntry.getName();
+                    testName = testName.substring(0, testName.indexOf('.'));
+                    program.visualize("Vis" + File.separator + testName + "_pass_1_ssa.dot");
+                    program.visualizeDominatorTree("Vis" + File.separator + testName + "_dom_tree.dot");
+
 		        }
 		    }
 			System.out.println("Parsing test passed");

@@ -251,7 +251,7 @@ public class DLXCodeGenerator {
         // Also use this table keeps displacement of vars in regard of SP
         // Variables could be inside local function frame or global table
         // TODO: modify according to Stack allocation
-        for (Variable var: f.symbolTable.getVars()) {
+        for (Variable var: f.localVariables.getVars()) {
             localVarMap.put(var.name, displacement);
             displacement += -1 * var.numElements();
         }
@@ -292,7 +292,7 @@ public class DLXCodeGenerator {
         // it increases
         int globalIndex = 0;
         Function main = program.getMainFunction();
-        for (Variable var: main.symbolTable.getVars()) {
+        for (Variable var: main.localVariables.getVars()) {
             globalVarMap.put(var.name, globalIndex);
             globalIndex += 1 * var.numElements();
         }

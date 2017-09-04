@@ -33,6 +33,13 @@ public class FunctionCallNode extends AbstractNode {
     }
 
 
+    @Override
+    public String getOutputOperand() {
+        if (returnsStuff)
+            return nodeId;
+        else
+            return null;
+    }
 
     // Adds operands at the beginning since they are accessed on Stack
     @Override
