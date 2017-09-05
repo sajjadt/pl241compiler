@@ -110,7 +110,7 @@ public class DLXCodeGenerator {
         Allocation allocation = null;
         // Handle instructions
         for (AbstractNode ins : b.getNodes()) {
-            if (ins instanceof LoadNode) {
+            if (ins instanceof VarGetNode) {
                 System.out.println("Generating load: " + ins.toString());
 
                 // Destination of load instruction
@@ -118,11 +118,11 @@ public class DLXCodeGenerator {
                 assert allocation.type == Allocation.Type.REGISTER;
                 // TODO use temp register for memory allocated vars
 
-                if (localVarMap.containsKey(((LoadNode) ins).variableId)) {
-                    instructions.add(DLX.assemble(DLX.LDW, allocation.address, this.FRAMEP, localVarMap.get(((LoadNode) ins).variableId)));
-                } else if (globalVarMap.containsKey(((LoadNode) ins).variableId)) {
+                if (localVarMap.containsKey(((VarGetNode) ins).variableId)) {
+                    instructions.add(DLX.assemble(DLX.LDW, allocation.address, this.FRAMEP, localVarMap.get(((VarGetNode) ins).variableId)));
+                } else if (globalVarMap.containsKey(((VarGetNode) ins).variableId)) {
                     instructions.add(DLX.assemble(DLX.ADDI, this.TEMP_REGISTER, this.ZERO, BSS));
-                    instructions.add(DLX.assemble(DLX.LDW, allocation.address, this.TEMP_REGISTER, globalVarMap.get(((LoadNode) ins).variableId)));
+                    instructions.add(DLX.assemble(DLX.LDW, allocation.address, this.TEMP_REGISTER, globalVarMap.get(((VarGetNode) ins).variableId)));
                 } else {
                     throw new Error("variable not found in both local and global map");
                 }
@@ -174,7 +174,7 @@ public class DLXCodeGenerator {
                         instructions.add(DLX.assemble(DLX.RDI, allocation.address));
                         break;
                 }
-            } else if (ins instanceof StoreNode) {
+            } else if (ins instanceof VarSetNode) {
                 System.out.println("Generating store: " + ins.toString());
 
                 // Source of write instruction
@@ -188,11 +188,11 @@ public class DLXCodeGenerator {
                 assert allocation.type == Allocation.Type.REGISTER;
                 // TODO use temp register for memory allocated vars
 
-                if (localVarMap.containsKey(((StoreNode) ins).memAddress)) {
-                    instructions.add(DLX.assemble(DLX.STW, allocation.address, this.FRAMEP, localVarMap.get(((StoreNode) ins).memAddress)));
-                } else if (globalVarMap.containsKey(((StoreNode) ins).memAddress)) {
+                if (localVarMap.containsKey(((VarSetNode) ins).originalMemAddress)) {
+                    instructions.add(DLX.assemble(DLX.STW, allocation.address, this.FRAMEP, localVarMap.get(((VarSetNode) ins).originalMemAddress)));
+                } else if (globalVarMap.containsKey(((VarSetNode) ins).originalMemAddress)) {
                     instructions.add(DLX.assemble(DLX.ADDI, this.TEMP_REGISTER, this.ZERO, BSS));
-                    instructions.add(DLX.assemble(DLX.STW, allocation.address, this.TEMP_REGISTER, globalVarMap.get(((StoreNode) ins).memAddress)));
+                    instructions.add(DLX.assemble(DLX.STW, allocation.address, this.TEMP_REGISTER, globalVarMap.get(((VarSetNode) ins).originalMemAddress)));
                 } else {
                     throw new Error("variable not found in both local and global map");
                 }

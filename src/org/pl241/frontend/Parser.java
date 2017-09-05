@@ -69,8 +69,6 @@ public class Parser {
 		List<ParseTreeNode> nodes = new ArrayList<ParseTreeNode>();
 		if (lookahead.token == Token.COMMA){
 			nodes.add( new TerminalNode(parent,  nextToken().sequence ));
-			String identifer = lookahead.sequence;
-			System.out.println(type + ":" + identifer);
 			nodes.add( new TerminalNode(parent,  nextToken().sequence ));
 			nodes.addAll(identStar(parent,type));
 		} 
@@ -137,8 +135,6 @@ public class Parser {
 				node.addChild( new TerminalNode(node,  nextToken().sequence ));// Arg0
 				
 			}
-			//String arg = lookahead.sequence;
-			//System.out.println("Arg: " + arg);
 			node.addChildren( identStar(node, "Arg") );
 			node.addChild( new TerminalNode(node,  nextToken().sequence )); // ")"
 		}
@@ -345,7 +341,6 @@ public class Parser {
 	private Token nextToken()
 	{
 		Token top = tokens.pop();
-		//System.out.println( tokens.size());
 		// at the end of input we return an epsilon token
 		if (tokens.isEmpty())
 			lookahead = new Token(Token.EPSILON, "" );

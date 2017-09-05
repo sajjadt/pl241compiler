@@ -5,7 +5,18 @@ public class IONode extends AbstractNode  {
     public enum IOType {
         READ,
         WRITE,
-        WRITELINE
+        WRITELINE;
+
+        @Override
+        public String toString() {
+            switch(this) {
+                case READ: return "read";
+                case WRITE: return "write";
+                case WRITELINE: return "writeln";
+                default: throw new IllegalArgumentException();
+            }
+        }
+
     };
 
     public IONode() {

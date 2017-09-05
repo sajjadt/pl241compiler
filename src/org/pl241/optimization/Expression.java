@@ -1,30 +1,66 @@
 package org.pl241.optimization;
 
+import org.pl241.ir.AbstractNode;
+import org.pl241.ir.ArithmeticNode;
+import org.pl241.ir.PhiNode;
+import java.util.ArrayList;
+
 public class Expression {
 
-	public Expression(Object _op1, Object _op2, String _operator){
-		op1 = _op1;
-		op2 = _op2;
-		operator = _operator;
+    public static Expression fromPhi(PhiNode node) {
+        Object[] operands = node.rightOperands.values().toArray();
+        return new Expression(operands[0], operands[1], ExpressionType.PHI);
+    }
+
+    public static ExpressionType fromArithExpressions(ArithmeticNode.ArithmeticType type) {
+        switch (type) {
+            case ADD:
+                return ExpressionType.ADD;
+            case SUB:
+                return ExpressionType.SUB;
+            case MUL:
+                return ExpressionType.MUL;
+            case DIV:
+                return ExpressionType.DIV;
+            default:
+                return ExpressionType.NONE;
+        }
+    }
+
+    public enum ExpressionType {
+        PHI,
+        ADD,
+        SUB,
+        MUL,
+        DIV,
+        NONE
+    }
+
+
+	public Expression(Object operand1, Object operand2, ExpressionType operator){
+		this.operand1 = operand1;
+		this.operand2 = operand2;
+		this.operator = operator;
 	}
-	
+
 	@Override
 	public boolean equals(Object obj) {
-		if ( this == obj )
+		if (this == obj)
 			return true;
-		if ( obj == null )
+		if (obj == null)
 			return false;
-		if( getClass() != obj.getClass() )
+		if (getClass() != obj.getClass())
 			return false;
 		Expression other = (Expression)obj;
+		// TODO symmetric operations
 		if (other.operator.equals(operator) &&
-                ((other.op1.equals(op1) && other.op2.equals(op2)) ||
-                        (other.op2.equals(op1) && other.op1.equals(op2)))) {
+                other.operand1.equals(operand1) &&
+                other.operand2.equals(operand2)) {
 			return true;
 		}
 		return false;
 	}
-	
+
 	@Override
 	public int hashCode() {
 		int hash = 3;
@@ -32,7 +68,7 @@ public class Expression {
 		return hash;
 	}
 
-    private Object op1;
-    private Object op2;
-    private String operator;
+    private Object operand1;
+    private Object operand2;
+    private ExpressionType operator;
 }

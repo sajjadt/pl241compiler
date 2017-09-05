@@ -9,7 +9,6 @@ import java.util.Set;
 
 import org.pl241.ir.AbstractNode;
 import org.pl241.ir.BasicBlock;
-import org.pl241.ir.LoadNode;
 import org.pl241.ir.ImmediateNode;
 import org.pl241.ir.PhiNode;
 
@@ -77,7 +76,8 @@ public class IntervalBuilder {
 			    	}
 			    	intervals.get(opd).setFrom(node.getSourceIndex());
 			    	intervals.get(opd).definitionPoint = node.getSourceIndex();
-			    	intervals.get(opd).addReference(node.getSourceIndex()); // TODO write into counts as a reference?
+			    	intervals.get(opd).addReference(node.getSourceIndex());
+                    intervals.get(opd).addRange(node.getSourceIndex(), node.getSourceIndex());
 			    	live.remove(opd);    	
 			    }
 

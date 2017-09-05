@@ -6,14 +6,13 @@ import java.util.List;
 import java.util.ArrayList;
 import java.util.Map;
 
-import org.pl241.ir.AbstractNode;
-import org.pl241.ir.BasicBlock;
-import org.pl241.ir.Function;
+import org.pl241.ir.*;
 
 public class RegisterAllocator { // Allocate Registers for one function
 
     public RegisterAllocator(int _numRegs) { // SSA Form
-		numPhysicalRegisters = _numRegs ;
+		intervalMap = new HashMap<>();
+        numPhysicalRegisters = _numRegs ;
 	}
 
 	public HashMap<String, ArrayList<LiveInterval>> allocate(Function function) {
@@ -34,7 +33,7 @@ public class RegisterAllocator { // Allocate Registers for one function
         // At this point we need a list of allocations with these properties for resolve function:
         // access to all live intervals at given time
         // access to certain var allocation at give time
-        HashMap<String, ArrayList<LiveInterval>> intervalMap = new HashMap<>();
+        intervalMap.clear();
         for (LiveInterval interval: alloc) {
             if (!intervalMap.containsKey(interval.varName))
                 intervalMap.put(interval.varName, new ArrayList<>());
@@ -43,43 +42,57 @@ public class RegisterAllocator { // Allocate Registers for one function
 
         //assert intervalMap.keySet().equals(alloc)
 
+        intervalBuilder.printIntervals();
         return intervalMap;
     }
 
-
-    public void resolve(Function function, HashMap<String, ArrayList<LiveInterval>> intervals) {
+    public void resolve(Function function) {
 
         Allocation moveFrom = null;
         Allocation moveTo= null;
 
         Map<Allocation, Allocation> mapping = new HashMap<>();
 
-        for (BasicBlock pred: function.basicBlocks) {
-            for (BasicBlock succ: pred.getSuccessors()) {
+        for (BasicBlock current: function.basicBlocks) {
+            for (BasicBlock successor: current.getSuccessors()) {
 
-                // Intervals live at the beginning of the succ
-                ArrayList<LiveInterval> liveIntervals = liveIntervalsAt(intervals, succ.bFrom);
-
+                // Intervals live at the beginning of the successor
+                ArrayList<LiveInterval> liveIntervals = liveIntervalsAt(intervalMap, successor.bFrom);
                 for (LiveInterval interval: liveIntervals) {
-                    if (interval.start() == succ.bFrom) {
-                        AbstractNode node = succ.getPhiOperand(interval.varName, pred.getIndex());
+
+                    // It will be a Phi Node
+                    if (interval.start() == successor.bFrom) {
+                        AbstractNode node = successor.getPhiOperand(interval.varName, current.getIndex());
                         if (node != null)
-                            moveFrom = liveIntervalAllocationAt(intervals, node.getOutputOperand(), pred.bTo);
+                            moveFrom = liveIntervalAllocationAt(intervalMap, node.getOutputOperand(), current.bTo);
                     } else {
-                        moveFrom = liveIntervalAllocationAt(intervals, interval.varName, pred.bTo);
+                        moveFrom = liveIntervalAllocationAt(intervalMap, interval.varName, current.bTo);
                     }
 
-                    moveTo = liveIntervalAllocationAt(intervals, interval.varName, succ.bFrom);
+                    moveTo = liveIntervalAllocationAt(intervalMap, interval.varName, successor.bFrom);
 
                     if ( moveFrom!= null && !moveFrom.equals(moveTo)) {
                         mapping.put(moveFrom, moveTo);
+                        // TODO: insert move directly into successor block
                     }
+
                 }
             }
         }
 
-        // TODO: insert moves from mapping into basic blocks
+        System.out.println("************ Moves ***********");
         System.out.println(mapping);
+        System.out.println("********** End Moves **********");
+
+        // Remove Phi nodes
+        for (BasicBlock current: function.basicBlocks) {
+            List<AbstractNode> found = new ArrayList<>();
+            for (AbstractNode node: current.getNodes()) {
+                if (node instanceof PhiNode)
+                    found.add(node);
+            }
+            current.getNodes().removeAll(found);
+        }
     }
 
     // Utility functions
@@ -102,6 +115,10 @@ public class RegisterAllocator { // Allocate Registers for one function
     private Allocation liveIntervalAllocationAt(HashMap<String, ArrayList<LiveInterval>> intervalsSet, String varName, int time) {
         ArrayList<LiveInterval> intervals = intervalsSet.get(varName);
 
+        if (intervals == null) {
+            System.out.println("No interval found for " + varName + " at time " + time);
+            return null;
+        }
         for (LiveInterval interval: intervals) {
             if (interval.isAlive(time)) {
                 return interval.allocatedLocation;
@@ -110,16 +127,24 @@ public class RegisterAllocator { // Allocate Registers for one function
         return null;
     }
 
-    private int numPhysicalRegisters;
-    private LinearScanner scanner ;
+    public Allocation getAllocationAt(String variableName, int time) {
+        return liveIntervalAllocationAt(intervalMap, variableName, time) ;
+    }
 
-    public void toPhysical(Function f, HashMap<String, ArrayList<LiveInterval>> intervals) {
+    public void toPhysical(Function f) {
         for (BasicBlock block: f.basicBlocks) {
             for (AbstractNode node: block.getNodes()) {
                 if (node.hasOutputRegister()) {
-                    node.setAllocation(liveIntervalAllocationAt(intervals, node.getOutputOperand(), node.sourceIndex));
+                    node.setAllocation(liveIntervalAllocationAt(intervalMap, node.getOutputOperand(), node.sourceIndex));
                 }
             }
         }
      }
+
+
+
+    public HashMap<String, ArrayList<LiveInterval>> intervalMap;
+    private int numPhysicalRegisters;
+    private LinearScanner scanner ;
+
 }

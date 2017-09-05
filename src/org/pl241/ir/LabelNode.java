@@ -13,4 +13,9 @@ public class LabelNode extends AbstractNode{
     public String getLabel() {
         return label;
     }
+
+    @Override
+    public String getOutputOperand() {
+        return label;
+    }
 }

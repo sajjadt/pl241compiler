@@ -7,9 +7,8 @@ import java.util.Map;
 
 public class PhiNode extends AbstractNode {
 
-    public Map<Integer, String> rightLabels ; // bbl index, instruction nodeId
-	public Map<Integer, AbstractNode> rightOperands; // bbl index, operands
-
+    // Mapping from block index to instruction node
+	public Map<Integer, AbstractNode> rightOperands;
 
 	public String variableName;
 	public String originalVarName;
@@ -18,14 +17,13 @@ public class PhiNode extends AbstractNode {
 		super();
 		this.variableName = variableName;
 		this.originalVarName = variableName;
-		rightLabels = new HashMap<>();
 		rightOperands = new HashMap<>();
 	}
 
 	public String toString() {
 		StringBuilder oSet = new StringBuilder();
-		for (AbstractNode key: rightOperands.values()) {
-			oSet.append(key+", ");
+		for (Integer key: rightOperands.keySet()) {
+			oSet.append(key.toString() + ":" + rightOperands.get(key).getOutputOperand()+", ");
 		}
 		return super.toString() +   ": [" + sourceIndex +"]  " + variableName +  " phi: " + oSet;
 	}
@@ -38,8 +36,6 @@ public class PhiNode extends AbstractNode {
 		return variableName;
 	}
 
-
-
 	@Override
 	public List<AbstractNode> getInputOperands() {
 	    return new ArrayList<AbstractNode> (rightOperands.values());
@@ -50,5 +46,8 @@ public class PhiNode extends AbstractNode {
         return true;
     }
 
+	public boolean hasOutputRegister() {
+		return true;
+	}
 
 }

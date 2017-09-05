@@ -2,9 +2,9 @@ package org.pl241.ir;
 
 import java.util.Objects;
 
-public class LoadNode extends AbstractNode {
+public class VarGetNode extends AbstractNode {
 	public String variableId;
-	public LoadNode(String variableId) {
+	public VarGetNode(String variableId) {
 		super();
 		this.variableId = variableId;
 	}
@@ -27,5 +27,9 @@ public class LoadNode extends AbstractNode {
     public String displayId() {
         return variableId;
     }
+
+	public boolean hasOutputRegister() {
+		return true;
+	}
 }
 

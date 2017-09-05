@@ -58,7 +58,7 @@ public class AbstractNode {
         ret += "[" + nodeId + "]";
 
         if (allocation != null)
-                ret += allocation.toString();
+            ret += allocation.toString();
         return ret;
     }
 
@@ -98,6 +98,10 @@ public class AbstractNode {
         return false;
     }
     public boolean hasOutputRegister() {
-        return  false;
+        return false;
+    }
+
+    public String printAllocation() {
+        return null;
     }
 }

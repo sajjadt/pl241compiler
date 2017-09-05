@@ -6,15 +6,16 @@ import java.nio.charset.Charset;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.ArrayList;
-import java.util.HashMap;
 
 import org.pl241.cg.DLX;
 import org.pl241.cg.DLXCodeGenerator;
+import org.pl241.cg.LowLevelProgram;
+import org.pl241.cg.Instruction;
 import org.pl241.frontend.*;
 import org.pl241.frontend.Parser.ParseTreeNode;
+import org.pl241.ir.AbstractNode;
 import org.pl241.ir.Function;
 import org.pl241.ir.IRBuilderVisitor;
-import org.pl241.ra.LiveInterval;
 import org.pl241.ra.RegisterAllocator;
 
 public class run
@@ -24,12 +25,12 @@ public class run
 		// Settings
         boolean visualize = true;
         boolean optimize = false;
-        boolean allocateRegisters = false;
-        boolean genCode = false;
-        boolean execute = false;
+        boolean allocateRegisters = true;
+        boolean genCode = true;
+        boolean execute = true;
         int numRegs = 16;
-		String testName = "test008";
-        String testPath = "inputs/test008.txt";
+		String testName = "mincse";
+        String testPath = "inputs/mincse.txt";
 
         // Tokenize the input
 		byte[] encoded = Files.readAllBytes(Paths.get(testPath));
@@ -67,29 +68,28 @@ public class run
             }
 
             if (visualize)
-                program.visualize("Vis" + File.separator + testName + "_pass_0.dot");
+                program.visualize("Vis" + File.separator + testName + "_pass_0.dot", false);
 
             program.toSSAForm();
             program.indexIR();
+            program.printVarInfo();
 
             if (visualize) {
-                program.visualize("Vis" + File.separator + testName + "_pass_1_ssa.dot");
+                program.visualize("Vis" + File.separator + testName + "_pass_1_ssa.dot", false);
                 program.visualizeDominatorTree("Vis" + File.separator + testName + "_dom_tree.dot");
             }
 
-
-            program.printVarInfo();
-
-
             if (optimize) {
+                program.cse();
+                program.indexIR();
+                if (visualize)
+                    program.visualize("Vis" + File.separator + testName + "_pass_2_cse.dot", false);
 
                 program.copyPropagate();
+                program.indexIR();
                 if (visualize)
-                    program.visualize("Vis" + File.separator + testName + "_pass_2_cp.dot");
+                    program.visualize("Vis" + File.separator + testName + "_pass_3_cp.dot", false);
 
-                program.cse();
-                if (visualize)
-                    program.visualize("Vis" + File.separator + testName + "_pass_3_cse.dot");
             }
         }
         catch (Exception e) {
@@ -98,7 +98,7 @@ public class run
             return;
         }
 
-        // Allocate registers
+        // Allocate registers and execute on DLX emulator
         try {
 		    if (allocateRegisters) {
                 RegisterAllocator allocator = new RegisterAllocator(numRegs);
@@ -107,16 +107,22 @@ public class run
 
                     // Allocates registers/spills virtual registers
                     // Returns splitted intervals with allocatin information
-                    HashMap<String, ArrayList<LiveInterval>> intervals = allocator.allocate(f);
+                    allocator.allocate(f);
+                    allocator.toPhysical(f);
 
-                    // Works on intervals
-                    // Insert additional moves if necessary into f basic blocks
-                    allocator.resolve(f, intervals);
-                    allocator.toPhysical(f, intervals);
+                    if (visualize)
+                        program.visualize("Vis" + File.separator + testName + "_pass_4_ra.dot", false);
+
+                    // Deconstructs SSA form
+                    // Inserts additional moves if necessary
+                    allocator.resolve(f);
+                    if (visualize)
+                        program.visualize("Vis" + File.separator + testName + "_pass_5_resolved.dot", false);
                 }
 
-                if (visualize)
-                    program.visualize("Vis" + File.separator + testName + "_pass_4_ra.dot");
+                LowLevelProgram executable = new LowLevelProgram();
+                executable.fromIRProgram(program, allocator);
+                executable.visualize("Vis" + File.separator + testName + "_pass_6_llir.dot");
             }
 
             ArrayList<Integer> mem = new ArrayList<>();
@@ -130,7 +136,7 @@ public class run
             if (genCode && execute) {
                 DLX.load(mem);
                 System.out.println("MEM:" + mem);
-                System.out.println("Executing on DLX");
+                System.out.println("Starting execution on DLX emulator...");
                 DLX.execute();
             }
 
@@ -140,6 +146,16 @@ public class run
             e.printStackTrace();
             return;
         }
-		System.out.println("Done...");
+		System.out.println("All done...");
 	}
+
+	private static ArrayList<Instruction> programFromIR (ArrayList<AbstractNode> nodes,
+                                                         RegisterAllocator allocator) {
+        ArrayList<Instruction> instructions = new ArrayList<>();
+	    for (AbstractNode node: nodes) {
+	        instructions.addAll(Instruction.fromIRNode(node, allocator));
+        }
+        return instructions;
+    }
+
 }

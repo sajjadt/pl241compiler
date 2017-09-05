@@ -53,7 +53,7 @@ public class CFGBuildTest {
 
                     String testName = fileEntry.getName();
                     testName = testName.substring(0, testName.indexOf('.'));
-                    program.visualize(destinationFolder + File.separator + testName + "_pass_1_ssa.dot");
+                    program.visualize(destinationFolder + File.separator + testName + "_pass_1_ssa.dot", false);
                     program.visualizeDominatorTree(destinationFolder + File.separator + testName + "_dom_tree.dot");
 
 		        }

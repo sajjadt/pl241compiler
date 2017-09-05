@@ -34,6 +34,7 @@ public class LiveInterval implements Comparable<LiveInterval> {
     int finish() {
 		return ranges.get(ranges.size()-1).finish;
 	}
+
     void addReference(int position) {
 		referencesList.add(position);
 		Collections.sort(referencesList);
@@ -174,7 +175,7 @@ public class LiveInterval implements Comparable<LiveInterval> {
 
     boolean isAlive(int time) {
 		for (Range range: ranges) {
-			if (range.start <= time && range.finish > time)
+			if (range.start <= time && range.finish >= time)
 				return true;
 		}
 		return false;

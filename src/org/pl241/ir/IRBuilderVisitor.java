@@ -186,11 +186,8 @@ public class IRBuilderVisitor implements ParseTreeNodeVisitor {
 
 	@Override
 	public void enter(IfStmtNode node) {
-		LOGGER.log( Level.FINE,"Entering ifstmt node");
 		// Check if or if-else
-		System.out.println(node.getText());
 		// Compute relation and add it to current basicblock
-		//bblStack.peek().nodes.add(new AbstractNode("Relation"));
 		boolean lvalue = false;
 		if (node.parent instanceof AssignmentNode) {
 			lvalue = true;
@@ -198,14 +195,14 @@ public class IRBuilderVisitor implements ParseTreeNodeVisitor {
 		if (node.children.size() > 1) {
 			// ARRAY
 			ArrayList<Integer> strides = new ArrayList<>();
-			expressionStack.push(new LoadNode( node.getChild(0).getText()  ) ) ; // "load ARRAY l:" + lvalue + ctx.getText() ));
+			expressionStack.push(new VarGetNode( node.getChild(0).getText()  ) ) ; // "load ARRAY l:" + lvalue + ctx.getText() ));
 		} else {
 			// Var
 			if( lvalue ){
 				/// TODO pop stack here?
 				//expressionStack.push(new CopyNode( node.getChild(0).getText() ) );
 			} else{
-				expressionStack.push(new LoadNode( node.getChild(0).getText() ) ) ; // "load Var l:" + lvalue +  ctx.getText() ) );
+				expressionStack.push(new VarGetNode( node.getChild(0).getText() ) ) ; // "load Var l:" + lvalue +  ctx.getText() ) );
 			}
 		}
 		/// TODO add if condition
@@ -257,21 +254,16 @@ public class IRBuilderVisitor implements ParseTreeNodeVisitor {
 	}
 
 	@Override
-	public void enter(ReturnStmtNode node) {
-		LOGGER.log(Level.FINE,"Entering returnstmt node");
-	}
+	public void enter(ReturnStmtNode node) {}
 
 	@Override
 	public void enter(FuncBodyNode node) {
-		LOGGER.log( Level.FINE,"Entering funcbody node");
 		BasicBlock bbl =  new BasicBlock(currentFunction ,"func body") ;
 		bblStack.push(bbl);
 	}
 
 	@Override
-	public void enter(FormalParamNode node) {
-		LOGGER.log( Level.FINE,"Entering param node");
-	}
+	public void enter(FormalParamNode node) {}
 
 	@Override
 	public void enter(StatementNode node) {}
@@ -298,7 +290,6 @@ public class IRBuilderVisitor implements ParseTreeNodeVisitor {
 
 	@Override
 	public void exit(StatSeqNode node) {
-		LOGGER.log( Level.FINE,"Exiting Statseq node");
 		if (node.parent instanceof WhileStmtNode) {
 			bblStack.peek().addNode(new BranchNode());
 		}
@@ -308,7 +299,6 @@ public class IRBuilderVisitor implements ParseTreeNodeVisitor {
 		currentFunction.basicBlocks.add(bblStack.peek());
 		bblStack.pop();
 		if (node.parent instanceof ProgramNode) {
-			LOGGER.log( Level.FINE,"Exiting program node");
 			program.addFunction(currentFunction);
 		}
 	}
@@ -330,7 +320,6 @@ public class IRBuilderVisitor implements ParseTreeNodeVisitor {
 		if( var == null )
 			var = mainFunction.localVariables.getVar(varName);
 		assert var != null;
-
 
         // Array of Integers
 		if (node.children.size() > 1) {
@@ -384,9 +373,9 @@ public class IRBuilderVisitor implements ParseTreeNodeVisitor {
             // It is not clear if this is being allocated on the stack or a register
             // For now we emit regular load/store nodes
 			if (lvalue)
-				expressionStack.push(new StoreNode(varName));
+				expressionStack.push(new VarSetNode(varName));
 			else
-				expressionStack.push(new LoadNode(varName));
+				expressionStack.push(new VarGetNode(varName));
 		}
 	}
 
@@ -499,16 +488,10 @@ public class IRBuilderVisitor implements ParseTreeNodeVisitor {
 
 	@Override
 	public void exit(AssignmentNode node) {
-		LOGGER.log( Level.FINE,"Exiting Assignment node");
-
 		AbstractNode exp = expressionStack.pop();
 		AbstractNode des = expressionStack.pop();
 
-		LOGGER.log( Level.FINE,"popping des " + des );
-		LOGGER.log( Level.FINE,"pushing exp " + exp );
-
-
-		assert des instanceof StoreNode || des instanceof MemoryStoreNode;
+		assert des instanceof VarSetNode || des instanceof MemoryStoreNode;
 
         // Function call has been added to the previous block
 		if (!(exp instanceof FunctionCallNode))
@@ -519,8 +502,8 @@ public class IRBuilderVisitor implements ParseTreeNodeVisitor {
 		if(exp instanceof  FunctionCallNode)
             ((FunctionCallNode)exp).returnsStuff = true;
 
-        if (des instanceof  StoreNode)
-		    ((StoreNode)des).setSrcOperand(exp);
+        if (des instanceof VarSetNode)
+		    ((VarSetNode)des).setSrcOperand(exp);
         else
             ((MemoryStoreNode)des).setSrcOperand(exp);
 

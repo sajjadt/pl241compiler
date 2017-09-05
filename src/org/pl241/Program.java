@@ -11,7 +11,7 @@ import java.util.Objects;
 import org.pl241.ir.AnalysisException;
 import org.pl241.ir.Function;
 import org.pl241.optimization.CopyPropagation;
-import org.pl241.optimization.CSE;
+import org.pl241.optimization.CommonSubexpressionElimination;
 
 public class Program {
 	private List<Function> functions;
@@ -45,20 +45,23 @@ public class Program {
 	}
 	public void cse() {
 		for (Function f: functions) {
-        	CSE cse = new CSE();
+        	CommonSubexpressionElimination cse = new CommonSubexpressionElimination();
         	cse.apply(f);
         }
 	}
 
 	public void toSSAForm() {
+
 		for (Function f: functions) {
-		    
-			f.computeDominateDependance();
-			f.computeDominatorFrontiers();
-			f.insertPhiFunctions();
 
 			try {
+                f.computeDominateDependance();
+                f.computeDominateDependance();
                 f.computeDominatorTree();
+
+                f.computeDominatorFrontiers();
+                f.insertPhiFunctions();
+
             } catch (AnalysisException e) {
 				e.printStackTrace();
 			}
@@ -68,7 +71,7 @@ public class Program {
 	}
 
 	// Visualization
-	public void visualize(String path) throws IOException {
+	public void visualize(String path, boolean printAllocation) throws IOException {
 		boolean first = true ;
 		File file = new File(path);
 		file.createNewFile();
@@ -78,7 +81,7 @@ public class Program {
 	            String n = function.getName();
 	            String name = n ; // function.getSourceIndex().getFileName().replace('/', '.').replace('\\', '.').replace(':', '.') +
 	            	//	"." + n + ".line" + function.getSourceIndex().getLineNumber();
-	            function.toDot(writer, false, false );
+	            function.toDot(writer, false, false, printAllocation);
 	        }
 			writer.println("}");
         	

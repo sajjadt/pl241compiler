@@ -12,7 +12,21 @@ public class BranchNode extends AbstractNode{
         BLE,
         BLT,
         BGE,
-        BGT
+        BGT;
+
+        @Override
+        public String toString() {
+            switch(this) {
+                case BRA: return "jmp";
+                case BNE: return "bne";
+                case BEQ: return "beq";
+                case BLE: return "ble";
+                case BLT: return "blt";
+                case BGE: return "bge";
+                case BGT: return "bgt";
+                default: throw new IllegalArgumentException();
+            }
+        }
     }
 
     public BranchNode() {
@@ -36,8 +50,8 @@ public class BranchNode extends AbstractNode{
         } else {
             if (operands.size() > 0)
                 ret += " " + getOperandAtIndex(0).nodeId;
-            if (takenBlock != null) ret += (", Block " + takenBlock.id);
-            if (nonTakenBlock != null) ret += (", Block " + nonTakenBlock.id);
+            if (takenBlock != null) ret += (", Block " + takenBlock.getID());
+            if (nonTakenBlock != null) ret += (", Block " + nonTakenBlock.getID());
         }
         return ret;
     }

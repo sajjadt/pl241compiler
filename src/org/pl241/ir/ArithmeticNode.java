@@ -1,5 +1,7 @@
 package org.pl241.ir;
 
+import org.pl241.ra.Allocation;
+
 import java.util.HashMap;
 import java.util.Map;
 
@@ -11,7 +13,20 @@ public class ArithmeticNode extends AbstractNode {
         SUB,
         MUL,
         DIV,
-        CMP
+        CMP;
+
+        @Override
+        public String toString() {
+            switch(this) {
+                case NEG: return "!";
+                case ADD: return "+";
+                case SUB: return "-";
+                case MUL: return "*";
+                case DIV: return "/";
+                case CMP: return "check";
+                default: throw new IllegalArgumentException();
+            }
+        }
     }
 
     public ArithmeticNode(AbstractNode _operand1, AbstractNode _operand2, ArithmeticType _operator) {
@@ -33,6 +48,21 @@ public class ArithmeticNode extends AbstractNode {
         if (this.operands.size() > 1)
             operands +=  ", " + this.operands.get(1).displayId();
         return super.toString() + " "+ operatorMapR.get(operator) + " " + operands;
+    }
+
+    @Override
+    public String printAllocation() {
+        String ret = "";
+        Allocation al = this.operands.get(0).allocation;
+        if (al != null)
+            ret = ret + al.toString();
+
+        if (this.operands.size() > 1) {
+            al = this.operands.get(1).allocation;
+            if (al != null)
+                ret +=  ", " + this.operands.get(1).allocation.toString();
+        }
+        return this.allocation + " "+ operatorMapR.get(operator) + " " + ret;
     }
 
     public ArithmeticType operator;

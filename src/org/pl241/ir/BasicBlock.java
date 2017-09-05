@@ -15,24 +15,25 @@ public class BasicBlock {
 		predecessors = new ArrayList<BasicBlock>();
 		dominators = new HashSet<BasicBlock>();
 		dominatorsTemp = new HashSet<BasicBlock>();
-		dominants = new HashSet<BasicBlock>();
 		dominatorFrontiers = new HashSet<BasicBlock>();
 		immediateDominants = new HashSet<BasicBlock>();
 		parentFunction  = _parentFunction;
-		tag = _tag;
+
 		_index = ++_sindex;
 		
 		loopBody = false; 
 		loopHeader = false ;
 		
 		liveIn = new HashSet<String>();
-		id = this.generateID("");
+
+		id = _index.toString();
+        tag = "Block " + id;
 	}
-	
-	
+
+
 	public AbstractNode getEntry(){
 		for(AbstractNode node:nodes ){
-			if ( node instanceof LoadNode || node instanceof ImmediateNode ){
+			if ( node instanceof VarGetNode || node instanceof ImmediateNode ){
 				continue;
 			}
 			return node;
@@ -136,8 +137,7 @@ public class BasicBlock {
 		return nodes;
 	}
 	
-	public String tag;
-	
+
 	
 	public ArrayList<BasicBlock> getSuccessors(){
 		return successors;
@@ -148,18 +148,21 @@ public class BasicBlock {
 	public BasicBlock fallThrough ;
 	public BasicBlock parent;
 	
-	public void toDot(PrintWriter pw, boolean standalone) {
+	public void toDot(PrintWriter pw, boolean standalone, boolean printRegAllocation) {
 		if (standalone) {
 			pw.println("digraph {");
 			pw.println("rankdir=\"TD\"");
 		}
 
 		pw.print("BB" + _index + " [shape=record label=\"{");
-        pw.print( "Block " + id + "\n");
+        pw.print( "Block " + id + " from " + bFrom + " to " + bTo + "\n");
 
 		for (AbstractNode n: getNodes()) {
             if (n.isExecutable())
-			    pw.print('|' + n.toString());
+                if (printRegAllocation)
+                    pw.print('|' + n.printAllocation());
+                else
+			        pw.print('|' + n.toString());
 
 		}
 
@@ -184,8 +187,8 @@ public class BasicBlock {
 				if (((PhiNode)node).variableName.equals(var.name))
 					return true;
 
-			if (node instanceof StoreNode)
-				if (((StoreNode)node).memAddress.equals(var.name))
+			if (node instanceof VarSetNode)
+				if (((VarSetNode)node).memAddress.equals(var.name))
 					return true;
 		}
 		return false;
@@ -193,7 +196,6 @@ public class BasicBlock {
 
 
 	public void addPhiNode(Variable var) {
-		System.out.println("Phi function for var " + var.name + " added to BBL " + getIndex() );
 		PhiNode phi = new PhiNode(var.name) ;
 		if (this.lineIndex != null)
 			phi.sourceIndex = this.lineIndex ;
@@ -203,18 +205,18 @@ public class BasicBlock {
 	}
 
 
-	public String lastAssignment(Variable var) {
+	public AbstractNode lastAssignment(Variable var) {
 		ListIterator<AbstractNode> li = nodes.listIterator(nodes.size());
 		while( li.hasPrevious() ){
 			AbstractNode node = li.previous();
 			if (node instanceof PhiNode)
 				if (((PhiNode)node).variableName.equals(var.name))
-					return node.nodeId;
-            if (node instanceof StoreNode)
-                if (((StoreNode)node).memAddress.equals(var.name))
-                    return node.nodeId;
+					return node;
+            if (node instanceof VarSetNode)
+                if (((VarSetNode)node).memAddress.equals(var.name))
+                    return node;
 		}
-		return "";
+		return null;
 	}
 
 
@@ -227,13 +229,12 @@ public class BasicBlock {
         return null;
     }
 
-	public void addPhiOperand(Variable leftOperands, String lastAssignment, int bblIndex) {
+	public void addPhiOperand(Variable leftOperands, AbstractNode lastAssignment, int bblIndex) {
 		for (AbstractNode node: getNodes()) {
 			if (node instanceof PhiNode) {
 				if (((PhiNode)node).variableName.equals(leftOperands.name)) {
-					((PhiNode)node).rightLabels.put(bblIndex , lastAssignment);
-					System.out.println("Phi operand @ " + getIndex()  + "for var " + leftOperands.name + " "  + bblIndex + " " + lastAssignment) ;
-				}
+					((PhiNode)node).rightOperands.put(bblIndex , lastAssignment);
+                }
 			}
 		}
 	}
@@ -251,17 +252,17 @@ public class BasicBlock {
 		for( AbstractNode node: getNodes()) {
 
 		    // LHS
-			if (node instanceof LoadNode) {
-				String src = ((LoadNode)node).variableId;
+			if (node instanceof VarGetNode) {
+				String src = ((VarGetNode)node).variableId;
 				String address = Variable.getTopmostName(src);
-				((LoadNode)node).variableId = address;
+				((VarGetNode)node).variableId = address;
 			}
 
 			// RHS
-            if (node instanceof StoreNode) {
-                String name = ((StoreNode)node).originalMemAddress;
+            if (node instanceof VarSetNode) {
+                String name = ((VarSetNode)node).originalMemAddress;
                 String newName = Variable.generateNewName(name);
-                ((StoreNode)node).memAddress = newName;
+                ((VarSetNode)node).memAddress = newName;
             }
 
 			if (node instanceof IONode && ((IONode)node).writeData()) {
@@ -276,10 +277,8 @@ public class BasicBlock {
 			for (AbstractNode node: b.getNodes()) {
 				if (node instanceof PhiNode) {
 					String name = ((PhiNode)node).originalVarName;
-					System.out.println("Reading " + name);
 					String newName = Variable.getTopmostName(name);
-					System.out.println(newName + " from BBL " + getIndex());
-					((PhiNode)node).rightOperands.put( getIndex() ,new LabelNode(newName));
+					((PhiNode)node).rightOperands.put(getIndex(), new LabelNode(newName));
 				}
 			}
 		}
@@ -294,8 +293,8 @@ public class BasicBlock {
 				String name = ((PhiNode)node).originalVarName;
 				Variable.popTopmostName(name);
 			}
-            if (node instanceof StoreNode) {
-                String name = ((StoreNode)node).originalMemAddress;
+            if (node instanceof VarSetNode) {
+                String name = ((VarSetNode)node).originalMemAddress;
                 Variable.popTopmostName(name);
             }
 		}
@@ -303,13 +302,16 @@ public class BasicBlock {
 
 	public int indexIR(int index) {
 	    bFrom = index;
-		for (AbstractNode node: getNodes()) {
-			if (node.isExecutable()) {
+	    for (AbstractNode node: getNodes()) {
+            // Make sure that PhiNodes have the same index as block start index
+            if (node instanceof PhiNode) {
+                node.sourceIndex = index;
+            } else if (node.isExecutable()) {
+                index += 2; // Makes room for spills
 				node.sourceIndex = index;
-				index += 2; // Makes room for spills
 			}
 		}
-		bTo = index; // For potential branch
+		bTo = index;
         return bTo;
 	}
 
@@ -318,9 +320,7 @@ public class BasicBlock {
         return tag;
     }
 
-
-
-	public String id;
+	private String id;
 	private static int counter = 0 ;
 	public static String generateID (String str) {
 		return str + counter++;
@@ -328,7 +328,7 @@ public class BasicBlock {
 
 	public static  int _sindex = 0;
 	public static  int _lindex = 0;
-	private int _index;
+	private Integer _index;
 	private List<AbstractNode> nodes;
 	public ArrayList<BasicBlock> successors;
 	public ArrayList<BasicBlock> predecessors;
@@ -336,7 +336,7 @@ public class BasicBlock {
 	public HashSet<BasicBlock> dominators; // Blocks that are dominating this
 	public HashSet<BasicBlock> dominatorsTemp;
 	public HashSet<BasicBlock> immediateDominants;
-	public HashSet<BasicBlock> dominants; // Blocks this one is dominating
+	//public HashSet<BasicBlock> dominants; // Blocks this one is dominating
 	public HashSet<BasicBlock> dominatorFrontiers;
 	public Function parentFunction;
 
@@ -347,6 +347,12 @@ public class BasicBlock {
 
 	public int bFrom ;
 	public int bTo ;
+    public String tag;
 
-	private Integer lineIndex; // a lineindex used for phi nodes
+
+    private Integer lineIndex; // a lineindex used for phi nodes
+
+    public String getID() {
+        return id;
+    }
 }

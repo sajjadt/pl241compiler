@@ -1,8 +1,8 @@
 package org.pl241.ir;
 
-public class StoreNode extends AbstractNode {
+public class VarSetNode extends AbstractNode {
 
-	StoreNode(String _memAddress) {
+	VarSetNode(String _memAddress) {
 		super();
 		memAddress = _memAddress;
         originalMemAddress = memAddress;
@@ -16,7 +16,7 @@ public class StoreNode extends AbstractNode {
 	public String toString() {
 	    String ret = super.toString();
 		if (operands.size()>0) {
-            ret += memAddress + "=" + getOperandAtIndex(0).displayId();
+            ret += memAddress + "=" + getOperandAtIndex(0).getOutputOperand();
         }
 	    return ret;
 	}
