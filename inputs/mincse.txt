@@ -1,8 +1,8 @@
 main
 var a,b,c,y,d;
 {
-    let a <- 5;
-    let b <- 6;
+    let a <- 3;
+    let b <- 4;
     let y <- a + b;
     let c <- a;
 	let d <- b + c;
@@ -15,4 +15,5 @@ var a,b,c,y,d;
 	fi;
 	let d <- b + y;
 	call OutputNum(d)
+	# d is expected to be a + 2 * b
 }.

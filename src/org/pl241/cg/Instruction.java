@@ -254,6 +254,12 @@ public class Instruction {
                 instructions.add(new BranchInstruction(Type.RET, new Operand(Operand.Type.REGISTER, RA), null));
             }
         }
+        else if (node instanceof MoveNode) {
+            instructions.add(new Instruction(Type.MOV,
+                    new Operand(Operand.Type.REGISTER, ((MoveNode) node).from.address),
+                    null,
+                    new Operand(Operand.Type.REGISTER, ((MoveNode) node).to.address)));
+            }
 
         return instructions;
     }

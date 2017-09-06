@@ -73,7 +73,12 @@ public class RegisterAllocator { // Allocate Registers for one function
 
                     if ( moveFrom!= null && !moveFrom.equals(moveTo)) {
                         mapping.put(moveFrom, moveTo);
-                        // TODO: insert move directly into successor block
+                        AbstractNode lastNode = current.getNodes().get(current.getNodes().size()-1);
+
+                        if (lastNode instanceof BranchNode || lastNode instanceof FunctionCallNode)
+                            current.getNodes().add(current.getNodes().size()-1, new MoveNode(moveFrom, moveTo));
+                        else
+                            current.getNodes().add(current.getNodes().size(), new MoveNode(moveFrom, moveTo));
                     }
 
                 }

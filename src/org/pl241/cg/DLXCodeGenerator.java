@@ -236,75 +236,8 @@ public class DLXCodeGenerator {
     }
 
 /*
-    private ArrayList<Integer> generateImmArithmetic(ArithmeticNode.ArithmeticType operation,
-                                                    Allocation destAllocation,
-                                                    Allocation src1Allocation,
-                                                    int immValue) {
 
-        assert destAllocation.type == Allocation.Type.REGISTER
-                && src1Allocation.type == Allocation.Type.REGISTER;
 
-        ArrayList<Integer> instructions = new ArrayList<>();
-        switch (operation) {
-            case ADD:
-                instructions.add(DLX.assemble(DLX.ADDI, destAllocation.address, src1Allocation.address, immValue));
-                break;
-            case SUB:
-                instructions.add(DLX.assemble(DLX.SUBI, destAllocation.address, src1Allocation.address, immValue));
-                break;
-            case MUL:
-                instructions.add(DLX.assemble(DLX.MULI, destAllocation.address, src1Allocation.address, immValue));
-                break;
-            case CMP:
-                instructions.add(DLX.assemble(DLX.CMPI, destAllocation.address, src1Allocation.address, immValue));
-                break;
-            case DIV:
-                instructions.add(DLX.assemble(DLX.DIVI, destAllocation.address, src1Allocation.address, immValue));
-                break;
-            //case NEG:
-            //    instructions.add(DLX.assemble(DLX.MULI, destAllocation.address, src1Allocation.address,-1));
-            //    break;
-            default:
-                throw new Error("Unsupported op " + operation);
-                //break;
-        }
-        return instructions;
-    }
-
-    private ArrayList<Integer> generateRegisterArithmetic(ArithmeticNode.ArithmeticType operation,
-                                      Allocation destAllocation,
-                                      Allocation src1Allocation,
-                                      Allocation src2Allocation) {
-
-        assert destAllocation.type == Allocation.Type.REGISTER
-                && src1Allocation.type == Allocation.Type.REGISTER
-                && src2Allocation.type == Allocation.Type.REGISTER;
-
-        ArrayList<Integer> instructions = new ArrayList<>();
-        switch (operation) {
-            case ADD:
-                instructions.add(DLX.assemble(DLX.ADD, destAllocation.address, src1Allocation.address, src2Allocation.address));
-                break;
-            case SUB:
-                instructions.add(DLX.assemble(DLX.SUB, destAllocation.address, src1Allocation.address, src2Allocation.address));
-                break;
-            case MUL:
-                instructions.add(DLX.assemble(DLX.MUL, destAllocation.address, src1Allocation.address, src2Allocation.address));
-                break;
-            case CMP:
-                instructions.add(DLX.assemble(DLX.ADD, destAllocation.address, src1Allocation.address, src2Allocation.address));
-                break;
-            case DIV:
-                instructions.add(DLX.assemble(DLX.DIV, destAllocation.address, src1Allocation.address, src2Allocation.address));
-                break;
-            case NEG:
-                instructions.add(DLX.assemble(DLX.MULI, destAllocation.address, src1Allocation.address,-1));
-                break;
-            default:
-                throw new Error("Unsupported op " + operation);
-        }
-        return instructions;
-    }
 
     ////////////////////////////////////////////////////////////
     ////////////////////////////////////////////////////////////
@@ -455,8 +388,6 @@ public class DLXCodeGenerator {
         }
         return instructions;
     }
-
-
 
 
     private ArrayList<Integer> generateCall(String dest) {
