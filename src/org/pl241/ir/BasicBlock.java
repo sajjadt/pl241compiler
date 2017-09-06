@@ -26,8 +26,8 @@ public class BasicBlock {
 		
 		liveIn = new HashSet<String>();
 
-		id = _index.toString();
-        tag = "Block " + id;
+		id = _index;
+        tag = "Block " + id.toString();
 	}
 
 
@@ -320,7 +320,7 @@ public class BasicBlock {
         return tag;
     }
 
-	private String id;
+	private Integer id;
 	private static int counter = 0 ;
 	public static String generateID (String str) {
 		return str + counter++;
@@ -352,7 +352,7 @@ public class BasicBlock {
 
     private Integer lineIndex; // a lineindex used for phi nodes
 
-    public String getID() {
+    public Integer getID() {
         return id;
     }
 }

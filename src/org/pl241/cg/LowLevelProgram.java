@@ -2,6 +2,7 @@ package org.pl241.cg;
 
 import org.pl241.Program;
 import org.pl241.ir.AbstractNode;
+import org.pl241.ir.BasicBlock;
 import org.pl241.ir.Function;
 import org.pl241.ra.RegisterAllocator;
 
@@ -18,25 +19,52 @@ public class LowLevelProgram {
         this.program = null;
     }
 
-    public List<Integer> generateExecutable () {
-        return new ArrayList<>();
-    }
-
     public void fromIRProgram(Program program, RegisterAllocator allocator) {
         this.program = program;
 
         for(Function f: program.getFunctions()) {
             List<Instruction> instructions = new ArrayList<>();
+            Map<Integer, Integer> blockMap = new HashMap<>();
 
-            for (AbstractNode node: f.getNodesInLayoutOrder()) {
-                instructions.addAll(Instruction.fromIRNode(node, allocator));
+            Integer currentIndex = 0;
+
+            List<BasicBlock> blocks = f.getBlocksInLayoutOrder();
+            ListIterator li = blocks.listIterator(blocks.size());
+
+            while(li.hasPrevious()) {
+                BasicBlock block = (BasicBlock) li.previous();
+                List<Instruction> blockInstructions = new ArrayList<>();
+
+
+                List<AbstractNode> blockNodes = block.getNodes();
+                ListIterator bi = blockNodes.listIterator(blockNodes.size());
+                while (bi.hasPrevious()) {
+                    AbstractNode node = (AbstractNode) bi.previous();
+                    List<Instruction> ints = Instruction.lowerIRNode(node, allocator, currentIndex, blockMap);
+                    blockInstructions.addAll(0, ints);
+                    currentIndex += ints.size();
+                }
+
+                blockMap.put(block.getID(), currentIndex);
+                instructions.addAll(0, blockInstructions);
             }
+
             lowLevelIR.put(f.name, instructions);
         }
     }
 
     private Program program;
     private HashMap<String, List<Instruction>> lowLevelIR;
+
+
+    public Program getIRProgram() {
+        return program;
+    }
+
+
+    public List<Instruction> getFuncitonInstructions (Function func) {
+        return lowLevelIR.get(func.name);
+    }
 
     public void visualize(String path) throws IOException {
         File file = new File(path);
@@ -55,7 +83,6 @@ public class LowLevelProgram {
     }
 
     private void visualizeFunction(Function function, PrintWriter pw) {
-
         //pw.println("subgraph " + "cluster" + function. + " {");
         pw.println("label=" + function.getName() );
         pw.println("labelloc=\"t\";");
@@ -69,11 +96,8 @@ public class LowLevelProgram {
         for (Instruction n: lowLevelIR.get(function.name)) {
             pw.print('|' + n.toString());
         }
-
         pw.print("}\" ] " + "\n");
-
 //        pw.println("}");
-
     }
 
 }

@@ -24,7 +24,7 @@ public class run
 	{
 		// Settings
         boolean visualize = true;
-        boolean optimize = false;
+        boolean optimize = true;
         boolean allocateRegisters = true;
         boolean genCode = true;
         boolean execute = true;
@@ -80,10 +80,10 @@ public class run
             }
 
             if (optimize) {
-                program.cse();
-                program.indexIR();
-                if (visualize)
-                    program.visualize("Vis" + File.separator + testName + "_pass_2_cse.dot", false);
+                //program.cse();
+                //program.indexIR();
+                //if (visualize)
+                //    program.visualize("Vis" + File.separator + testName + "_pass_2_cse.dot", false);
 
                 program.copyPropagate();
                 program.indexIR();
@@ -123,39 +123,29 @@ public class run
                 LowLevelProgram executable = new LowLevelProgram();
                 executable.fromIRProgram(program, allocator);
                 executable.visualize("Vis" + File.separator + testName + "_pass_6_llir.dot");
-            }
 
-            ArrayList<Integer> mem = new ArrayList<>();
-            if (allocateRegisters && genCode) {
-                DLXCodeGenerator generator = new DLXCodeGenerator(program);
-                mem = generator.generateProgram();
-                for (int i =0 ;i < 20; i++) {
-                    System.out.println(DLX.disassemble(mem.get(i)));
+                if (genCode) {
+                    DLXCodeGenerator codeGen = new DLXCodeGenerator(executable);
+                    ArrayList<Integer> mem = codeGen.generateBinary();
+                    for (int i =0 ;i < 20; i++) {
+                        System.out.println(DLX.disassemble(mem.get(i)));
+                    }
+
+                    if (execute) {
+                        DLX.load(mem);
+                        System.out.println("MEM:" + mem);
+                        System.out.println("Starting execution on DLX emulator...");
+                        DLX.execute();
+                    }
                 }
             }
-            if (genCode && execute) {
-                DLX.load(mem);
-                System.out.println("MEM:" + mem);
-                System.out.println("Starting execution on DLX emulator...");
-                DLX.execute();
-            }
-
-        }
-        catch (Exception e) {
+        } catch (Exception e) {
 		    System.out.println(e.getMessage());
             e.printStackTrace();
             return;
         }
+
 		System.out.println("All done...");
 	}
-
-	private static ArrayList<Instruction> programFromIR (ArrayList<AbstractNode> nodes,
-                                                         RegisterAllocator allocator) {
-        ArrayList<Instruction> instructions = new ArrayList<>();
-	    for (AbstractNode node: nodes) {
-	        instructions.addAll(Instruction.fromIRNode(node, allocator));
-        }
-        return instructions;
-    }
 
 }

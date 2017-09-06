@@ -7,7 +7,7 @@ import java.util.Map;
 
 public class ArithmeticNode extends AbstractNode {
 
-    public enum ArithmeticType {
+    public enum Type {
         NEG,
         ADD,
         SUB,
@@ -29,18 +29,18 @@ public class ArithmeticNode extends AbstractNode {
         }
     }
 
-    public ArithmeticNode(AbstractNode _operand1, AbstractNode _operand2, ArithmeticType _operator) {
+    public ArithmeticNode(AbstractNode _operand1, AbstractNode _operand2, Type _operator) {
         super(_operand1, _operand2);
         operator = _operator;
     }
 
-    public static ArithmeticType toType(String textOperator) {
+    public static Type toType(String textOperator) {
         return operatorMap.get(textOperator);
     }
 
 
     public boolean isSymmetric () {
-        return operator == ArithmeticType.ADD || operator == ArithmeticType.MUL;
+        return operator == Type.ADD || operator == Type.MUL;
     }
 
     public String toString() {
@@ -65,23 +65,23 @@ public class ArithmeticNode extends AbstractNode {
         return this.allocation + " "+ operatorMapR.get(operator) + " " + ret;
     }
 
-    public ArithmeticType operator;
-    public static Map<String, ArithmeticType> operatorMap;
-    public static Map<ArithmeticType,String> operatorMapR;
+    public Type operator;
+    public static Map<String, Type> operatorMap;
+    public static Map<Type,String> operatorMapR;
     static {
         operatorMap = new HashMap<>();
 
-        operatorMap.put("+", ArithmeticType.ADD );
-        operatorMap.put("-", ArithmeticType.SUB );
-        operatorMap.put("*", ArithmeticType.MUL );
-        operatorMap.put("/", ArithmeticType.DIV );
+        operatorMap.put("+", Type.ADD );
+        operatorMap.put("-", Type.SUB );
+        operatorMap.put("*", Type.MUL );
+        operatorMap.put("/", Type.DIV );
 
         operatorMapR = new HashMap <>();
-        operatorMapR.put( ArithmeticType.ADD , "+" );
-        operatorMapR.put( ArithmeticType.SUB ,"-" );
-        operatorMapR.put( ArithmeticType.MUL , "*" );
-        operatorMapR.put( ArithmeticType.DIV ,"/");
-        operatorMapR.put( ArithmeticType.CMP ,"cmp");
+        operatorMapR.put( Type.ADD , "+" );
+        operatorMapR.put( Type.SUB ,"-" );
+        operatorMapR.put( Type.MUL , "*" );
+        operatorMapR.put( Type.DIV ,"/");
+        operatorMapR.put( Type.CMP ,"cmp");
     }
 
     @Override

@@ -1,9 +1,7 @@
 package org.pl241.optimization;
 
-import org.pl241.ir.AbstractNode;
 import org.pl241.ir.ArithmeticNode;
 import org.pl241.ir.PhiNode;
-import java.util.ArrayList;
 
 public class Expression {
 
@@ -12,7 +10,7 @@ public class Expression {
         return new Expression(operands[0], operands[1], ExpressionType.PHI);
     }
 
-    public static ExpressionType fromArithExpressions(ArithmeticNode.ArithmeticType type) {
+    public static ExpressionType fromArithExpressions(ArithmeticNode.Type type) {
         switch (type) {
             case ADD:
                 return ExpressionType.ADD;

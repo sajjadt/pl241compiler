@@ -345,7 +345,7 @@ public class IRBuilderVisitor implements ParseTreeNodeVisitor {
 					}
 					tempOffsetCalcNode = offsetCalcNode ;
 					if( offset > 1){
-						offsetCalcNode = new ArithmeticNode(expressionStack.peek(), new ImmediateNode(Integer.toString(offset)), ArithmeticNode.ArithmeticType.MUL) ;
+						offsetCalcNode = new ArithmeticNode(expressionStack.peek(), new ImmediateNode(Integer.toString(offset)), ArithmeticNode.Type.MUL) ;
 						bblStack.peek().addNode( offsetCalcNode );
 					}else {
 						offsetCalcNode =  expressionStack.peek();
@@ -354,7 +354,7 @@ public class IRBuilderVisitor implements ParseTreeNodeVisitor {
 					
 					if( tempOffsetCalcNode != null )
 					{
-						offsetCalcNode = new ArithmeticNode(tempOffsetCalcNode, offsetCalcNode , ArithmeticNode.ArithmeticType.ADD) ;
+						offsetCalcNode = new ArithmeticNode(tempOffsetCalcNode, offsetCalcNode , ArithmeticNode.Type.ADD) ;
 						bblStack.peek().addNode( offsetCalcNode );
 					}
 					++index ;
@@ -475,7 +475,7 @@ public class IRBuilderVisitor implements ParseTreeNodeVisitor {
 		bblStack.peek().addNode( expressionStack.peek() );
 		AbstractNode label2 = expressionStack.pop() ;
 		
-		AbstractNode nNode = new ArithmeticNode(label1, label2 , ArithmeticNode.ArithmeticType.CMP);
+		AbstractNode nNode = new ArithmeticNode(label1, label2 , ArithmeticNode.Type.CMP);
 		bblStack.peek().addNode( nNode );
 		bblStack.peek().addNode( new BranchNode( BranchNode.branchMap.get(node.children.get(1).getText() ), nNode)  );
 		

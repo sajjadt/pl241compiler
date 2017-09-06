@@ -1,5 +1,6 @@
 package org.pl241.cg;
 
+import java.lang.reflect.Array;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
@@ -11,14 +12,222 @@ import org.pl241.Program;
 import org.pl241.ra.Allocation;
 public class DLXCodeGenerator {
 
-    public DLXCodeGenerator(Program program) {
-        this.program = program;
+    public DLXCodeGenerator(LowLevelProgram program) {
+        this.lowLevelProgram = program;
+        this.irProgram = lowLevelProgram.getIRProgram();
         this.memLayout = new ArrayList<>(Collections.nCopies(memSize/4, 0));
-        this.functionMap = new HashMap<>();
-        this.globalVarMap = new HashMap<>();
+
+        //this.functionMap = new HashMap<>();
+        //this.globalVarMap = new HashMap<>();
+    }
+
+    public ArrayList<Integer> generateBinary() {
+
+        // Initialize globalMap
+        // Global index keeps track of variables on HEAP
+        // it increases
+        int globalIndex = 0;
+        Function main = irProgram.getMainFunction();
+
+        for (Variable var: main.localVariables.getVars()) {
+            globalVarMap.put(var.name, globalIndex);
+            globalIndex += 1 * var.numElements();
+        }
+
+        // Other initializations go here!
+        int currentIndex;
+        // Set SP
+        memLayout.set(0, DLX.assemble(DLX.ADDI, this.SP, this.ZERO, stackAddress));
+
+        // Reserve spot for jump to main
+        int jumpToMainIndex = 1;
+        currentIndex = jumpToMainIndex + 1;
+
+        // Generate functions
+        for (Function f: irProgram.getFunctions()) {
+            ArrayList<Integer> body = generateFuncBody(f);
+            memLayout.subList(currentIndex, currentIndex + body.size()).clear();
+            functionMap.put(f.name, currentIndex);
+            memLayout.addAll(currentIndex, body);
+            currentIndex += body.size();
+        }
+
+        // Jump to main
+        memLayout.set(jumpToMainIndex, DLX.assemble(DLX.BEQ, 0, functionMap.get("main")));
+
+        return memLayout;
     }
 
 
+    private ArrayList<Integer> generateFuncBody(Function f) {
+        HashMap<String, Integer> localVarMap = new HashMap<>();
+        Integer temp;
+        ArrayList<Integer> instructions = new ArrayList<>();
+        int displacement = 0;
+        System.out.println("Generating code for function: " + f.name);
+
+
+        // Allocate space for local vars (no need to initialize)
+        // Also use this table keeps displacement of vars in regard of SP
+        // Variables could be inside local function frame or global table
+        // TODO: modify according to Stack allocation
+        for (Variable var: f.localVariables.getVars()) {
+            localVarMap.put(var.name, displacement);
+            displacement += -1 * var.numElements();
+        }
+
+        // Save SP in FrameP for user access to variables
+        temp = DLX.assemble(DLX.ADD, this.FRAMEP, this.SP, 0);
+        instructions.add(temp);
+
+        // Make room for local variables
+        instructions.add(DLX.assemble(DLX.ADDI, this.SP, this.SP, displacement));
+
+        for (Instruction ins: lowLevelProgram.getFuncitonInstructions(f)) {
+            instructions.add(this.generateInstruction(ins));
+        }
+
+        return instructions;
+    }
+
+
+    private Integer generateInstruction (Instruction ins) {
+
+        switch (ins.type) {
+            case ADD:
+            case SUB:
+            case MUL:
+            case DIV:
+            case CMP:
+            case NEG:
+                return generateRegisterArithmetic(ins.type, ins.destinationOperand, ins.sourceOperand2, ins.sourceOperand1);
+            case ADDI:
+            case SUBI:
+            case MULI:
+            case DIVI:
+            case CMPI:
+                if (ins.sourceOperand1.type == Operand.Type.IMMEDIATE)
+                    return generateImmArithmetic(ins.type, ins.destinationOperand, ins.sourceOperand2, ins.sourceOperand1.value);
+                else
+                    return generateImmArithmetic(ins.type, ins.destinationOperand, ins.sourceOperand1, ins.sourceOperand2.value);
+            case BEQ:
+            case BNE:
+            case BLT:
+            case BGE:
+            case RET:
+            case BLE:
+            case BGT:
+            case BRA:
+                return generateBranch(ins.type, ins.sourceOperand1, new Operand(Operand.Type.IMMEDIATE, ((BranchInstruction)ins).offset));
+            // TODO function call case JSR:
+            case RDD:
+            case WRD:
+            case WRL:
+                return generateIO(ins.type, ins.sourceOperand1);
+                //TODO true for read instructions as well??
+            case MOV:
+                return DLX.assemble(DLX.ADD, ins.destinationOperand.value, ZERO, ins.sourceOperand1.value);
+            default:
+                throw new IllegalArgumentException();
+        }
+    }
+
+    private Integer generateImmArithmetic(Instruction.Type operation,
+                                          Operand destAllocation,
+                                          Operand src1Allocation,
+                                          int immValue) {
+
+        assert destAllocation.type == Operand.Type.REGISTER
+                && src1Allocation.type == Operand.Type.REGISTER;
+
+        switch (operation) {
+            case ADDI:
+                return DLX.assemble(DLX.ADDI, destAllocation.value, src1Allocation.value, immValue);
+            case SUBI:
+                return DLX.assemble(DLX.SUBI, destAllocation.value, src1Allocation.value, immValue);
+            case MULI:
+                return DLX.assemble(DLX.MULI, destAllocation.value, src1Allocation.value, immValue);
+            case CMPI:
+                return DLX.assemble(DLX.CMPI, destAllocation.value, src1Allocation.value, immValue);
+            case DIVI:
+                return DLX.assemble(DLX.DIVI, destAllocation.value, src1Allocation.value, immValue);
+            default:
+                throw new Error("Unsupported op " + operation);
+        }
+    }
+
+    private Integer generateRegisterArithmetic(Instruction.Type operation,
+                                               Operand destAllocation,
+                                               Operand src1Allocation,
+                                               Operand src2Allocation) {
+
+        assert destAllocation.type == Operand.Type.REGISTER
+                && src1Allocation.type == Operand.Type.REGISTER
+                && src2Allocation.type == Operand.Type.REGISTER;
+
+        switch (operation) {
+            case ADD:
+                return DLX.assemble(DLX.ADD, destAllocation.value, src1Allocation.value, src2Allocation.value);
+            case SUB:
+                return DLX.assemble(DLX.SUB, destAllocation.value, src1Allocation.value, src2Allocation.value);
+            case MUL:
+                return DLX.assemble(DLX.MUL, destAllocation.value, src1Allocation.value, src2Allocation.value);
+            case CMP:
+                return DLX.assemble(DLX.ADD, destAllocation.value, src1Allocation.value, src2Allocation.value);
+            case DIV:
+                return DLX.assemble(DLX.DIV, destAllocation.value, src1Allocation.value, src2Allocation.value);
+            case NEG:
+                return DLX.assemble(DLX.MULI, destAllocation.value, src1Allocation.value,-1);
+            default:
+                throw new Error("Unsupported op " + operation);
+        }
+    }
+
+    private Integer generateBranch(Instruction.Type operation,
+                                   Operand operand1,
+                                   Operand operand2) {
+
+        assert operand2.type == Operand.Type.IMMEDIATE;
+
+        if (operation != Instruction.Type.BRA)
+            assert operand1.type == Operand.Type.REGISTER;
+
+        switch (operation) {
+            case BEQ:
+
+                return DLX.assemble(DLX.BEQ, operand1.value, operand2.value);
+            case BGE:
+                return DLX.assemble(DLX.BGE, operand1.value, operand2.value);
+            case BLE:
+                return DLX.assemble(DLX.BEQ, operand1.value, operand2.value);
+            case BNE:
+                return DLX.assemble(DLX.BEQ, operand1.value, operand2.value);
+            case BRA:
+                return DLX.assemble(DLX.BEQ, operand2.value);
+            case BLT:
+                return DLX.assemble(DLX.BEQ, operand1.value, operand2.value);
+            default:
+                throw new Error("Unsupported op " + operation);
+        }
+    }
+
+    private Integer generateIO(Instruction.Type operation, Operand operand) {
+
+        ArrayList<Integer> instructions = new ArrayList<>();
+        switch (operation) {
+            case WRD:
+                return DLX.assemble(DLX.WRD, operand.value);
+            case RDD:
+                return DLX.assemble(DLX.RDI, operand.value);
+            case WRL:
+                return DLX.assemble(DLX.WRL);
+            default:
+                throw new Error("Unsupported op " + operation);
+        }
+
+    }
+
+/*
     private ArrayList<Integer> generateImmArithmetic(ArithmeticNode.ArithmeticType operation,
                                                     Allocation destAllocation,
                                                     Allocation src1Allocation,
@@ -239,36 +448,7 @@ public class DLXCodeGenerator {
         return instructions;
     }
 
-    private ArrayList<Integer> generateFuncBody(Function f) {
-        HashMap<String, Integer> localVarMap = new HashMap<>();
-        Integer temp;
-        ArrayList<Integer> instructions = new ArrayList<>();
-        int displacement = 0;
-        System.out.println("Generating code for function: " + f.name);
 
-
-        // Allocate space for local vars (no need to initialize)
-        // Also use this table keeps displacement of vars in regard of SP
-        // Variables could be inside local function frame or global table
-        // TODO: modify according to Stack allocation
-        for (Variable var: f.localVariables.getVars()) {
-            localVarMap.put(var.name, displacement);
-            displacement += -1 * var.numElements();
-        }
-
-        // Save SP in FrameP for user access to variables
-        temp = DLX.assemble(DLX.ADD, this.FRAMEP, this.SP, 0);
-        instructions.add(temp);
-
-        // Make room for local variables
-        instructions.add(DLX.assemble(DLX.ADDI, this.SP, this.SP, displacement));
-
-        for (BasicBlock block: f.getBlocksInLayoutOrder()) {
-            instructions.addAll(generateBlock(f, block, localVarMap));
-        }
-
-        return instructions;
-    }
 
 
     private ArrayList<Integer> generateCall(String dest) {
@@ -285,48 +465,15 @@ public class DLXCodeGenerator {
         return instructions;
     }
 
-    public ArrayList<Integer> generateProgram() {
 
-        // Initialize globalMap
-        // Global index keeps track of variables on HEAP
-        // it increases
-        int globalIndex = 0;
-        Function main = program.getMainFunction();
-        for (Variable var: main.localVariables.getVars()) {
-            globalVarMap.put(var.name, globalIndex);
-            globalIndex += 1 * var.numElements();
-        }
-
-        // Other initializations go here!
-        int currentIndex;
-        // Set SP
-        memLayout.set(0, DLX.assemble(DLX.ADDI, this.SP, this.ZERO, stackAddress));
-
-        // Reserve spot for jump to main
-        int jumpToMainIndex = 1;
-        currentIndex = jumpToMainIndex + 1;
-
-        // Generate functions
-        for (Function f: program.getFunctions()) {
-            ArrayList<Integer> body = generateFuncBody(f);
-            memLayout.subList(currentIndex, currentIndex + body.size()).clear();
-            functionMap.put(f.name, currentIndex);
-            memLayout.addAll(currentIndex, body);
-            currentIndex += body.size();
-        }
-
-        // Jump to main
-        memLayout.set(jumpToMainIndex, DLX.assemble(DLX.BEQ, 0, functionMap.get("main")));
-
-        return memLayout;
-    }
+    */
 	// Contains the list of DLX instructions
 	private ArrayList<Integer> memLayout;
 
 	/////// Register Map ///////////////
-	private final int ZERO = 0 ;
+	public static final int ZERO = 0 ;
+    public static final int TEMP_REGISTER = 27;
 
-    private final int TEMP_REGISTER = 27;
     private final int FRAMEP = 28;
     private final int SP = 29; // Register 29 is the stack pointer
 	// Register 31 contains the return address when we use JSP
@@ -345,7 +492,8 @@ public class DLXCodeGenerator {
     //
 
     // Input program
-	private Program program;
+	private LowLevelProgram lowLevelProgram;
+    private Program irProgram;
 
 	// Contains a map between the function IDs and their address in the memory
 	private HashMap<String, Integer> functionMap;

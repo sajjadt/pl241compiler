@@ -5,7 +5,7 @@ import java.util.Map;
 
 public class BranchNode extends AbstractNode{
 
-    public enum BranchType {
+    public enum Type {
         BRA, // Used for returns as well
         BNE,
         BEQ,
@@ -30,10 +30,10 @@ public class BranchNode extends AbstractNode{
     }
 
     public BranchNode() {
-        type = BranchType.BRA;
+        type = Type.BRA;
     }
 
-    public BranchNode(BranchType _type, AbstractNode _operand) {
+    public BranchNode(Type _type, AbstractNode _operand) {
         super();
         type = _type;
         operands.add(_operand);
@@ -57,7 +57,7 @@ public class BranchNode extends AbstractNode{
     }
 
     public boolean isConditioned() {
-        if (type == BranchType.BRA)
+        if (type == Type.BRA)
             return false;
         else
             return true;
@@ -83,27 +83,27 @@ public class BranchNode extends AbstractNode{
 
     boolean isCall;
     public String callTarget;
-    public BranchType type;
+    public Type type;
 
-    public static Map<String, BranchType> branchMap;
-    public static Map<BranchType, String> branchMapR;
+    public static Map<String, Type> branchMap;
+    public static Map<Type, String> branchMapR;
     static {
         branchMap = new HashMap<>();
 
-        branchMap.put("==", BranchType.BEQ );
-        branchMap.put("!=", BranchType.BNE );
-        branchMap.put("<", BranchType.BLT);
-        branchMap.put("<=", BranchType.BLE );
-        branchMap.put(">", BranchType.BGT );
-        branchMap.put(">=", BranchType.BGE );
+        branchMap.put("==", Type.BEQ );
+        branchMap.put("!=", Type.BNE );
+        branchMap.put("<", Type.BLT);
+        branchMap.put("<=", Type.BLE );
+        branchMap.put(">", Type.BGT );
+        branchMap.put(">=", Type.BGE );
 
         branchMapR = new HashMap <>();
-        branchMapR.put( BranchType.BEQ , "==");
-        branchMapR.put( BranchType.BNE , "!=");
-        branchMapR.put( BranchType.BLT , "<");
-        branchMapR.put( BranchType.BLE , "<=" );
-        branchMapR.put( BranchType.BGT , ">");
-        branchMapR.put( BranchType.BGE  , ">=");
+        branchMapR.put( Type.BEQ , "==");
+        branchMapR.put( Type.BNE , "!=");
+        branchMapR.put( Type.BLT , "<");
+        branchMapR.put( Type.BLE , "<=" );
+        branchMapR.put( Type.BGT , ">");
+        branchMapR.put( Type.BGE  , ">=");
     }
 
 }
