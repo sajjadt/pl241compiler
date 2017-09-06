@@ -21,10 +21,24 @@ public class CopyPropagation {
                     // Find source operand
                     AbstractNode tnode = node.getOperandAtIndex(0);
 
-                    if (tnode instanceof VarGetNode) {
+                    if (tnode.hasOutputRegister()) {
+                        System.out.println("Has output reg");
+                        String dst = ((VarSetNode) node).memAddress;
+                        String src = tnode.getOutputOperand();
+                        System.out.println("Copy from " + src + " to " + dst);
+
+                        if (copyTable.containsKey(src))
+                            copyTable.put(dst, copyTable.get(src));
+                        else
+                            copyTable.put(dst, src);
+
+                        node.removed = true;
+                    }
+
+                    // Find copies
+                    /*if (tnode instanceof VarGetNode) {
                         String src = ((VarSetNode) node).memAddress;
                         String dst = ((VarGetNode) tnode).variableId;
-
                         if (copyTable.containsKey(dst))
                             copyTable.put(src, copyTable.get(dst));
                         else
@@ -32,7 +46,7 @@ public class CopyPropagation {
 
                         node.removed = true;
                         tnode.removed = true;
-                    }
+                    }*/
                 }
             }
             Iterator<AbstractNode> i = block.getNodes().iterator();

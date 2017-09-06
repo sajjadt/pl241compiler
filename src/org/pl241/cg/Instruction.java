@@ -38,10 +38,13 @@ public class Instruction {
         if (destinationOperand != null)
             ret += destinationOperand.toString();
 
-        ret += " " + this.instruction;
+        ret += "=";
 
         if (sourceOperand1 != null)
             ret += " " + sourceOperand1.toString();
+
+        ret += this.instruction + " ";
+
         if (sourceOperand2 != null)
             ret += " " + sourceOperand2.toString();
         return ret;
