@@ -29,8 +29,8 @@ public class run
         boolean genCode = true;
         boolean execute = true;
         int numRegs = 16;
-		String testName = "test001";
-        String testPath = "inputs/test001.txt";
+		String testName = "mincse";
+        String testPath = "inputs/mincse.txt";
 
         // Tokenize the input
 		byte[] encoded = Files.readAllBytes(Paths.get(testPath));

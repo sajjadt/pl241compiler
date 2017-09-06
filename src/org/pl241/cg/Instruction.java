@@ -186,10 +186,24 @@ public class Instruction {
             boolean hasImmediateOperand = ((node1 != null) && node1 instanceof ImmediateNode) ||
                     ((node2 != null) && node2 instanceof ImmediateNode);
 
-
-            instructions.add(new Instruction(Instruction.Type.fromArithmeticType( ((ArithmeticNode) node).operator, hasImmediateOperand),
-                    operand1, operand2,
-                    new Operand(Operand.Type.REGISTER, dst.address)));
+            // TODO: remove this by simple constant propagation
+            if (((node1 != null) && node1 instanceof ImmediateNode) &&
+                    ((node2 != null) && node2 instanceof ImmediateNode)) {
+                instructions.add(new Instruction(Type.ADDI,
+                        new Operand(Operand.Type.REGISTER, ZERO),
+                        new Operand(Operand.Type.IMMEDIATE, ((ImmediateNode) node1).getValue()),
+                        new Operand(Operand.Type.REGISTER, TEMP_REGISTER)));
+                instructions.add(
+                        new Instruction(
+                                Instruction.Type.fromArithmeticType(((ArithmeticNode)node).operator, hasImmediateOperand),
+                                new Operand(Operand.Type.REGISTER, TEMP_REGISTER),
+                                operand2,
+                                new Operand(Operand.Type.REGISTER, dst.address)));
+            } else {
+                instructions.add(new Instruction(Instruction.Type.fromArithmeticType( ((ArithmeticNode) node).operator, hasImmediateOperand),
+                        operand1, operand2,
+                        new Operand(Operand.Type.REGISTER, dst.address)));
+            }
         } else if (node instanceof VarSetNode) {
             Allocation dst = allocator.getAllocationAt(node.getOutputOperand(), node.sourceIndex);
             assert dst.type == Allocation.Type.REGISTER;
