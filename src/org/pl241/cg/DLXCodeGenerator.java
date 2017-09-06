@@ -17,7 +17,7 @@ public class DLXCodeGenerator {
         this.irProgram = lowLevelProgram.getIRProgram();
         this.memLayout = new ArrayList<>(Collections.nCopies(memSize/4, 0));
 
-        //this.functionMap = new HashMap<>();
+        this.functionMap = new HashMap<>();
         //this.globalVarMap = new HashMap<>();
     }
 
@@ -84,14 +84,14 @@ public class DLXCodeGenerator {
         instructions.add(DLX.assemble(DLX.ADDI, this.SP, this.SP, displacement));
 
         for (Instruction ins: lowLevelProgram.getFuncitonInstructions(f)) {
-            instructions.add(this.generateInstruction(ins));
+            instructions.add(this.generateInstruction(ins, f.name == "main"));
         }
 
         return instructions;
     }
 
 
-    private Integer generateInstruction (Instruction ins) {
+    private Integer generateInstruction (Instruction ins, boolean isMain) {
 
         switch (ins.type) {
             case ADD:
@@ -118,7 +118,7 @@ public class DLXCodeGenerator {
             case BLE:
             case BGT:
             case BRA:
-                return generateBranch(ins.type, ins.sourceOperand1, new Operand(Operand.Type.IMMEDIATE, ((BranchInstruction)ins).offset));
+                return generateBranch(ins.type, ins.sourceOperand1, new Operand(Operand.Type.IMMEDIATE, ((BranchInstruction)ins).offset), isMain);
             // TODO function call case JSR:
             case RDD:
             case WRD:
@@ -126,7 +126,10 @@ public class DLXCodeGenerator {
                 return generateIO(ins.type, ins.sourceOperand1);
                 //TODO true for read instructions as well??
             case MOV:
-                return DLX.assemble(DLX.ADD, ins.destinationOperand.value, ZERO, ins.sourceOperand1.value);
+                if (ins.sourceOperand1.type == Operand.Type.IMMEDIATE)
+                    return DLX.assemble(DLX.ADDI, ins.destinationOperand.value, ZERO, ins.sourceOperand1.value);
+                else
+                    return DLX.assemble(DLX.ADD, ins.destinationOperand.value, ZERO, ins.sourceOperand1.value);
             default:
                 throw new IllegalArgumentException();
         }
@@ -185,7 +188,8 @@ public class DLXCodeGenerator {
 
     private Integer generateBranch(Instruction.Type operation,
                                    Operand operand1,
-                                   Operand operand2) {
+                                   Operand operand2,
+                                   boolean fromMain) {
 
         assert operand2.type == Operand.Type.IMMEDIATE;
 
@@ -194,7 +198,6 @@ public class DLXCodeGenerator {
 
         switch (operation) {
             case BEQ:
-
                 return DLX.assemble(DLX.BEQ, operand1.value, operand2.value);
             case BGE:
                 return DLX.assemble(DLX.BGE, operand1.value, operand2.value);
@@ -203,9 +206,14 @@ public class DLXCodeGenerator {
             case BNE:
                 return DLX.assemble(DLX.BEQ, operand1.value, operand2.value);
             case BRA:
-                return DLX.assemble(DLX.BEQ, operand2.value);
+                return DLX.assemble(DLX.BSR, operand2.value);
             case BLT:
-                return DLX.assemble(DLX.BEQ, operand1.value, operand2.value);
+                return DLX.assemble(DLX.BLT, operand1.value, operand2.value);
+            case RET:
+                if (fromMain)
+                    return DLX.assemble(DLX.RET, 0);
+                else
+                    return DLX.assemble(DLX.RET, operand1.value);
             default:
                 throw new Error("Unsupported op " + operation);
         }
@@ -473,11 +481,12 @@ public class DLXCodeGenerator {
 	/////// Register Map ///////////////
 	public static final int ZERO = 0 ;
     public static final int TEMP_REGISTER = 27;
+    public static final int RA = 31;
 
     private final int FRAMEP = 28;
     private final int SP = 29; // Register 29 is the stack pointer
 	// Register 31 contains the return address when we use JSP
-	private final int RA = 31;
+
     ////////////////////////////////////
 	
 	private final String[] arithSet = { "ADD" , "MUL" , "DIV" , "SUB"};

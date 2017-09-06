@@ -12,14 +12,12 @@ public class BranchInstruction extends Instruction {
     @Override
     public String toString() {
         String ret = "";
-
-
         ret += this.type + " ";
 
         if (sourceOperand1 != null)
             ret += " " + sourceOperand1.toString();
-
-        ret += ("," + offset.toString());
+        if (offset != null)
+            ret += ("," + offset.toString());
 
         return ret;
     }

@@ -8,6 +8,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
+import static org.pl241.cg.DLXCodeGenerator.RA;
 import static org.pl241.cg.DLXCodeGenerator.ZERO;
 import static org.pl241.cg.DLXCodeGenerator.TEMP_REGISTER;
 
@@ -199,13 +200,15 @@ public class Instruction {
 
 
             Integer offset1 = null;
-            Integer offset2 = null;
+            //Integer offset2 = null;
 
-            if (((BranchNode) node).takenBlock != null)
+            if (((BranchNode) node).takenBlock != null) {
                 offset1 = currentBlockIndex - blockMap.get(((BranchNode) node).takenBlock.getID());
+                offset1 += 1;
+            }
 
-            if (((BranchNode) node).nonTakenBlock != null)
-                offset2 = currentBlockIndex - blockMap.get(((BranchNode) node).nonTakenBlock.getID());
+            //if (((BranchNode) node).nonTakenBlock != null)
+            //    offset2 = currentBlockIndex - blockMap.get(((BranchNode) node).nonTakenBlock.getID());
 
             if (((BranchNode)node).isConditioned()) {
                 src1 = allocator.getAllocationAt(node.getOperandAtIndex(0).getOutputOperand(), node.sourceIndex);
@@ -213,7 +216,7 @@ public class Instruction {
                 instructions.add(new BranchInstruction(Instruction.Type.fromBranchType(((BranchNode) node).type), operand1, offset1));
             } else {
                 // No jump is necessary
-                if (offset1 != 0)
+                if (offset1 != 1)
                     instructions.add(new BranchInstruction(Instruction.Type.fromBranchType(((BranchNode) node).type), operand1, offset1));
             }
         } else if (node instanceof IONode) {
@@ -239,10 +242,17 @@ public class Instruction {
                 instructions.add(new Instruction(Type.WRL, null, null, null));
 
         } else if (node instanceof ReturnNode) {
-            if (node.hasOutputRegister())
-                instructions.add(new Instruction(Type.RET, operand1, null, null));
-            else
-                instructions.add(new Instruction(Type.RET, null, null, null));
+
+            if (node.hasOutputRegister()) {
+                // Move it into TEMP REG
+                instructions.add(new Instruction(Type.ADD, operand1,
+                        new Operand(Operand.Type.REGISTER, ZERO),
+                        new Operand(Operand.Type.REGISTER, TEMP_REGISTER)));
+                instructions.add(new BranchInstruction(Type.RET, new Operand(Operand.Type.REGISTER, RA), null));
+            }
+            else {
+                instructions.add(new BranchInstruction(Type.RET, new Operand(Operand.Type.REGISTER, RA), null));
+            }
         }
 
         return instructions;
