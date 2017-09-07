@@ -5,8 +5,8 @@ var i, j, k;
 {
 	let i <- 0;
 	let j <- 0;
-	#let k <- 10;
-	while i < 10 do
+	let k <- 10;
+	while i < 20 do
 		let j <- j + 1;
 		let i <- i + 1
 	od;

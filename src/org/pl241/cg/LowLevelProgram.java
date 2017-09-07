@@ -64,6 +64,8 @@ public class LowLevelProgram {
                 currentIndex += 1;
             }
 
+            System.out.println("Bmap:" + blockMap);
+
             lowLevelIR.put(f.name, instructions);
         }
     }

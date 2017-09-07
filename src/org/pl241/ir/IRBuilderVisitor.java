@@ -152,7 +152,6 @@ public class IRBuilderVisitor implements ParseTreeNodeVisitor {
 		bblOld.successors.clear();
 
 		if( bblOld.getNodes().size() == 0 ){
-			LOGGER.log( Level.FINE,"**********Top BBL is empty************");
 			bblOld.fallThrough = bblLoopBody;
 			bblOld.taken = bblAfterWhile;
 			bblOld.successors.add(bblLoopBody);
@@ -400,7 +399,8 @@ public class IRBuilderVisitor implements ParseTreeNodeVisitor {
             AbstractNode label2 = expressionStack.pop() ;
 
             String operatorText = operator.getText() ;
-            AbstractNode anode = new ArithmeticNode(label1, label2 ,  ArithmeticNode.operatorMap.get(operatorText) );
+            // Coming from stack, reverse order
+            AbstractNode anode = new ArithmeticNode(label2, label1,  ArithmeticNode.operatorMap.get(operatorText) );
             expressionStack.push(anode);
 
             li.previous();
@@ -474,16 +474,13 @@ public class IRBuilderVisitor implements ParseTreeNodeVisitor {
 		
 		bblStack.peek().addNode( expressionStack.peek() );
 		AbstractNode label2 = expressionStack.pop() ;
-		
-		AbstractNode nNode = new ArithmeticNode(label1, label2 , ArithmeticNode.Type.CMP);
-		bblStack.peek().addNode( nNode );
-		bblStack.peek().addNode( new BranchNode( BranchNode.branchMap.get(node.children.get(1).getText() ), nNode)  );
-		
-    	//if ( ctx.parent instanceof WhilestatementContext ){
-		currentFunction.basicBlocks.add( bblStack.peek() );
-		bblStack.pop();
-    	//}
 
+		AbstractNode nNode = new ArithmeticNode(label2, label1,  ArithmeticNode.Type.CMP);
+		bblStack.peek().addNode( nNode );
+		bblStack.peek().addNode( new BranchNode( BranchNode.branchMapReversed.get(node.children.get(1).getText() ), nNode)  );
+        
+        currentFunction.basicBlocks.add( bblStack.peek() );
+		bblStack.pop();
 	}
 
 	@Override

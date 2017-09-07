@@ -50,8 +50,8 @@ public class BranchNode extends AbstractNode{
         } else {
             if (operands.size() > 0)
                 ret += " " + getOperandAtIndex(0).nodeId;
-            if (takenBlock != null) ret += (", Block " + takenBlock.getID());
-            if (fallThroughBlock != null) ret += (", Block " + fallThroughBlock.getID());
+            if (takenBlock != null) ret += (", TakenBl " + takenBlock.getID());
+            if (fallThroughBlock != null) ret += (", FallThBl " + fallThroughBlock.getID());
         }
         return ret;
     }
@@ -86,6 +86,7 @@ public class BranchNode extends AbstractNode{
     public Type type;
 
     public static Map<String, Type> branchMap;
+    public static Map<String, Type> branchMapReversed;
     public static Map<Type, String> branchMapR;
     static {
         branchMap = new HashMap<>();
@@ -96,6 +97,14 @@ public class BranchNode extends AbstractNode{
         branchMap.put("<=", Type.BLE );
         branchMap.put(">", Type.BGT );
         branchMap.put(">=", Type.BGE );
+
+        branchMapReversed = new HashMap<>();
+        branchMapReversed.put("==", Type.BNE);
+        branchMapReversed.put("!=", Type.BEQ);
+        branchMapReversed.put("<", Type.BGE);
+        branchMapReversed.put("<=", Type.BGT);
+        branchMapReversed.put(">", Type.BLE);
+        branchMapReversed.put(">=", Type.BLT);
 
         branchMapR = new HashMap <>();
         branchMapR.put( Type.BEQ , "==");

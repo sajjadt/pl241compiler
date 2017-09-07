@@ -33,7 +33,7 @@ public class Function  {
 							((BranchNode)node).fallThroughBlock = (b.getSuccessors().get(0));
                             ((BranchNode) node).takenBlock = (b.getSuccessors().get(1));
                         } else {
-                            ((BranchNode) node).takenBlock = (b.getSuccessors().get(0));
+                            ((BranchNode) node).fallThroughBlock = (b.getSuccessors().get(0));
                         }
                     }
 				}
@@ -305,7 +305,7 @@ public class Function  {
                     && !(block.getLastNode() instanceof BranchNode)
                     && !(block.getLastNode() instanceof ReturnNode)) {
                 BranchNode node = new BranchNode();
-                node.takenBlock = block.successors.get(0);
+                //node.takenBlock = block.successors.get(0);
                 block.fallThrough = block.successors.get(0);
                 block.addNode(node);
 			}

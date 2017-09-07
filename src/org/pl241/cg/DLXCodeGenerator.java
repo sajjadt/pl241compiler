@@ -100,7 +100,7 @@ public class DLXCodeGenerator {
             case DIV:
             case CMP:
             case NEG:
-                return generateRegisterArithmetic(ins.type, ins.destinationOperand, ins.sourceOperand2, ins.sourceOperand1);
+                return generateRegisterArithmetic(ins.type, ins.destinationOperand, ins.sourceOperand1, ins.sourceOperand2);
             case CMPI:
             case ADDI:
             case SUBI:

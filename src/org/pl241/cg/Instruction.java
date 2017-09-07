@@ -258,7 +258,6 @@ public class Instruction {
             //Integer offset2 = null;
 
             if (((BranchNode) node).takenBlock != null) {
-
                 if (!blockMap.containsKey(((BranchNode) node).takenBlock.getID())) {
                     offset1 = null;
                 } else {
@@ -276,7 +275,7 @@ public class Instruction {
                 if (offset1 == null) {
                     instructions.add(new BranchInstruction(Instruction.Type.fromBranchType(((BranchNode) node).type),
                             operand1,
-                            ((BranchNode) node).takenBlock));
+                            ((BranchNode) node).fallThroughBlock));
                 } else {
                     // No jump is necessary
                     if (offset1 != 1)
