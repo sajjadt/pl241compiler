@@ -5,7 +5,7 @@ var i, j;
 {
 	let i <- 0;
 	let j <- 0;
-	while i < 1000 do
+	while i < 10 do
 		let j <- j + 1;
 		let i <- i + 1
 	od;

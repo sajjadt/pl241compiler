@@ -54,12 +54,10 @@ public class Instruction {
         // Extra
         MOV;
 
-        //@Override
-        //public String toString() {
-        //    switch(this) {
-        //        default: throw new IllegalArgumentException();
-        //    }
-        //}
+        @Override
+        public String toString() {
+            return name();
+        }
 
         public static Instruction.Type fromArithmeticType(ArithmeticNode.Type type, boolean withImmediateOperand) {
             switch (type) {
@@ -119,6 +117,27 @@ public class Instruction {
             }
         }
 
+
+        public static  boolean isSymmetric (Instruction.Type type) {
+            switch (type) {
+                case NEG:
+                case SUB:
+                case SUBI:
+                case DIV:
+                case DIVI:
+                case CMP:
+                case CMPI:
+                    return false;
+                case MUL:
+                case MULI:
+                case ADD:
+                case ADDI:
+                    return true;
+                default:
+                    throw new IllegalArgumentException();
+            }
+        }
+
     }
 
     public Instruction (Instruction.Type type, Operand op1, Operand op2, Operand dst) {
@@ -139,7 +158,7 @@ public class Instruction {
         if (sourceOperand1 != null)
             ret += " " + sourceOperand1.toString();
 
-        ret += this.type + " ";
+        ret += this.type.toString() + " ";
 
         if (sourceOperand2 != null)
             ret += " " + sourceOperand2.toString();
@@ -180,15 +199,16 @@ public class Instruction {
         }
 
         if (node instanceof ArithmeticNode) {
+
             Allocation dst = allocator.getAllocationAt(node.getOutputOperand(), node.sourceIndex);
             assert dst.type == Allocation.Type.REGISTER;
 
-            boolean hasImmediateOperand = ((node1 != null) && node1 instanceof ImmediateNode) ||
-                    ((node2 != null) && node2 instanceof ImmediateNode);
+            boolean firstOperandIsImmediate = ((node1 != null) && node1 instanceof ImmediateNode);
+            boolean secondOperandIsImmediate = ((node2 != null) && node2 instanceof ImmediateNode);
+            boolean hasImmediateOperand = firstOperandIsImmediate | secondOperandIsImmediate;
 
             // TODO: remove this by simple constant propagation
-            if (((node1 != null) && node1 instanceof ImmediateNode) &&
-                    ((node2 != null) && node2 instanceof ImmediateNode)) {
+            if (firstOperandIsImmediate && secondOperandIsImmediate) { // Both operands are immediate values
                 instructions.add(new Instruction(Type.ADDI,
                         new Operand(Operand.Type.REGISTER, ZERO),
                         new Operand(Operand.Type.IMMEDIATE, ((ImmediateNode) node1).getValue()),
@@ -199,7 +219,28 @@ public class Instruction {
                                 new Operand(Operand.Type.REGISTER, TEMP_REGISTER),
                                 operand2,
                                 new Operand(Operand.Type.REGISTER, dst.address)));
-            } else {
+            }
+            else if (firstOperandIsImmediate ) { // Only first operand is immediate
+
+                Instruction.Type type = Instruction.Type.fromArithmeticType(((ArithmeticNode) node).operator, true);
+
+                if (Instruction.Type.isSymmetric(type)) {
+                    // Swap first and second param
+                    instructions.add(new Instruction(type,
+                            operand2, operand1,
+                            new Operand(Operand.Type.REGISTER, dst.address)));
+                } else {
+                    instructions.add(new Instruction(Type.ADDI,
+                            new Operand(Operand.Type.REGISTER, ZERO),
+                            new Operand(Operand.Type.IMMEDIATE, ((ImmediateNode) node1).getValue()),
+                            new Operand(Operand.Type.REGISTER, TEMP_REGISTER)));
+                    instructions.add(new Instruction(Instruction.Type.fromArithmeticType(((ArithmeticNode) node).operator, false),
+                            new Operand(Operand.Type.REGISTER, TEMP_REGISTER),
+                            operand2,
+                            new Operand(Operand.Type.REGISTER, dst.address)));
+                }
+            }
+            else {
                 instructions.add(new Instruction(Instruction.Type.fromArithmeticType( ((ArithmeticNode) node).operator, hasImmediateOperand),
                         operand1, operand2,
                         new Operand(Operand.Type.REGISTER, dst.address)));

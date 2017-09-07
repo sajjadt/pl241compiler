@@ -101,15 +101,14 @@ public class DLXCodeGenerator {
             case CMP:
             case NEG:
                 return generateRegisterArithmetic(ins.type, ins.destinationOperand, ins.sourceOperand2, ins.sourceOperand1);
+            case CMPI:
             case ADDI:
             case SUBI:
             case MULI:
             case DIVI:
-            case CMPI:
-                if (ins.sourceOperand1.type == Operand.Type.IMMEDIATE)
-                    return generateImmArithmetic(ins.type, ins.destinationOperand, ins.sourceOperand2, ins.sourceOperand1.value);
-                else
-                    return generateImmArithmetic(ins.type, ins.destinationOperand, ins.sourceOperand1, ins.sourceOperand2.value);
+                assert (ins.sourceOperand1.type == Operand.Type.REGISTER &&
+                        ins.sourceOperand2.type == Operand.Type.IMMEDIATE);
+                return generateImmArithmetic(ins.type, ins.destinationOperand, ins.sourceOperand1, ins.sourceOperand2.value);
             case BEQ:
             case BNE:
             case BLT:
@@ -178,7 +177,7 @@ public class DLXCodeGenerator {
             case MUL:
                 return DLX.assemble(DLX.MUL, destAllocation.value, src1Allocation.value, src2Allocation.value);
             case CMP:
-                return DLX.assemble(DLX.ADD, destAllocation.value, src1Allocation.value, src2Allocation.value);
+                return DLX.assemble(DLX.CMP, destAllocation.value, src1Allocation.value, src2Allocation.value);
             case DIV:
                 return DLX.assemble(DLX.DIV, destAllocation.value, src1Allocation.value, src2Allocation.value);
             case NEG:
@@ -204,9 +203,9 @@ public class DLXCodeGenerator {
             case BGE:
                 return DLX.assemble(DLX.BGE, operand1.value, operand2.value);
             case BLE:
-                return DLX.assemble(DLX.BEQ, operand1.value, operand2.value);
+                return DLX.assemble(DLX.BLE, operand1.value, operand2.value);
             case BNE:
-                return DLX.assemble(DLX.BEQ, operand1.value, operand2.value);
+                return DLX.assemble(DLX.BNE, operand1.value, operand2.value);
             case BRA:
                 return DLX.assemble(DLX.BSR, operand2.value);
             case BLT:
