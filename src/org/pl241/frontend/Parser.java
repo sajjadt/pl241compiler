@@ -49,7 +49,6 @@ public class Parser {
 		List<ParseTreeNode> nodes = new ArrayList<ParseTreeNode>();
 		if (lookahead.token == Token.VAR || lookahead.token == Token.ARRAY )
 		{
-			
 			VarDeclNode node = new VarDeclNode(parent, "") ;
 			node.addChild( typeDecl(node) ); 
 			
@@ -58,9 +57,7 @@ public class Parser {
 			node.addChildren( identStar(node,"") );
 			node.addChild( new TerminalNode(parent,  nextToken().sequence )); // ";"
 			nodes.add(node);
-			// Next time
 			nodes.addAll( varDeclStar(parent) );
-			
 		}
 		return nodes ;
 	}
@@ -108,9 +105,7 @@ public class Parser {
 		List<ParseTreeNode> nodes = new ArrayList<ParseTreeNode>();
 		
 		if (lookahead.token == Token.FUNCTION || lookahead.token == Token.PROCEDURE ){
-			
 			//FuncDeclNode node = new FuncDeclNode(parent, "Func Decl"));
-			
 			nodes.add( new TerminalNode(parent,  nextToken().sequence )); // func/procedure
 			
 			FuncDeclNode node = new FuncDeclNode(parent,"");
@@ -218,12 +213,10 @@ public class Parser {
 			}
 			node.addChild(rnode);
 			return node;
-			
 		}
 		else {
 			throw new Exception("Unreachlabe has been reached");
 		}
-		
 	}
 	
 	private ParseTreeNode relation(ParseTreeNode parent){
@@ -325,15 +318,13 @@ public class Parser {
 		return nodes ;
 	}
 	
-	private List<ParseTreeNode> argExpressionStar(ParseTreeNode parent){
-		List<ParseTreeNode> nodes = new ArrayList<ParseTreeNode>();
+	private List<ParseTreeNode> argExpressionStar(ParseTreeNode parent) {
+		List<ParseTreeNode> nodes = new ArrayList<>();
 		if( lookahead.token == Token.COMMA ){
-			
-			nodes.add( new TerminalNode(parent,  nextToken().sequence )); // Comma
-			nodes.add( expression(parent) );
+			nodes.add(new TerminalNode(parent, nextToken().sequence)); // Comma
+			nodes.add(expression(parent));
 			//nodes.add( new TerminalNode(parent,  nextToken().sequence )); // ]
 			nodes.addAll( argExpressionStar(parent) );
-			
 		}
 		return nodes ;
 	}
@@ -405,9 +396,6 @@ public class Parser {
 			}
 			visitor.exit(this);
 		}
-
-		
-
 	}
 		
 	public  class VarNode extends ParseTreeNode {
@@ -424,9 +412,6 @@ public class Parser {
 			}
 			visitor.exit(this);
 		}
-
-		
-
 	}
 	
 	public  class TypeDeclNode extends ParseTreeNode {
@@ -443,8 +428,6 @@ public class Parser {
 			}
 			visitor.exit(this);
 		}
-
-
 	}
 	
 	public  class NumberNode extends ParseTreeNode {
@@ -476,9 +459,6 @@ public class Parser {
 			}
 			visitor.exit(this);
 		}
-
-		
-		
 	}
 	
 	public  class FuncDeclNode extends ParseTreeNode {
@@ -495,8 +475,6 @@ public class Parser {
 			}
 			visitor.exit(this);
 		}
-
-		
 	}
 	
 	public  class StatSeqNode extends ParseTreeNode {
@@ -513,8 +491,6 @@ public class Parser {
 			}
 			visitor.exit(this);
 		}
-
-		
 	}
 	
 	public  class DesignatorNode extends ParseTreeNode {
@@ -535,8 +511,6 @@ public class Parser {
 				e.printStackTrace();
 			}
 		}
-
-		
 	}
 	
 	public  class ExpressionNode extends ParseTreeNode {
@@ -567,8 +541,6 @@ public class Parser {
 			}
 			visitor.exit(this);
 		}
-	
-		
 	}
 	
 	public  class FactorNode extends ParseTreeNode {
@@ -585,8 +557,6 @@ public class Parser {
 			}
 			visitor.exit(this);
 		}
-
-		
 	}
 	
 	public  class RelationNode extends ParseTreeNode {
@@ -721,7 +691,6 @@ public class Parser {
 		public StatementNode(ParseTreeNode parent, String text) {
 			super(parent,text);
 		}
-
 		@Override
 		public void accept(ParseTreeNodeVisitor visitor) {
 			visitor.enter(this);
@@ -741,11 +710,4 @@ public class Parser {
 		public void accept(ParseTreeNodeVisitor visitor) {
 		}
 	}
-	
-	
-	
-	
-	
-
-
 }

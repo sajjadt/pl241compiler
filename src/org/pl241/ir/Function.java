@@ -271,14 +271,14 @@ public class Function  {
 			}
 			// Then if
 			for (BasicBlock b: block.immediateDominants) {
-				if( b == block.taken ){
+				if (b == block.taken) {
 					stack.push(b);
 					break;
 				}
 			}
 			// First fallthrough 
 			for (BasicBlock b: block.immediateDominants) {
-				if( b == block.fallThrough ){
+				if (b == block.fallThrough) {
 					stack.push(b);
 					break;
 				}
@@ -304,6 +304,7 @@ public class Function  {
                     && !(block.getLastNode() instanceof ReturnNode)) {
                 BranchNode node = new BranchNode();
                 node.takenBlock = block.successors.get(0);
+                block.fallThrough = block.successors.get(0);
                 block.addNode(node);
 			}
 

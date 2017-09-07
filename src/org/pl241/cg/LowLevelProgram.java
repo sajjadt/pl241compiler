@@ -3,6 +3,7 @@ package org.pl241.cg;
 import org.pl241.Program;
 import org.pl241.ir.AbstractNode;
 import org.pl241.ir.BasicBlock;
+import org.pl241.ir.BranchNode;
 import org.pl241.ir.Function;
 import org.pl241.ra.RegisterAllocator;
 
@@ -47,6 +48,18 @@ public class LowLevelProgram {
 
                 blockMap.put(block.getID(), currentIndex);
                 instructions.addAll(0, blockInstructions);
+            }
+
+            currentIndex = 0;
+            // Fix missing branch targets
+            for (Instruction ins: instructions) {
+                if (ins instanceof BranchInstruction &&
+                        !((BranchInstruction) ins).resolved) {
+                    Integer offset = blockMap.get(((BranchInstruction) ins).destBlockID) - currentIndex;
+                    ((BranchInstruction) ins).offset = offset;
+                    ((BranchInstruction) ins).resolved = true;
+                }
+                currentIndex += 1;
             }
 
             lowLevelIR.put(f.name, instructions);

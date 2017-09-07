@@ -10,10 +10,8 @@ import java.util.ArrayList;
 import org.pl241.cg.DLX;
 import org.pl241.cg.DLXCodeGenerator;
 import org.pl241.cg.LowLevelProgram;
-import org.pl241.cg.Instruction;
 import org.pl241.frontend.*;
 import org.pl241.frontend.Parser.ParseTreeNode;
-import org.pl241.ir.AbstractNode;
 import org.pl241.ir.Function;
 import org.pl241.ir.IRBuilderVisitor;
 import org.pl241.ra.RegisterAllocator;
@@ -29,8 +27,8 @@ public class run
         boolean genCode = true;
         boolean execute = true;
         int numRegs = 16;
-		String testName = "mincse";
-        String testPath = "inputs/mincse.txt";
+		String testName = "test008";
+        String testPath = "inputs/test008.txt";
 
         // Tokenize the input
 		byte[] encoded = Files.readAllBytes(Paths.get(testPath));

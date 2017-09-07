@@ -217,21 +217,30 @@ public class Instruction {
             //Integer offset2 = null;
 
             if (((BranchNode) node).takenBlock != null) {
-                offset1 = currentBlockIndex - blockMap.get(((BranchNode) node).takenBlock.getID());
-                offset1 += 1;
-            }
 
-            //if (((BranchNode) node).nonTakenBlock != null)
-            //    offset2 = currentBlockIndex - blockMap.get(((BranchNode) node).nonTakenBlock.getID());
+                if (!blockMap.containsKey(((BranchNode) node).takenBlock.getID())) {
+                    offset1 = null;
+                } else {
+                    offset1 = currentBlockIndex - blockMap.get(((BranchNode) node).takenBlock.getID());
+                    offset1 += 1;
+                }
+            }
 
             if (((BranchNode)node).isConditioned()) {
                 src1 = allocator.getAllocationAt(node.getOperandAtIndex(0).getOutputOperand(), node.sourceIndex);
                 operand1 = new Operand(Operand.Type.REGISTER, src1.address);
                 instructions.add(new BranchInstruction(Instruction.Type.fromBranchType(((BranchNode) node).type), operand1, offset1));
             } else {
-                // No jump is necessary
-                if (offset1 != 1)
-                    instructions.add(new BranchInstruction(Instruction.Type.fromBranchType(((BranchNode) node).type), operand1, offset1));
+
+                if (offset1 == null) {
+                    instructions.add(new BranchInstruction(Instruction.Type.fromBranchType(((BranchNode) node).type),
+                            operand1,
+                            ((BranchNode) node).takenBlock));
+                } else {
+                    // No jump is necessary
+                    if (offset1 != 1)
+                        instructions.add(new BranchInstruction(Instruction.Type.fromBranchType(((BranchNode) node).type), operand1, offset1));
+                }
             }
         } else if (node instanceof IONode) {
             if (((IONode) node).type == IONode.IOType.READ) {
@@ -262,10 +271,10 @@ public class Instruction {
                 instructions.add(new Instruction(Type.ADD, operand1,
                         new Operand(Operand.Type.REGISTER, ZERO),
                         new Operand(Operand.Type.REGISTER, TEMP_REGISTER)));
-                instructions.add(new BranchInstruction(Type.RET, new Operand(Operand.Type.REGISTER, RA), null));
+                instructions.add(new BranchInstruction(Type.RET, new Operand(Operand.Type.REGISTER, RA), (Integer) null));
             }
             else {
-                instructions.add(new BranchInstruction(Type.RET, new Operand(Operand.Type.REGISTER, RA), null));
+                instructions.add(new BranchInstruction(Type.RET, new Operand(Operand.Type.REGISTER, RA), (Integer) null));
             }
         }
         else if (node instanceof MoveNode) {
