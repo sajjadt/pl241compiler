@@ -439,7 +439,7 @@ public class IRBuilderVisitor implements ParseTreeNodeVisitor {
 				bblStack.peek().addNode(expressionStack.peek());
 			AbstractNode label2 = expressionStack.pop();
 			
-			AbstractNode anode = new ArithmeticNode(label1, label2, ArithmeticNode.operatorMap.get(operator.getText()));
+			AbstractNode anode = new ArithmeticNode(label2, label1, ArithmeticNode.operatorMap.get(operator.getText()));
 			expressionStack.push(anode);
 			li.previous();
 
@@ -478,7 +478,7 @@ public class IRBuilderVisitor implements ParseTreeNodeVisitor {
 		AbstractNode nNode = new ArithmeticNode(label2, label1,  ArithmeticNode.Type.CMP);
 		bblStack.peek().addNode( nNode );
 		bblStack.peek().addNode( new BranchNode( BranchNode.branchMapReversed.get(node.children.get(1).getText() ), nNode)  );
-        
+
         currentFunction.basicBlocks.add( bblStack.peek() );
 		bblStack.pop();
 	}
