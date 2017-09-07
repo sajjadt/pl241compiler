@@ -53,7 +53,6 @@ public class Program {
 	public void toSSAForm() {
 
 		for (Function f: functions) {
-
 			try {
                 f.computeDominateDependance();
                 f.computeDominateDependance();
@@ -61,7 +60,6 @@ public class Program {
 
                 f.computeDominatorFrontiers();
                 f.insertPhiFunctions();
-
             } catch (AnalysisException e) {
 				e.printStackTrace();
 			}
@@ -74,7 +72,8 @@ public class Program {
 	public void visualize(String path, boolean printAllocation) throws IOException {
 		boolean first = true ;
 		File file = new File(path);
-		file.createNewFile();
+        file.getParentFile().mkdirs();
+        file.createNewFile();
 		try (PrintWriter writer = new PrintWriter(file)) {
 			writer.println("digraph {");
 			for (Function function : functions) {
@@ -89,10 +88,13 @@ public class Program {
 			e.printStackTrace();
 		}
 	}
-	public void visualizeDominatorTree(String path){
+
+	public void visualizeDominatorTree(String path) throws IOException {
 		boolean first = true ;
 		File file = new File(path);
-		try (PrintWriter writer = new PrintWriter(file)) {
+        file.getParentFile().mkdirs();
+        file.createNewFile();
+        try (PrintWriter writer = new PrintWriter(file)) {
 			writer.println("digraph {");
 			for (Function function : functions) {
 	            String n = function.getName();

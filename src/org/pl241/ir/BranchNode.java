@@ -38,7 +38,7 @@ public class BranchNode extends AbstractNode{
         type = _type;
         operands.add(_operand);
         takenBlock = null;
-        nonTakenBlock = null;
+        fallThroughBlock = null;
     }
 
     @Override
@@ -51,7 +51,7 @@ public class BranchNode extends AbstractNode{
             if (operands.size() > 0)
                 ret += " " + getOperandAtIndex(0).nodeId;
             if (takenBlock != null) ret += (", Block " + takenBlock.getID());
-            if (nonTakenBlock != null) ret += (", Block " + nonTakenBlock.getID());
+            if (fallThroughBlock != null) ret += (", Block " + fallThroughBlock.getID());
         }
         return ret;
     }
@@ -79,7 +79,7 @@ public class BranchNode extends AbstractNode{
     }
 
     public BasicBlock takenBlock;
-    public BasicBlock nonTakenBlock;
+    public BasicBlock fallThroughBlock;
 
     boolean isCall;
     public String callTarget;

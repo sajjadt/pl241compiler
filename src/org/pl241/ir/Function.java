@@ -29,9 +29,11 @@ public class Function  {
 				if (node instanceof BranchNode) {
 					// rewrite address
 					if (!((BranchNode)node).isCall) {
-                        ((BranchNode)node).takenBlock = (b.getSuccessors().get(0));
                         if (b.getSuccessors().size() > 1) {
-                            ((BranchNode) node).nonTakenBlock = (b.getSuccessors().get(1));
+							((BranchNode)node).fallThroughBlock = (b.getSuccessors().get(0));
+                            ((BranchNode) node).takenBlock = (b.getSuccessors().get(1));
+                        } else {
+                            ((BranchNode) node).takenBlock = (b.getSuccessors().get(0));
                         }
                     }
 				}
