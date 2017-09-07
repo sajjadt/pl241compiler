@@ -1,10 +1,11 @@
 # While loop code generation test
 # Also ensures code gen can handle constants in the condition
 main
-var i, j;
+var i, j, k;
 {
 	let i <- 0;
 	let j <- 0;
+	#let k <- 10;
 	while i < 10 do
 		let j <- j + 1;
 		let i <- i + 1

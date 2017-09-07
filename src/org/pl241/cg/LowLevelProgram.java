@@ -50,12 +50,14 @@ public class LowLevelProgram {
                 instructions.addAll(0, blockInstructions);
             }
 
-            currentIndex = 0;
+            currentIndex = 1;
+            li = instructions.listIterator(instructions.size());
             // Fix missing branch targets
-            for (Instruction ins: instructions) {
+            while(li.hasPrevious()) {
+                Instruction ins = (Instruction) li.previous();
                 if (ins instanceof BranchInstruction &&
                         !((BranchInstruction) ins).resolved) {
-                    Integer offset = blockMap.get(((BranchInstruction) ins).destBlockID) - currentIndex;
+                    Integer offset = currentIndex - blockMap.get(((BranchInstruction) ins).destBlockID);
                     ((BranchInstruction) ins).offset = offset;
                     ((BranchInstruction) ins).resolved = true;
                 }
