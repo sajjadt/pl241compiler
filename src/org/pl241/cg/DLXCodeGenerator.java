@@ -202,6 +202,8 @@ public class DLXCodeGenerator {
                 return DLX.assemble(DLX.BEQ, operand1.value, operand2.value);
             case BGE:
                 return DLX.assemble(DLX.BGE, operand1.value, operand2.value);
+            case BGT:
+                return DLX.assemble(DLX.BGT, operand1.value, operand2.value);
             case BLE:
                 return DLX.assemble(DLX.BLE, operand1.value, operand2.value);
             case BNE:

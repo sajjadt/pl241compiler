@@ -5,6 +5,8 @@ public class ReturnNode extends AbstractNode {
 	public ReturnNode (AbstractNode _returnValue) {
 		super();
 		this.returnValue = _returnValue;
+		if (_returnValue != null)
+		    this.addOperand(_returnValue);
 	}
 	public void setReturnValue (AbstractNode _returnValue) {
 		this.returnValue = _returnValue ;

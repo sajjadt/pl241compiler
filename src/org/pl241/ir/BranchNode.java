@@ -98,6 +98,7 @@ public class BranchNode extends AbstractNode{
         branchMap.put(">", Type.BGT );
         branchMap.put(">=", Type.BGE );
 
+
         branchMapReversed = new HashMap<>();
         branchMapReversed.put("==", Type.BNE);
         branchMapReversed.put("!=", Type.BEQ);
@@ -105,6 +106,7 @@ public class BranchNode extends AbstractNode{
         branchMapReversed.put("<=", Type.BGT);
         branchMapReversed.put(">", Type.BLE);
         branchMapReversed.put(">=", Type.BLT);
+
 
         branchMapR = new HashMap <>();
         branchMapR.put( Type.BEQ , "==");

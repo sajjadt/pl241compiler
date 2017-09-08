@@ -158,6 +158,7 @@ public class IRBuilderVisitor implements ParseTreeNodeVisitor {
 			bblOld.successors.add(bblAfterWhile);
 			
 			bblLoopBody.successors.add(bblOld);
+            bblLoopBody.fallThrough = bblOld;
 
 			BasicBlock top = bblStack.pop() ;
 			bblStack.push( bblAfterWhile );
@@ -173,6 +174,7 @@ public class IRBuilderVisitor implements ParseTreeNodeVisitor {
 			bblCheck.successors.add(bblLoopBody);
 			bblCheck.successors.add(bblAfterWhile);
 			bblLoopBody.successors.add(bblCheck);
+			bblLoopBody.fallThrough = bblCheck;
 			
 			currentFunction.basicBlocks.add( bblStack.peek() );
 			bblStack.pop();
@@ -220,8 +222,8 @@ public class IRBuilderVisitor implements ParseTreeNodeVisitor {
 
 			bblStack.pop();
 
-			bblOld.fallThrough = bblAfterIf ;
-			bblOld.taken = bblThen;
+			bblOld.fallThrough = bblThen;
+			bblOld.taken = bblAfterIf;
 
 			bblStack.push( bblAfterIf );
 			bblStack.push( bblThen );
@@ -243,8 +245,8 @@ public class IRBuilderVisitor implements ParseTreeNodeVisitor {
 			bblThen.successors.add(bblAfterIf);
 			bblElse.successors.add(bblAfterIf);
 
-			bblOld.fallThrough = bblElse ;
-			bblOld.taken = bblThen;
+			bblOld.fallThrough = bblThen;
+			bblOld.taken = bblElse;
 
 			bblStack.push(bblOld);
 			// Fall-through node => else

@@ -27,8 +27,8 @@ public class run
         boolean genCode = true;
         boolean execute = true;
         int numRegs = 16;
-		String testName = "test008";
-        String testPath = "inputs/test008.txt";
+		String testName = "factorial";
+        String testPath = "inputs/factorial.txt";
 
         // Tokenize the input
 		byte[] encoded = Files.readAllBytes(Paths.get(testPath));
@@ -98,10 +98,12 @@ public class run
 
         // Allocate registers and execute on DLX emulator
         try {
-		    if (allocateRegisters) {
-                RegisterAllocator allocator = new RegisterAllocator(numRegs);
+            if (allocateRegisters) {
+                LowLevelProgram executable = new LowLevelProgram();
+                executable.setIRProgram(program);
 
                 for (Function f : program.getFunctions()) {
+                    RegisterAllocator allocator = new RegisterAllocator(numRegs);
 
                     // Allocates registers/spills virtual registers
                     // Returns splitted intervals with allocatin information
@@ -116,11 +118,11 @@ public class run
                     allocator.resolve(f);
                     if (visualize)
                         program.visualize("Vis" + File.separator + testName + "_pass_5_resolved.dot", false);
-                }
 
-                LowLevelProgram executable = new LowLevelProgram();
-                executable.fromIRProgram(program, allocator);
-                executable.visualize("Vis" + File.separator + testName + "_pass_6_llir.dot");
+                    executable.fromIRFunction(f, allocator);
+
+                }
+               executable.visualize("Vis" + File.separator + testName + "_pass_6_llir.dot");
 
                 if (genCode) {
                     DLXCodeGenerator codeGen = new DLXCodeGenerator(executable);

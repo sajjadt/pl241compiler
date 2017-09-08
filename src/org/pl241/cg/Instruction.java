@@ -179,9 +179,7 @@ public class Instruction {
         Allocation src2 = null;
         Operand operand1 = null;
         Operand operand2 = null;
-
         List<Instruction> instructions = new ArrayList<>();
-
 
         if (node1 != null) {
             if (!(node1 instanceof ImmediateNode)) {
@@ -199,7 +197,6 @@ public class Instruction {
         }
 
         if (node instanceof ArithmeticNode) {
-
             Allocation dst = allocator.getAllocationAt(node.getOutputOperand(), node.sourceIndex);
             assert dst.type == Allocation.Type.REGISTER;
 
@@ -252,8 +249,6 @@ public class Instruction {
             instructions.add(new Instruction(Type.MOV, operand1, null,
                     new Operand(Operand.Type.REGISTER, dst.address)));
         } else if (node instanceof BranchNode) {
-
-
             Integer offset1 = null;
             //Integer offset2 = null;
 

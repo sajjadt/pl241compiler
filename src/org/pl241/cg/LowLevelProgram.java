@@ -3,7 +3,6 @@ package org.pl241.cg;
 import org.pl241.Program;
 import org.pl241.ir.AbstractNode;
 import org.pl241.ir.BasicBlock;
-import org.pl241.ir.BranchNode;
 import org.pl241.ir.Function;
 import org.pl241.ra.RegisterAllocator;
 
@@ -17,67 +16,54 @@ public class LowLevelProgram {
 
     public LowLevelProgram() {
         lowLevelIR = new HashMap<>();
-        this.program = null;
     }
 
-    public void fromIRProgram(Program program, RegisterAllocator allocator) {
-        this.program = program;
+    public void fromIRFunction(Function f, RegisterAllocator allocator) {
+        List<Instruction> instructions = new ArrayList<>();
+        Map<Integer, Integer> blockMap = new HashMap<>();
 
-        for(Function f: program.getFunctions()) {
-            List<Instruction> instructions = new ArrayList<>();
-            Map<Integer, Integer> blockMap = new HashMap<>();
+        Integer currentIndex = 0;
 
-            Integer currentIndex = 0;
+        List<BasicBlock> blocks = f.getBlocksInLayoutOrder();
+        ListIterator li = blocks.listIterator(blocks.size());
 
-            List<BasicBlock> blocks = f.getBlocksInLayoutOrder();
-            ListIterator li = blocks.listIterator(blocks.size());
-
-            while(li.hasPrevious()) {
-                BasicBlock block = (BasicBlock) li.previous();
-                List<Instruction> blockInstructions = new ArrayList<>();
+        while(li.hasPrevious()) {
+            BasicBlock block = (BasicBlock) li.previous();
+            List<Instruction> blockInstructions = new ArrayList<>();
 
 
-                List<AbstractNode> blockNodes = block.getNodes();
-                ListIterator bi = blockNodes.listIterator(blockNodes.size());
-                while (bi.hasPrevious()) {
-                    AbstractNode node = (AbstractNode) bi.previous();
-                    List<Instruction> ints = Instruction.lowerIRNode(node, allocator, currentIndex, blockMap);
-                    blockInstructions.addAll(0, ints);
-                    currentIndex += ints.size();
-                }
-
-                blockMap.put(block.getID(), currentIndex);
-                instructions.addAll(0, blockInstructions);
+            List<AbstractNode> blockNodes = block.getNodes();
+            ListIterator bi = blockNodes.listIterator(blockNodes.size());
+            while (bi.hasPrevious()) {
+                AbstractNode node = (AbstractNode) bi.previous();
+                List<Instruction> ints = Instruction.lowerIRNode(node, allocator, currentIndex, blockMap);
+                blockInstructions.addAll(0, ints);
+                currentIndex += ints.size();
             }
 
-            currentIndex = 1;
-            li = instructions.listIterator(instructions.size());
-            // Fix missing branch targets
-            while(li.hasPrevious()) {
-                Instruction ins = (Instruction) li.previous();
-                if (ins instanceof BranchInstruction &&
-                        !((BranchInstruction) ins).resolved) {
-                    Integer offset = currentIndex - blockMap.get(((BranchInstruction) ins).destBlockID);
-                    ((BranchInstruction) ins).offset = offset;
-                    ((BranchInstruction) ins).resolved = true;
-                }
-                currentIndex += 1;
-            }
-
-            System.out.println("Bmap:" + blockMap);
-
-            lowLevelIR.put(f.name, instructions);
+            blockMap.put(block.getID(), currentIndex);
+            instructions.addAll(0, blockInstructions);
         }
+
+        currentIndex = 1;
+        li = instructions.listIterator(instructions.size());
+        // Fix missing branch targets
+        while(li.hasPrevious()) {
+            Instruction ins = (Instruction) li.previous();
+            if (ins instanceof BranchInstruction &&
+                    !((BranchInstruction) ins).resolved) {
+                Integer offset = currentIndex - blockMap.get(((BranchInstruction) ins).destBlockID);
+                ((BranchInstruction) ins).offset = offset;
+                ((BranchInstruction) ins).resolved = true;
+            }
+            currentIndex += 1;
+        }
+
+        System.out.println("Bmap:" + blockMap);
+        lowLevelIR.put(f.name, instructions);
     }
 
-    private Program program;
     private HashMap<String, List<Instruction>> lowLevelIR;
-
-
-    public Program getIRProgram() {
-        return program;
-    }
-
 
     public List<Instruction> getFuncitonInstructions (Function func) {
         return lowLevelIR.get(func.name);
@@ -89,8 +75,8 @@ public class LowLevelProgram {
 
         try (PrintWriter writer = new PrintWriter(file)) {
             writer.println("digraph {");
-            for (Function function : program.getFunctions()) {
-                visualizeFunction(function, writer);
+            for (String functionName: lowLevelIR.keySet()) {
+                visualizeFunction(functionName, writer);
             }
             writer.println("}");
 
@@ -99,22 +85,29 @@ public class LowLevelProgram {
         }
     }
 
-    private void visualizeFunction(Function function, PrintWriter pw) {
+    private void visualizeFunction(String functionName, PrintWriter pw) {
         //pw.println("subgraph " + "cluster" + function. + " {");
-        pw.println("label=" + function.getName() );
+        pw.println("label=" + functionName );
         pw.println("labelloc=\"t\";");
         pw.println("fontsize=18;");
 
         pw.println("rankdir=\"TD\"");
 
         pw.print("BB"  + " [shape=record label=\"{");
-        pw.print( "Function " + function.name + "\n");
+        pw.print( "Function " + functionName+ "\n");
 
-        for (Instruction n: lowLevelIR.get(function.name)) {
+        for (Instruction n: lowLevelIR.get(functionName)) {
             pw.print('|' + n.toString());
         }
         pw.print("}\" ] " + "\n");
 //        pw.println("}");
     }
 
+    public Program getIRProgram() {
+        return irProgram;
+    }
+    public void setIRProgram(Program irProgram) {
+        this.irProgram = irProgram;
+    }
+    private Program irProgram;
 }

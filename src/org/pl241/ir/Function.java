@@ -30,10 +30,10 @@ public class Function  {
 					// rewrite address
 					if (!((BranchNode)node).isCall) {
                         if (b.getSuccessors().size() > 1) {
-							((BranchNode)node).fallThroughBlock = (b.getSuccessors().get(0));
-                            ((BranchNode) node).takenBlock = (b.getSuccessors().get(1));
+							((BranchNode)node).fallThroughBlock = b.fallThrough;
+                            ((BranchNode) node).takenBlock = b.taken;
                         } else {
-                            ((BranchNode) node).fallThroughBlock = (b.getSuccessors().get(0));
+                            ((BranchNode) node).fallThroughBlock = b.fallThrough;
                         }
                     }
 				}
