@@ -324,7 +324,7 @@ public class IRBuilderVisitor implements ParseTreeNodeVisitor {
 
         // Array of Integers
 		if (node.children.size() > 1) {
-			// Need to calculate the access offset first
+			// Need to calculate the access jumpAddress first
 			int index = 0;
 			AbstractNode offsetCalcNode = null;
 			AbstractNode tempOffsetCalcNode = null;

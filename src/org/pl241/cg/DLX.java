@@ -55,7 +55,7 @@ public class DLX {
 				c = R[c];  // dirty trick
 			}
 			
-//			System.out.print(print(op, a, b, c));
+			System.out.print(print(op, a, b, c));
 			
 			switch (op) {
 				case ADD:

@@ -21,7 +21,7 @@ public class VarGetNode extends AbstractNode {
     public boolean accessVariable(String variableId) {
         return Objects.equals(this.variableId, variableId);
     }
-    
+
     @Override
     public String displayId() {
         return variableId;

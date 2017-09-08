@@ -3,6 +3,7 @@ package org.pl241.cg;
 import org.pl241.ir.*;
 import org.pl241.ra.Allocation;
 import org.pl241.ra.RegisterAllocator;
+import sun.jvm.hotspot.opto.CallNode;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -166,7 +167,7 @@ public class Instruction {
     }
 
     // Lowers one IR instruction into DLX equivalent
-    public static List<Instruction> lowerIRNode(AbstractNode node, RegisterAllocator allocator, Integer currentBlockIndex, Map<Integer, Integer> blockMap) {
+    public static List<Instruction> lowerIRNode(AbstractNode node, RegisterAllocator allocator, Integer currentBlockIndex, Map<Integer, Integer> blockMap, boolean isMain) {
 
         AbstractNode node1 = null;
         AbstractNode node2 = null;
@@ -300,15 +301,19 @@ public class Instruction {
                 instructions.add(new Instruction(Type.WRL, null, null, null));
 
         } else if (node instanceof ReturnNode) {
-
-            if (node.hasOutputRegister()) {
-                // Move it into TEMP REG
-                instructions.add(new Instruction(Type.ADD, operand1,
-                        new Operand(Operand.Type.REGISTER, ZERO),
-                        new Operand(Operand.Type.REGISTER, TEMP_REGISTER)));
-                instructions.add(new BranchInstruction(Type.RET, new Operand(Operand.Type.REGISTER, RA), (Integer) null));
-            }
+            if (isMain)
+                instructions.add(new BranchInstruction(Type.RET, new Operand(Operand.Type.REGISTER, 0), (Integer) null));
             else {
+                if (node.getInputOperands().size()>0) {
+
+                    Allocation retVal = allocator.getAllocationAt(node.getOperandAtIndex(0).getOutputOperand(), node.sourceIndex);
+                    assert retVal.type == Allocation.Type.REGISTER;
+
+                    instructions.add(new Instruction(Type.MOV,
+                            new Operand(Operand.Type.REGISTER, retVal.address),
+                            null,
+                            new Operand(Operand.Type.REGISTER, TEMP_REGISTER)));
+                }
                 instructions.add(new BranchInstruction(Type.RET, new Operand(Operand.Type.REGISTER, RA), (Integer) null));
             }
         }
@@ -317,7 +322,53 @@ public class Instruction {
                     new Operand(Operand.Type.REGISTER, ((MoveNode) node).from.address),
                     null,
                     new Operand(Operand.Type.REGISTER, ((MoveNode) node).to.address)));
-            }
+        } else if (node instanceof FunctionCallNode) {
+            System.out.println("here");
+            instructions.addAll(generateCall((FunctionCallNode)node, allocator));
+        }
+        return instructions;
+    }
+
+    private static ArrayList<Instruction> generateCall(FunctionCallNode callNode, RegisterAllocator allocator) {
+        ArrayList<Instruction> instructions = new ArrayList<>();
+
+        // Push Regs
+        for (int i = 1; i < DLXCodeGenerator.numRegisters; i++) {
+            if (i == TEMP_REGISTER)
+                continue;
+            instructions.add(new Instruction(Type.PSH, new Operand(Operand.Type.REGISTER, i), null, null));
+        }
+        //Pass parameters
+        for (AbstractNode node: callNode.getInputOperands()) {
+            assert node.hasOutputRegister() == true;
+            Allocation srcAllocation = allocator.getAllocationAt(node.getOutputOperand(), callNode.sourceIndex);
+            assert srcAllocation.type == Allocation.Type.REGISTER;
+            instructions.add(new Instruction(Type.PSH, new Operand(Operand.Type.REGISTER, srcAllocation.address), null, null));
+        }
+
+        // Call
+        instructions.add(new CallInstruction(callNode.callTarget));
+
+        //Discard parameters
+        instructions.add(new Instruction(Type.ADDI, new Operand(Operand.Type.REGISTER, RA), new Operand(Operand.Type.IMMEDIATE, 4*callNode.getInputOperands().size()), new Operand(Operand.Type.REGISTER, RA)));
+
+        //Restore Registers
+        for (int i = DLXCodeGenerator.numRegisters-1; i > 0; i--) {
+            if (i == TEMP_REGISTER)
+                continue;
+            instructions.add(new Instruction(Type.POP, new Operand(Operand.Type.REGISTER, i), null, null));
+        }
+
+        // Move return value
+        if (callNode.hasOutputRegister()){
+            Allocation retVal = allocator.getAllocationAt(callNode.getOutputOperand(), callNode.sourceIndex);
+            assert retVal.type == Allocation.Type.REGISTER;
+
+            instructions.add(new Instruction(Type.MOV, new Operand(Operand.Type.REGISTER, TEMP_REGISTER),
+                    null,
+                    new Operand(Operand.Type.REGISTER, retVal.address)));
+        }
+
 
         return instructions;
     }

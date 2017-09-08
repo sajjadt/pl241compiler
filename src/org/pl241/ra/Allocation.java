@@ -21,7 +21,7 @@ public class Allocation implements Comparable<Allocation> {
     }
 
 	public Allocation.Type type;
-	public int address ; // Reg number or spill offset
+	public int address ; // Reg number or spill jumpAddress
 
 	@Override
 	public int compareTo(Allocation allocation) {

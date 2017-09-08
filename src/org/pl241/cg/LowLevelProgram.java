@@ -4,6 +4,7 @@ import org.pl241.Program;
 import org.pl241.ir.AbstractNode;
 import org.pl241.ir.BasicBlock;
 import org.pl241.ir.Function;
+import org.pl241.ir.Variable;
 import org.pl241.ra.RegisterAllocator;
 
 import java.io.File;
@@ -12,17 +13,50 @@ import java.io.IOException;
 import java.io.PrintWriter;
 import java.util.*;
 
+////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////
+//                   Function Frame Map
+// low address
+//
+//                   Local variables
+//                      parameters
+//
+// high address
+////////////////////////////////////////////////////////////
+
+
+// Translates function codes into lower level instructions
 public class LowLevelProgram {
 
     public LowLevelProgram() {
         lowLevelIR = new HashMap<>();
     }
 
-    public void fromIRFunction(Function f, RegisterAllocator allocator) {
+
+    public void lowerAndAddFunction(Function f, RegisterAllocator allocator) {
         List<Instruction> instructions = new ArrayList<>();
         Map<Integer, Integer> blockMap = new HashMap<>();
 
         Integer currentIndex = 0;
+
+
+        // Allocate space for local vars (no need to initialize)
+        // Also use this table keeps displacement of vars in regard of SP
+        // Variables could be inside local function frame or global table
+        // TODO: modify according to Stack allocation
+      /*
+        for (Variable var: f.localVariables.getVars()) {
+            localVarMap.put(var.name, displacement);
+            displacement += -1 * var.numElements();
+        }
+        // Save SP in FrameP for user access to variables
+        temp = DLX.assemble(DLX.ADD, this.FRAMEP, this.SP, 0);
+        instructions.add(temp);
+        // Make room for local variables
+        instructions.add(DLX.assemble(DLX.ADDI, this.SP, this.SP, displacement));
+*/
+
+
 
         List<BasicBlock> blocks = f.getBlocksInLayoutOrder();
         ListIterator li = blocks.listIterator(blocks.size());
@@ -31,12 +65,11 @@ public class LowLevelProgram {
             BasicBlock block = (BasicBlock) li.previous();
             List<Instruction> blockInstructions = new ArrayList<>();
 
-
             List<AbstractNode> blockNodes = block.getNodes();
             ListIterator bi = blockNodes.listIterator(blockNodes.size());
             while (bi.hasPrevious()) {
                 AbstractNode node = (AbstractNode) bi.previous();
-                List<Instruction> ints = Instruction.lowerIRNode(node, allocator, currentIndex, blockMap);
+                List<Instruction> ints = Instruction.lowerIRNode(node, allocator, currentIndex, blockMap, f.name.equals("main"));
                 blockInstructions.addAll(0, ints);
                 currentIndex += ints.size();
             }
@@ -59,6 +92,8 @@ public class LowLevelProgram {
             currentIndex += 1;
         }
 
+
+
         System.out.println("Bmap:" + blockMap);
         lowLevelIR.put(f.name, instructions);
     }
@@ -78,6 +113,20 @@ public class LowLevelProgram {
             for (String functionName: lowLevelIR.keySet()) {
                 visualizeFunction(functionName, writer);
             }
+            writer.println("}");
+
+        } catch (FileNotFoundException e) {
+            e.printStackTrace();
+        }
+    }
+
+    public void visualizeFunction(String path, String functionName) throws IOException {
+        File file = new File(path);
+        file.createNewFile();
+
+        try (PrintWriter writer = new PrintWriter(file)) {
+            writer.println("digraph {");
+            visualizeFunction(functionName, writer);
             writer.println("}");
 
         } catch (FileNotFoundException e) {

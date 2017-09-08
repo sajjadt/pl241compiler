@@ -26,9 +26,10 @@ public class run
         boolean allocateRegisters = true;
         boolean genCode = true;
         boolean execute = true;
-        int numRegs = 16;
-		String testName = "factorial";
-        String testPath = "inputs/factorial.txt";
+
+        int numberOfRegisters = 4;
+		String testName = "test006";
+        String testPath = "inputs" + File.separator + testName + ".txt";
 
         // Tokenize the input
 		byte[] encoded = Files.readAllBytes(Paths.get(testPath));
@@ -49,7 +50,6 @@ public class run
             ParseTreeNode root = parser.parse(tokenizer.getTokens());
             root.accept(visitor);
             program = visitor.getProgram();
-
         }
         catch (Exception e) {
             System.out.println(e.getMessage());
@@ -99,41 +99,34 @@ public class run
         // Allocate registers and execute on DLX emulator
         try {
             if (allocateRegisters) {
-                LowLevelProgram executable = new LowLevelProgram();
-                executable.setIRProgram(program);
+                LowLevelProgram lowLevelProgram = new LowLevelProgram();
+                lowLevelProgram.setIRProgram(program);
 
                 for (Function f : program.getFunctions()) {
-                    RegisterAllocator allocator = new RegisterAllocator(numRegs);
+                    RegisterAllocator allocator = new RegisterAllocator(numberOfRegisters);
 
                     // Allocates registers/spills virtual registers
                     // Returns splitted intervals with allocatin information
                     allocator.allocate(f);
                     allocator.toPhysical(f);
-
-                    if (visualize)
-                        program.visualize("Vis" + File.separator + testName + "_pass_4_ra.dot", false);
+                    //lowLevelProgram.visualizeFunction("Vis" + File.separator + testName + "_" + f.name + "_pass_4_llir.dot", f.name);
 
                     // Deconstructs SSA form
                     // Inserts additional moves if necessary
                     allocator.resolve(f);
-                    if (visualize)
-                        program.visualize("Vis" + File.separator + testName + "_pass_5_resolved.dot", false);
-
-                    executable.fromIRFunction(f, allocator);
-
+                    lowLevelProgram.lowerAndAddFunction(f, allocator);
+                    lowLevelProgram.visualizeFunction("Vis" + File.separator + testName + "_" + f.name + "_pass_5_resolved.dot", f.name);
                 }
-               executable.visualize("Vis" + File.separator + testName + "_pass_6_llir.dot");
 
                 if (genCode) {
-                    DLXCodeGenerator codeGen = new DLXCodeGenerator(executable);
-                    ArrayList<Integer> mem = codeGen.generateBinary();
-                    for (int i =0 ;i < 20; i++) {
-                        System.out.println(DLX.disassemble(mem.get(i)));
-                    }
+
+                    // Executable has missing function call jumps
+                    DLXCodeGenerator codeGen = new DLXCodeGenerator(lowLevelProgram);
+                    ArrayList<Integer> executable = codeGen.generateBinary();
 
                     if (execute) {
-                        DLX.load(mem);
-                        System.out.println("MEM:" + mem);
+                        DLX.load(executable);
+                        System.out.println("MEM:" + executable);
                         System.out.println("Starting execution on DLX emulator...");
                         DLX.execute();
                     }
