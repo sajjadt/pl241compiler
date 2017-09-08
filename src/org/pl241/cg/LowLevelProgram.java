@@ -13,6 +13,9 @@ import java.io.IOException;
 import java.io.PrintWriter;
 import java.util.*;
 
+import static org.pl241.cg.DLXCodeGenerator.FRAMEP;
+import static org.pl241.cg.DLXCodeGenerator.SP;
+
 ////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////
 //                   Function Frame Map
@@ -38,23 +41,10 @@ public class LowLevelProgram {
         Map<Integer, Integer> blockMap = new HashMap<>();
 
         Integer currentIndex = 0;
+        HashMap<String, Integer> localVarMap = new HashMap<>();
 
 
-        // Allocate space for local vars (no need to initialize)
-        // Also use this table keeps displacement of vars in regard of SP
-        // Variables could be inside local function frame or global table
-        // TODO: modify according to Stack allocation
-      /*
-        for (Variable var: f.localVariables.getVars()) {
-            localVarMap.put(var.name, displacement);
-            displacement += -1 * var.numElements();
-        }
-        // Save SP in FrameP for user access to variables
-        temp = DLX.assemble(DLX.ADD, this.FRAMEP, this.SP, 0);
-        instructions.add(temp);
-        // Make room for local variables
-        instructions.add(DLX.assemble(DLX.ADDI, this.SP, this.SP, displacement));
-*/
+
 
 
 
@@ -93,6 +83,27 @@ public class LowLevelProgram {
         }
 
 
+        // Allocate space for local vars (no need to initialize)
+        // Also use this table keeps displacement of vars in regard of SP
+        // Variables could be inside local function frame or global table
+        // TODO: modify according to Stack allocation
+        int displacement = 0;
+        for (Variable var: f.localVariables.getVars()) {
+                localVarMap.put(var.name, displacement);
+                displacement += -4 * var.numElements();
+        }
+
+        // Save SP in FrameP for user access to variables
+        instructions.add(0, new Instruction(Instruction.Type.MOV,
+                new Operand(Operand.Type.REGISTER, SP),
+                null,
+                new Operand(Operand.Type.REGISTER, FRAMEP)));
+        // Make room for local variables
+        instructions.add(1, new Instruction(Instruction.Type.ADDI,
+                new Operand(Operand.Type.REGISTER, SP),
+                new Operand(Operand.Type.IMMEDIATE, displacement),
+                new Operand(Operand.Type.REGISTER, SP))
+        );
 
         System.out.println("Bmap:" + blockMap);
         lowLevelIR.put(f.name, instructions);

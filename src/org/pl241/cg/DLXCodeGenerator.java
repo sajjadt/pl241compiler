@@ -88,10 +88,8 @@ public class DLXCodeGenerator {
     }
 
     private ArrayList<Integer> generateFuncBody(Function f, List<Instruction> lowLevelInstructions) {
-        HashMap<String, Integer> localVarMap = new HashMap<>();
-        Integer temp;
         ArrayList<Integer> instructions = new ArrayList<>();
-        int displacement = 0;
+
         System.out.println("Generating code for function: " + f.name);
 
         for (Instruction ins: lowLevelInstructions) {
@@ -322,8 +320,8 @@ public class DLXCodeGenerator {
 	public static final int ZERO = 0 ;
     public static final int TEMP_REGISTER = 27;
     public static final int RA = 31; // RA contains the return address when we use JSP
-    private final int FRAMEP = 28;
-    private final int SP = 29; // Register 29 is the stack pointer
+    public static final int FRAMEP = 28;
+    public static final int SP = 29; // Register 29 is the stack pointer
 
     public static final int numRegisters = 32;
 

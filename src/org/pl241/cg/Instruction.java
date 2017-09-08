@@ -12,7 +12,8 @@ import java.util.Map;
 import static org.pl241.cg.DLXCodeGenerator.RA;
 import static org.pl241.cg.DLXCodeGenerator.ZERO;
 import static org.pl241.cg.DLXCodeGenerator.TEMP_REGISTER;
-
+import static org.pl241.cg.DLXCodeGenerator.FRAMEP;
+import static org.pl241.cg.DLXCodeGenerator.SP;
 
 public class Instruction {
 
@@ -304,11 +305,16 @@ public class Instruction {
             if (isMain)
                 instructions.add(new BranchInstruction(Type.RET, new Operand(Operand.Type.REGISTER, 0), (Integer) null));
             else {
-                if (node.getInputOperands().size()>0) {
+                // Restore SP
+                instructions.add(new Instruction(Type.MOV,
+                        new Operand(Operand.Type.REGISTER, FRAMEP),
+                        null,
+                        new Operand(Operand.Type.REGISTER, SP)));
 
+                if (node.getInputOperands().size()>0) {
+                    // Prepare return value
                     Allocation retVal = allocator.getAllocationAt(node.getOperandAtIndex(0).getOutputOperand(), node.sourceIndex);
                     assert retVal.type == Allocation.Type.REGISTER;
-
                     instructions.add(new Instruction(Type.MOV,
                             new Operand(Operand.Type.REGISTER, retVal.address),
                             null,

@@ -1,12 +1,12 @@
 main
 var a;
 function foo( );
-var i;
+array[5] i;
 {
-	let i <- 7;
-	call OutputNum(i+3);
+	let i[0] <- 7;
+	call OutputNum(i[0]+3);
 	call OutputNewLine();
-	return i+7
+	return i[0]+7
 };
 {
 	let a <- call foo;
