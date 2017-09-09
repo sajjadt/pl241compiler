@@ -7,7 +7,7 @@ import org.pl241.cg.DLX;
 import org.pl241.cg.DLXCodeGenerator;
 
 
-public class DLXTest {
+class DLXTest {
 	
 
 	public static void main(String[] args){

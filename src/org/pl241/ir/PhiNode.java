@@ -14,16 +14,16 @@ public class PhiNode extends AbstractNode {
 	public String originalVarName;
 	
 	public PhiNode (String variableName) {
-		super();
-		this.variableName = variableName;
-		this.originalVarName = variableName;
-		rightOperands = new HashMap<>();
-	}
+        super();
+        this.variableName = variableName;
+        this.originalVarName = variableName;
+        rightOperands = new HashMap<>();
+    }
 
 	public String toString() {
 		StringBuilder oSet = new StringBuilder();
 		for (Integer key: rightOperands.keySet()) {
-			oSet.append(key.toString() + ":" + rightOperands.get(key).getOutputOperand()+", ");
+			oSet.append(key.toString()).append(":").append(rightOperands.get(key).getOutputOperand()).append(", ");
 		}
 		return super.toString() +   ": [" + sourceIndex +"]  " + variableName +  " phi: " + oSet;
 	}
@@ -38,7 +38,7 @@ public class PhiNode extends AbstractNode {
 
 	@Override
 	public List<AbstractNode> getInputOperands() {
-	    return new ArrayList<AbstractNode> (rightOperands.values());
+	    return new ArrayList<> (rightOperands.values());
 	}
 
     @Override

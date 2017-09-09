@@ -44,8 +44,15 @@ public class LowLevelProgram {
         HashMap<String, Integer> localVarMap = new HashMap<>();
 
 
-
-
+        // Allocate space for local vars (no need to initialize)
+        // Also use this table keeps displacement of vars in regard of SP
+        // Variables could be inside local function frame or global table
+        // TODO: modify according to Stack allocation
+        int displacement = 0;
+        for (Variable var: f.localVariables.getVars()) {
+            localVarMap.put(var.name, displacement);
+            displacement += -4 * var.numElements();
+        }
 
 
         List<BasicBlock> blocks = f.getBlocksInLayoutOrder();
@@ -59,7 +66,7 @@ public class LowLevelProgram {
             ListIterator bi = blockNodes.listIterator(blockNodes.size());
             while (bi.hasPrevious()) {
                 AbstractNode node = (AbstractNode) bi.previous();
-                List<Instruction> ints = Instruction.lowerIRNode(node, allocator, currentIndex, blockMap, f.name.equals("main"));
+                List<Instruction> ints = Instruction.lowerIRNode(node, allocator, currentIndex, blockMap, localVarMap, f.name.equals("main"));
                 blockInstructions.addAll(0, ints);
                 currentIndex += ints.size();
             }
@@ -82,17 +89,6 @@ public class LowLevelProgram {
             currentIndex += 1;
         }
 
-
-        // Allocate space for local vars (no need to initialize)
-        // Also use this table keeps displacement of vars in regard of SP
-        // Variables could be inside local function frame or global table
-        // TODO: modify according to Stack allocation
-        int displacement = 0;
-        for (Variable var: f.localVariables.getVars()) {
-                localVarMap.put(var.name, displacement);
-                displacement += -4 * var.numElements();
-        }
-
         // Save SP in FrameP for user access to variables
         instructions.add(0, new Instruction(Instruction.Type.MOV,
                 new Operand(Operand.Type.REGISTER, SP),
@@ -104,6 +100,11 @@ public class LowLevelProgram {
                 new Operand(Operand.Type.IMMEDIATE, displacement),
                 new Operand(Operand.Type.REGISTER, SP))
         );
+
+        // Transfer parameters to their allocated space
+        for (Variable var: f.localVariables.getVars()) {
+
+        }
 
         System.out.println("Bmap:" + blockMap);
         lowLevelIR.put(f.name, instructions);

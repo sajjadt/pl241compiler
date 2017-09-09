@@ -13,7 +13,7 @@ import java.util.logging.Logger;
 import java.util.logging.Level;
 
 
-public class ParserTest {
+class ParserTest {
 
 	private static final Logger LOGGER = Logger.getLogger(ParserTest.class.getName());
 	public static void main(String[] args) {

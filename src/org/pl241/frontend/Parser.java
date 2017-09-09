@@ -6,20 +6,20 @@ import java.util.List;
 import java.util.logging.Logger;
 
 public class Parser {
-	LinkedList<Token> tokens;
-	Token lookahead;
+	private LinkedList<Token> tokens;
+	private Token lookahead;
 
 	public ParseTreeNode parse(List<Token> tokens) throws Exception
 	{
-		this.tokens = new LinkedList<Token>();
+		this.tokens = new LinkedList<>();
 		this.tokens.addAll( tokens);
 		lookahead = this.tokens.getFirst();
 		ParseTreeNode root = pl241();
 
 		if (lookahead.token != Token.EPSILON){
-			String ret = "" ;
+			StringBuilder ret = new StringBuilder();
 			while( this.tokens.size() > 0 )
-				ret += " " + nextToken().sequence ;
+				ret.append(" ").append(nextToken().sequence);
 			throw new Exception(  "Unexpected symbol " + lookahead.sequence + " not found " + ret);
 		}
 		return root;
@@ -46,7 +46,7 @@ public class Parser {
 
 	private List<ParseTreeNode> varDeclStar(ParseTreeNode parent){
 		// varDecl : typeDecl IDENT  ( ',' IDENT )* ';' ;
-		List<ParseTreeNode> nodes = new ArrayList<ParseTreeNode>();
+		List<ParseTreeNode> nodes = new ArrayList<>();
 		if (lookahead.token == Token.VAR || lookahead.token == Token.ARRAY )
 		{
 			VarDeclNode node = new VarDeclNode(parent, "") ;
@@ -63,7 +63,7 @@ public class Parser {
 	}
 
 	private List<ParseTreeNode> identStar(ParseTreeNode parent , String type){
-		List<ParseTreeNode> nodes = new ArrayList<ParseTreeNode>();
+		List<ParseTreeNode> nodes = new ArrayList<>();
 		if (lookahead.token == Token.COMMA){
 			nodes.add( new TerminalNode(parent,  nextToken().sequence ));
 			nodes.add( new TerminalNode(parent,  nextToken().sequence ));
@@ -91,7 +91,7 @@ public class Parser {
 	
 	private List<ParseTreeNode> arrayDimStar( ParseTreeNode parent){
 		
-		List<ParseTreeNode> nodes = new ArrayList<Parser.ParseTreeNode>();
+		List<ParseTreeNode> nodes = new ArrayList<>();
 		if( lookahead.token == Token.OPEN_BRACKET ) {
 			nodes.add( new TerminalNode(parent,  nextToken().sequence )); //[
 			nodes.add( new NumberNode(parent,  nextToken().sequence )); // Number
@@ -102,7 +102,7 @@ public class Parser {
 	}
 
 	private List<ParseTreeNode> funcDeclStar(ParseTreeNode parent) throws Exception{
-		List<ParseTreeNode> nodes = new ArrayList<ParseTreeNode>();
+		List<ParseTreeNode> nodes = new ArrayList<>();
 		
 		if (lookahead.token == Token.FUNCTION || lookahead.token == Token.PROCEDURE ){
 			//FuncDeclNode node = new FuncDeclNode(parent, "Func Decl"));
@@ -153,7 +153,7 @@ public class Parser {
 	}
 
 	private List<ParseTreeNode> statementStar(ParseTreeNode parent) throws Exception{
-		List<ParseTreeNode> nodes = new ArrayList<ParseTreeNode>();
+		List<ParseTreeNode> nodes = new ArrayList<>();
 		if( lookahead.token == Token.SEMICOLON ){
 			nodes.add( new TerminalNode(parent,  nextToken().sequence ));//";"
 			nodes.add( statement(parent) );
@@ -242,7 +242,7 @@ public class Parser {
 	}
 
 	private List<ParseTreeNode> termStar(ParseTreeNode parent){
-		List<ParseTreeNode> nodes = new  ArrayList<Parser.ParseTreeNode>();
+		List<ParseTreeNode> nodes = new ArrayList<>();
 		if( lookahead.token == Token.PLUS_OR_MINUS ){
 			nodes.add( new TerminalNode(parent,  nextToken().sequence )); // "+" or "-"
 			nodes.add( term(parent) );
@@ -268,7 +268,7 @@ public class Parser {
 	}
 	
 	private List<ParseTreeNode> factorStar(ParseTreeNode parent){
-		List<ParseTreeNode> nodes = new ArrayList<ParseTreeNode>();
+		List<ParseTreeNode> nodes = new ArrayList<>();
 		if( lookahead.token == Token.MULT_OR_DIV ){
 			
 			nodes.add( new TerminalNode(parent,  nextToken().sequence )); // "*" or "/"
@@ -306,7 +306,7 @@ public class Parser {
 	}
 	
 	private List<ParseTreeNode> expressionStar(ParseTreeNode parent){
-		List<ParseTreeNode> nodes = new ArrayList<ParseTreeNode>();
+		List<ParseTreeNode> nodes = new ArrayList<>();
 		if( lookahead.token == Token.OPEN_BRACKET ){
 			
 			nodes.add( new TerminalNode(parent,  nextToken().sequence )); // [
@@ -355,15 +355,15 @@ public class Parser {
 			return children.get(index);
 		}
 		
-		public ParseTreeNode(ParseTreeNode parent, String text) {
-			children = new ArrayList<Parser.ParseTreeNode>();
+		ParseTreeNode(ParseTreeNode parent, String text) {
+			children = new ArrayList<>();
 			this.text = text ;
 			this.parent = parent;
 		}
-		public void addChild(ParseTreeNode node){
+		void addChild(ParseTreeNode node){
 			children.add(node);
 		}
-		public void addChildren(List<ParseTreeNode> nodes){
+		void addChildren(List<ParseTreeNode> nodes){
 			children.addAll(nodes);
 		}
 		public void setParent(ParseTreeNode parent){
@@ -372,7 +372,7 @@ public class Parser {
 		public ParseTreeNode getParent(){
 			return parent;
 		}
-		public List<ParseTreeNode> getChildren(){
+		List<ParseTreeNode> getChildren(){
 			return children;
 		}
 		public String getText(){
@@ -384,7 +384,7 @@ public class Parser {
 
 	public  class ProgramNode extends ParseTreeNode {
 
-		public ProgramNode(ParseTreeNode parent,String text) {
+		ProgramNode(ParseTreeNode parent, String text) {
 			super(parent,text);
 		}
 
@@ -416,7 +416,7 @@ public class Parser {
 	
 	public  class TypeDeclNode extends ParseTreeNode {
 
-		public TypeDeclNode(ParseTreeNode parent,String text) {
+		TypeDeclNode(ParseTreeNode parent, String text) {
 			super(parent,text);
 		}
 
@@ -431,7 +431,7 @@ public class Parser {
 	}
 	
 	public  class NumberNode extends ParseTreeNode {
-		public NumberNode(ParseTreeNode parent, String text) {
+		NumberNode(ParseTreeNode parent, String text) {
 			super(parent,text);
 		}
 
@@ -447,7 +447,7 @@ public class Parser {
 
 	public  class VarDeclNode extends ParseTreeNode {
 
-		public VarDeclNode(ParseTreeNode parent, String text) {
+		VarDeclNode(ParseTreeNode parent, String text) {
 			super(parent, text);
 		}
 
@@ -463,7 +463,7 @@ public class Parser {
 	
 	public  class FuncDeclNode extends ParseTreeNode {
 
-		public FuncDeclNode(ParseTreeNode parent,String text) {
+		FuncDeclNode(ParseTreeNode parent, String text) {
 			super(parent, text);
 		}
 
@@ -479,7 +479,7 @@ public class Parser {
 	
 	public  class StatSeqNode extends ParseTreeNode {
 
-		public StatSeqNode(ParseTreeNode parent, String text) {
+		StatSeqNode(ParseTreeNode parent, String text) {
 			super(parent,text);
 		}
 
@@ -495,7 +495,7 @@ public class Parser {
 	
 	public  class DesignatorNode extends ParseTreeNode {
 
-		public DesignatorNode(ParseTreeNode parent, String text) {
+		DesignatorNode(ParseTreeNode parent, String text) {
 			super(parent,text);
 		}
 
@@ -514,7 +514,7 @@ public class Parser {
 	}
 	
 	public  class ExpressionNode extends ParseTreeNode {
-		public ExpressionNode(ParseTreeNode parent, String text) {
+		ExpressionNode(ParseTreeNode parent, String text) {
 			super(parent,text);
 		}
 		@Override
@@ -529,7 +529,7 @@ public class Parser {
 	
 	public  class TermNode extends ParseTreeNode {
 
-		public TermNode(ParseTreeNode parent, String text) {
+		TermNode(ParseTreeNode parent, String text) {
 			super(parent,text);
 		}
 
@@ -545,7 +545,7 @@ public class Parser {
 	
 	public  class FactorNode extends ParseTreeNode {
 
-		public FactorNode(ParseTreeNode parent, String text) {
+		FactorNode(ParseTreeNode parent, String text) {
 			super(parent,text);
 		}
 
@@ -561,7 +561,7 @@ public class Parser {
 	
 	public  class RelationNode extends ParseTreeNode {
 
-		public RelationNode(ParseTreeNode parent, String text) {
+		RelationNode(ParseTreeNode parent, String text) {
 			super(parent,text);
 		}
 
@@ -577,7 +577,7 @@ public class Parser {
 	
 	public  class AssignmentNode extends ParseTreeNode {
 
-		public AssignmentNode(ParseTreeNode parent,String text) {
+		AssignmentNode(ParseTreeNode parent, String text) {
 			super(parent,text);
 		}
 
@@ -593,7 +593,7 @@ public class Parser {
 	
 	public  class FuncCallNode extends ParseTreeNode {
 
-		public FuncCallNode(ParseTreeNode parent, String text) {
+		FuncCallNode(ParseTreeNode parent, String text) {
 			super(parent,text);
 		}
 
@@ -609,7 +609,7 @@ public class Parser {
 	
 	public  class WhileStmtNode extends ParseTreeNode {
 
-		public WhileStmtNode(ParseTreeNode parent, String text) {
+		WhileStmtNode(ParseTreeNode parent, String text) {
 			super(parent,text);
 		}
 	
@@ -625,7 +625,7 @@ public class Parser {
 	
 	public  class IfStmtNode extends ParseTreeNode {
 
-		public IfStmtNode(ParseTreeNode parent, String text) {
+		IfStmtNode(ParseTreeNode parent, String text) {
 			super(parent,text);
 		}
 
@@ -640,7 +640,7 @@ public class Parser {
 	}
 	
 	public class ReturnStmtNode extends ParseTreeNode {
-		public ReturnStmtNode(ParseTreeNode parent, String text) {
+		ReturnStmtNode(ParseTreeNode parent, String text) {
 			super(parent,text);
 		}
 
@@ -656,7 +656,7 @@ public class Parser {
 
 	public  class FuncBodyNode extends ParseTreeNode {
 
-		public FuncBodyNode(ParseTreeNode parent, String text) {
+		FuncBodyNode(ParseTreeNode parent, String text) {
 			super(parent,text);
 		}
 
@@ -672,7 +672,7 @@ public class Parser {
 	
 	public  class FormalParamNode extends ParseTreeNode {
 
-		public FormalParamNode(ParseTreeNode parent, String text) {
+		FormalParamNode(ParseTreeNode parent, String text) {
 			super(parent,text);
 		}
 
@@ -688,7 +688,7 @@ public class Parser {
 	
 	public  class StatementNode extends ParseTreeNode {
 
-		public StatementNode(ParseTreeNode parent, String text) {
+		StatementNode(ParseTreeNode parent, String text) {
 			super(parent,text);
 		}
 		@Override
@@ -702,7 +702,7 @@ public class Parser {
 	}
 	
 	public  class TerminalNode extends ParseTreeNode {
-		public TerminalNode( ParseTreeNode parent, String text){
+		TerminalNode(ParseTreeNode parent, String text){
 			super(parent, text);
 		}
 		

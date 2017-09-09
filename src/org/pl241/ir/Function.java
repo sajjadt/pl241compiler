@@ -40,8 +40,24 @@ public class Function  {
 			}
 		}
 	}
-	
-	
+
+    public void insertReadParams() {
+
+	    // We add load op for all the varialbes
+        // There might be a case of duplicates
+        // This will be taken care of by DeadCodeElimination
+
+	    for (Variable var: localVariables.getVars()) {
+	        this.getEntryBlock().getNodes().add(0,
+                    new VarGetNode(var.name));
+        }
+        for (Variable var: parameters.getVars()) {
+            this.getEntryBlock().getNodes().add(0,
+                    new VarGetNode(var.name));
+        }
+        // TODO issue variable get for global variables
+    }
+
 	public void toDot(PrintWriter pw, boolean standalone, boolean main, boolean printAllocation) {
 
 		if (!standalone) {
@@ -348,13 +364,11 @@ public class Function  {
     // Unique across program
     public String name;
 
-    public static int _sindex = 0;
+    private static int _sindex = 0;
     private int _index;
     public VarInfoTable localVariables;
     public VarInfoTable parameters;
-
     public List<BasicBlock> basicBlocks;
-
 }
 	
 	

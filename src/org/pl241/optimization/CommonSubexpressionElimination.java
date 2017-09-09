@@ -1,17 +1,11 @@
 package org.pl241.optimization;
 
 import java.util.HashMap;
-import java.util.Iterator;
-
 import org.pl241.ir.Function;
 import org.pl241.ir.*;
 
-
-//
-// CSE deals with Arith, store nodes
-//
-
-public class CommonSubexpressionElimination {
+// CSE deals with Arithmetic operations
+public class CommonSubexpressionElimination implements Optimization {
 
 	public CommonSubexpressionElimination() {
 		expressionMap = new HashMap<>();
@@ -22,7 +16,7 @@ public class CommonSubexpressionElimination {
 		fixBlock(function.getEntryBlock());
 	}
 
-	public void fixBlock(BasicBlock block){
+	private void fixBlock(BasicBlock block){
 		// Foreach phi function
         for (AbstractNode node: block.getNodes()) {
             if (node instanceof PhiNode) { // Handle Phis
@@ -93,13 +87,8 @@ public class CommonSubexpressionElimination {
 		for (BasicBlock iBlock: block.immediateDominants) {
 			fixBlock(iBlock);
 		}
-		
-		Iterator<AbstractNode> i = block.getNodes().iterator() ;
-		while (i.hasNext()) {
-			AbstractNode node = i.next();
-			if (node.removed)
-			 	i.remove();
-		}
+
+		block.getNodes().removeIf(node -> node.removed);
 
 	}
 	private HashMap<Expression, String> expressionMap;

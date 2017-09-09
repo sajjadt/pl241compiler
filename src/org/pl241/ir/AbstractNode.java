@@ -5,7 +5,7 @@ import org.pl241.ra.Allocation;
 import java.util.*;
 public class AbstractNode {
 
-    public AbstractNode() {
+    AbstractNode() {
         nodeId = generateId("L");
         removed = false;
         sourceIndex = -1;
@@ -13,7 +13,7 @@ public class AbstractNode {
         allocation = null;
     }
 
-    public AbstractNode(AbstractNode operand1, AbstractNode operand2) {
+    AbstractNode(AbstractNode operand1, AbstractNode operand2) {
         this();
         operands.add(operand1);
         operands.add(operand2);
@@ -44,7 +44,7 @@ public class AbstractNode {
         this.allocation = allocation;
     }
 
-    static String generateId (String str) {
+    private static String generateId(String str) {
         return str + counter++;
     }
 
@@ -67,7 +67,7 @@ public class AbstractNode {
     }
 
     // Show compact representation of node in CFGs
-    public String displayId() {
+    String displayId() {
         return nodeId;
     }
 
@@ -78,7 +78,7 @@ public class AbstractNode {
         operands.add(node);
     }
 
-    protected List<AbstractNode> operands ;
+    List<AbstractNode> operands ;
     public String nodeId;
 
     public int sourceIndex; // In source code
@@ -91,7 +91,7 @@ public class AbstractNode {
 		return sourceIndex;
 	}
     private static int counter = 0;
-	public Allocation allocation;
+	Allocation allocation;
 
     // These function should be overriden by executable nodes
     public boolean isExecutable() {

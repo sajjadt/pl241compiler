@@ -12,7 +12,7 @@ import org.pl241.ir.BasicBlock;
 import org.pl241.ir.ImmediateNode;
 import org.pl241.ir.PhiNode;
 
-public class IntervalBuilder {
+class IntervalBuilder {
     public IntervalBuilder() {
 		intervals = new HashMap<>();
 	}

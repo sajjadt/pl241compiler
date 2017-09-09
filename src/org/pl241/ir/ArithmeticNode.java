@@ -67,7 +67,7 @@ public class ArithmeticNode extends AbstractNode {
 
     public Type operator;
     public static Map<String, Type> operatorMap;
-    public static Map<Type,String> operatorMapR;
+    private static Map<Type,String> operatorMapR;
     static {
         operatorMap = new HashMap<>();
 

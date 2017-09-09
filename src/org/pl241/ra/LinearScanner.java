@@ -10,7 +10,7 @@ import java.util.Map;
 
 import org.pl241.ra.Allocation.Type;
 
-public class LinearScanner {
+class LinearScanner {
 
 	public LinearScanner (Map<String,LiveInterval> intervals, int _numRegisters) {
 		numRegisters = _numRegisters;
@@ -185,10 +185,10 @@ public class LinearScanner {
 
 	}
 
-    List<LiveInterval> active ;
-    List<LiveInterval> inactive ;
+    private List<LiveInterval> active ;
+    private List<LiveInterval> inactive ;
     List<LiveInterval> handled ;
-    List<LiveInterval> unhandled ;
+    private List<LiveInterval> unhandled ;
 
     private int numRegisters ;
 }

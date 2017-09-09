@@ -1,15 +1,17 @@
 main
 var a;
 function foo( );
-array[5] i;
+var i;
+array [5]j;
 {
-	let i[0] <- 7;
-	call OutputNum(i[0]+3);
+	let j[0] <- 3 + 5 ;
+	let j[2] <- 35 ;
+	call OutputNum(j[0]+3);
 	call OutputNewLine();
-	return i[0]+7
+	return j[0]
 };
 {
 	let a <- call foo;
-	call OutputNum(a+4);
+	call OutputNum(a+5);
 	call OutputNewLine()
 }.

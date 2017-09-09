@@ -10,13 +10,13 @@ import java.util.Set;
 public class BasicBlock {
 
 	public BasicBlock(Function _parentFunction, String _tag){
-		nodes = new ArrayList<AbstractNode>();
-		successors = new ArrayList<BasicBlock>();
-		predecessors = new ArrayList<BasicBlock>();
-		dominators = new HashSet<BasicBlock>();
-		dominatorsTemp = new HashSet<BasicBlock>();
-		dominatorFrontiers = new HashSet<BasicBlock>();
-		immediateDominants = new HashSet<BasicBlock>();
+		nodes = new ArrayList<>();
+		successors = new ArrayList<>();
+		predecessors = new ArrayList<>();
+		dominators = new HashSet<>();
+		dominatorsTemp = new HashSet<>();
+		dominatorFrontiers = new HashSet<>();
+		immediateDominants = new HashSet<>();
 		parentFunction  = _parentFunction;
 
 		_index = ++_sindex;
@@ -24,7 +24,7 @@ public class BasicBlock {
 		loopBody = false; 
 		loopHeader = false ;
 		
-		liveIn = new HashSet<String>();
+		liveIn = new HashSet<>();
 
 		id = _index;
         tag = "Block " + id.toString();
@@ -69,8 +69,7 @@ public class BasicBlock {
 			throw new NullPointerException("Setting dominator of basic block to null");
 		dominators.add(succ);
 	}
-	
-	
+
 	public void removeDominator(BasicBlock succ) throws AnalysisException {
 		if (succ == null)
 			throw new NullPointerException("Trying to remove a null dominator");
@@ -78,11 +77,7 @@ public class BasicBlock {
 			throw new AnalysisException("The basic block is not a dominator");
 		dominators.remove(succ);
 	}
-	
-	/**
-	 * Remove a successor.
-	 * @throws AnalysisException 
-	 */
+
 	public void removeSuccessor(BasicBlock succ) throws AnalysisException {
 		if (succ == null)
 			throw new NullPointerException("Trying to remove a null successor");
@@ -91,25 +86,16 @@ public class BasicBlock {
 		successors.remove(succ);
 	}
 
-	
-	
 	public HashSet<BasicBlock> getDominators() {
 		return dominators;
 	}
 
-	/**
-	 * Adds a Predecessor.
-	 */
 	public void addPredecessor(BasicBlock succ) {
 		if (succ == null)
 			throw new NullPointerException("Setting predecessor of basic block to null");
 		predecessors.add(succ);
 	}
-	
-	/**
-	 * Remove a Predecessor.
-	 * @throws AnalysisException 
-	 */
+
 	public void removePredecessor(BasicBlock succ) throws AnalysisException {
 		if (succ == null)
 			throw new NullPointerException("Trying to remove a null predecessor");
@@ -118,9 +104,6 @@ public class BasicBlock {
 		predecessors.remove(succ);
 	}
 
-	/**
-	 * Returns the Predecessors of this block.
-	 */
 	public ArrayList<BasicBlock> getPredecessors() {
 		return predecessors;
 	}
@@ -136,14 +119,11 @@ public class BasicBlock {
 	public List<AbstractNode> getNodes() {
 		return nodes;
 	}
-	
 
-	
 	public ArrayList<BasicBlock> getSuccessors(){
 		return successors;
 	}
-	
-	
+
 	public BasicBlock taken ;
 	public BasicBlock fallThrough ;
 	public BasicBlock parent;
@@ -266,7 +246,7 @@ public class BasicBlock {
             }
 
 			if (node instanceof IONode && ((IONode)node).writeData()) {
-				AbstractNode src =((IONode)node).getOperandAtIndex(0);
+				AbstractNode src = node.getOperandAtIndex(0);
 				//String address = Variable.getTopmostName(src);
 				//saji TODO new
 				// ((IONode)node).operands.set(0, new LabelNode(address));
@@ -326,28 +306,28 @@ public class BasicBlock {
 		return str + counter++;
 	}
 
-	public static  int _sindex = 0;
-	public static  int _lindex = 0;
+	private static  int _sindex = 0;
+	private static  int _lindex = 0;
 	private Integer _index;
 	private List<AbstractNode> nodes;
 	public ArrayList<BasicBlock> successors;
-	public ArrayList<BasicBlock> predecessors;
+	private ArrayList<BasicBlock> predecessors;
 
 	public HashSet<BasicBlock> dominators; // Blocks that are dominating this
 	public HashSet<BasicBlock> dominatorsTemp;
 	public HashSet<BasicBlock> immediateDominants;
 	//public HashSet<BasicBlock> dominants; // Blocks this one is dominating
 	public HashSet<BasicBlock> dominatorFrontiers;
-	public Function parentFunction;
+	private Function parentFunction;
 
 
 	public boolean loopHeader ;
-	public boolean loopBody ;
+	private boolean loopBody ;
 	public Set<String> liveIn ;
 
 	public int bFrom ;
 	public int bTo ;
-    public String tag;
+    private String tag;
 
 
     private Integer lineIndex; // a lineindex used for phi nodes

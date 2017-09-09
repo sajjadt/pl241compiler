@@ -69,7 +69,6 @@ public class Variable {
         return null;
     }
 
-
     public ArrayList<Integer> getDimensions() {
 	    return dimensions;
     }

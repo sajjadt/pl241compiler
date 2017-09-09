@@ -19,12 +19,10 @@ public class MemoryStoreNode extends AbstractNode {
         super.addOperand(srcOperand);
     }
 
-
     @Override
     public String getOutputOperand() {
         return null;
     }
-
 
     @Override
     public boolean isExecutable() {

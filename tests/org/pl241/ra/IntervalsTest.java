@@ -2,7 +2,7 @@ package org.pl241.ra ;
 
 import org.pl241.ra.LiveInterval;
 
-public class IntervalsTest {
+class IntervalsTest {
 	public static void main(String[] args) {
 		// Crate an interval
 		LiveInterval int1 = new LiveInterval("v1", false);

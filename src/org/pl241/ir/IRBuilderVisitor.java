@@ -88,7 +88,7 @@ public class IRBuilderVisitor implements ParseTreeNodeVisitor {
 				}
 			}
 		} else { // ARRAY
-			ArrayList<Integer> dimensions = new ArrayList<Integer>();
+			ArrayList<Integer> dimensions = new ArrayList<>();
 			TypeDeclNode tctx = (TypeDeclNode) node.getChild(0) ;
 			for( int i = 1 ;i < tctx.children.size() ; ++i ){
 				if( tctx.getChild(i).getText().equals("[") ){

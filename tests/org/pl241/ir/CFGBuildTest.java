@@ -10,7 +10,7 @@ import org.pl241.frontend.Parser;
 import org.pl241.frontend.Parser.ParseTreeNode;
 import org.pl241.frontend.Tokenizer;
 
-public class CFGBuildTest {
+class CFGBuildTest {
 	public static void main(String[] args) {
 		Tokenizer tokenizer = new Tokenizer();
 		Parser parser = new Parser();

@@ -57,10 +57,7 @@ public class BranchNode extends AbstractNode{
     }
 
     public boolean isConditioned() {
-        if (type == Type.BRA)
-            return false;
-        else
-            return true;
+        return type != Type.BRA;
     }
 
 
@@ -82,12 +79,12 @@ public class BranchNode extends AbstractNode{
     public BasicBlock fallThroughBlock;
 
     boolean isCall;
-    public String callTarget;
+    private String callTarget;
     public Type type;
 
-    public static Map<String, Type> branchMap;
+    private static Map<String, Type> branchMap;
     public static Map<String, Type> branchMapReversed;
-    public static Map<Type, String> branchMapR;
+    private static Map<Type, String> branchMapR;
     static {
         branchMap = new HashMap<>();
 

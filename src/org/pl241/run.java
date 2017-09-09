@@ -16,7 +16,7 @@ import org.pl241.ir.Function;
 import org.pl241.ir.IRBuilderVisitor;
 import org.pl241.ra.RegisterAllocator;
 
-public class run
+class run
 {
 	public static void main(String[] args) throws IOException
 	{
@@ -28,7 +28,7 @@ public class run
         boolean execute = true;
 
         int numberOfRegisters = 4;
-		String testName = "test006";
+		String testName = "factorial";
         String testPath = "inputs" + File.separator + testName + ".txt";
 
         // Tokenize the input
@@ -56,10 +56,11 @@ public class run
             e.printStackTrace();
             return;
         }
-
+        
         // Process and optimize the program
         try {
             for (Function f : program.getFunctions()) {
+                f.insertReadParams();
                 f.insertBranches();
                 f.setBranchTargets();
                 f.removeUnreachableFlowEdges();

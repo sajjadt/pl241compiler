@@ -10,7 +10,7 @@ public class CallInstruction extends Instruction {
     }
 
     public Integer jumpAddress;
-    public boolean resolved;
+    private boolean resolved;
     public String destFunc;
 
     @Override

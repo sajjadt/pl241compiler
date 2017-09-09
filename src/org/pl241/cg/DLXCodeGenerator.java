@@ -18,16 +18,17 @@ public class DLXCodeGenerator {
     public DLXCodeGenerator(LowLevelProgram program) {
         this.lowLevelProgram = program;
         this.irProgram = lowLevelProgram.getIRProgram();
-        this.memLayout = new ArrayList<>(Collections.nCopies(memSize/4, 0));
+        int MEMORY_SIZE = 2000;
+        this.memLayout = new ArrayList<>(Collections.nCopies(MEMORY_SIZE /4, 0));
         this.functionMap = new HashMap<>();
         //this.globalVarMap = new HashMap<>();
     }
 
-    public ArrayList<Integer> initialize () {
+    private ArrayList<Integer> initialize() {
         ArrayList<Integer> initCode = new ArrayList<>();
 
         // Initialize globalMap
-        // Global index keeps track of variables on HEAP
+        // Global index keeps track of variables on GLOBALS_ADDRESS
         // it increases
         int globalIndex = 0;
         Function main = irProgram.getMainFunction();
@@ -40,7 +41,8 @@ public class DLXCodeGenerator {
         // Other initializations go here!
         int currentIndex;
         // Set SP
-        initCode.add(DLX.assemble(DLX.ADDI, this.SP, this.ZERO, stackAddress));
+        int STACK_ADDRESS = 2000;
+        initCode.add(DLX.assemble(DLX.ADDI, this.SP, this.ZERO, STACK_ADDRESS));
 
         // Reserve spot for jump to main
         int jumpToMainIndex = 1;
@@ -55,8 +57,9 @@ public class DLXCodeGenerator {
 
         // Figure out function mapping
         // There is one-to-one mapping from LL Instructions to machine instructions
+        int CODE_ADDRESS = 10;
         for (Function f: irProgram.getFunctions()) {
-            functionMap.put(f.name, (CODE + currentIndex)*4);
+            functionMap.put(f.name, (CODE_ADDRESS + currentIndex)*4);
             currentIndex += lowLevelProgram.getFuncitonInstructions(f).size();
         }
 
@@ -80,7 +83,7 @@ public class DLXCodeGenerator {
         // Initialize and jump to main
         memLayout.addAll(0, initialize());
         // Add functions code
-        memLayout.addAll(CODE, functionCode);
+        memLayout.addAll(CODE_ADDRESS, functionCode);
 
         System.out.println("Function map: " + functionMap);
 
@@ -147,6 +150,10 @@ public class DLXCodeGenerator {
                 return DLX.assemble(DLX.POP, ins.sourceOperand1.value, SP, 4);
             case JSR:
                 return DLX.assemble(DLX.JSR, ((CallInstruction)ins).jumpAddress);
+            case STORE:
+                return DLX.assemble(DLX.STX, ins.sourceOperand1.value, ins.destinationOperand.value, ZERO);
+            case LOAD:
+                return DLX.assemble(DLX.LDX, ins.destinationOperand.value, ins.sourceOperand1.value, ins.sourceOperand2.value);
 
             default:
                 throw new IllegalArgumentException();
@@ -234,7 +241,6 @@ public class DLXCodeGenerator {
                 throw new Error("Unsupported op " + operation);
         }
     }
-
     private Integer generateIO(Instruction.Type operation, Operand operand) {
 
         ArrayList<Integer> instructions = new ArrayList<>();
@@ -251,87 +257,17 @@ public class DLXCodeGenerator {
 
     }
 
-/*
-
-
-    private ArrayList<Integer> generateBlock(Function f, BasicBlock b, HashMap<String, Integer> localVarMap) {
-
-        System.out.println("Generating block: " + b);
-        System.out.println();
-
-
-        ArrayList<Integer> instructions = new ArrayList<>();
-        Allocation allocation = null;
-        // Handle instructions
-        for (AbstractNode ins : b.getNodes()) {
-            if (ins instanceof VarGetNode) {
-                System.out.println("Generating load: " + ins.toString());
-
-                // Destination of load instruction
-                allocation = ins.allocation;
-                assert allocation.type == Allocation.Type.REGISTER;
-                // TODO use temp register for memory allocated vars
-
-                if (localVarMap.containsKey(((VarGetNode) ins).variableId)) {
-                    instructions.add(DLX.assemble(DLX.LDW, allocation.address, this.FRAMEP, localVarMap.get(((VarGetNode) ins).variableId)));
-                } else if (globalVarMap.containsKey(((VarGetNode) ins).variableId)) {
-                    instructions.add(DLX.assemble(DLX.ADDI, this.TEMP_REGISTER, this.ZERO, BSS));
-                    instructions.add(DLX.assemble(DLX.LDW, allocation.address, this.TEMP_REGISTER, globalVarMap.get(((VarGetNode) ins).variableId)));
-                } else {
-                    throw new Error("variable not found in both local and global map");
-                }
-            }
-                instanceof VarSetNode) {
-                System.out.println("Generating store: " + ins.toString());
-
-                // Source of write instruction
-                // x <- imm : move imm value into temp
-                if (ins.getOperandAtIndex(0) instanceof ImmediateNode) {
-                    instructions.add(DLX.assemble(DLX.ADDI, this.TEMP_REGISTER, this.ZERO, ((ImmediateNode) ins.getOperandAtIndex(0)).getValue()));
-                    allocation = new Allocation(Allocation.Type.REGISTER, TEMP_REGISTER);
-                } else {
-                    allocation = ins.getOperandAtIndex(0).allocation;
-                }
-                assert allocation.type == Allocation.Type.REGISTER;
-                // TODO use temp register for memory allocated vars
-
-                if (localVarMap.containsKey(((VarSetNode) ins).originalMemAddress)) {
-                    instructions.add(DLX.assemble(DLX.STW, allocation.address, this.FRAMEP, localVarMap.get(((VarSetNode) ins).originalMemAddress)));
-                } else if (globalVarMap.containsKey(((VarSetNode) ins).originalMemAddress)) {
-                    instructions.add(DLX.assemble(DLX.ADDI, this.TEMP_REGISTER, this.ZERO, BSS));
-                    instructions.add(DLX.assemble(DLX.STW, allocation.address, this.TEMP_REGISTER, globalVarMap.get(((VarSetNode) ins).originalMemAddress)));
-                } else {
-                    throw new Error("variable not found in both local and global map");
-                }
-
-            }
-        }
-        return instructions;
-    }
-
-
-
-
-
-    */
 	// Contains the list of DLX instructions
 	private ArrayList<Integer> memLayout;
 
+	// Constants
 	public static final int ZERO = 0 ;
-    public static final int TEMP_REGISTER = 27;
+    public static final int SCRATCH_REGISTER = 27;
     public static final int RA = 31; // RA contains the return address when we use JSP
     public static final int FRAMEP = 28;
     public static final int SP = 29; // Register 29 is the stack pointer
-
-    public static final int numRegisters = 32;
-
-    // In bytes
-    private final int memSize = 2000 ;
-	private int stackAddress = 2000 ; // Grows downwards
-	private int HEAP = 1000 ; // Grows upwards
-
-    // In words
-    private int CODE = 10 ; // Grows downwards. starts with Main.
+    public static final int NUM_REGISTERS = 32;
+    private final int GLOBALS_ADDRESS = 1000 ; // Grows upwards
 
     // Input program representations
 	private LowLevelProgram lowLevelProgram;

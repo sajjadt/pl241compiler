@@ -7,11 +7,8 @@ import java.util.Map;
 import org.pl241.ir.*;
 import org.pl241.ir.Function;
 
-public class CopyPropagation {
-
-
+public class CopyPropagation implements Optimization {
     public void apply(Function function) {
-
         Map<String, String> copyTable = new HashMap<>();
 
         for (BasicBlock block : function.basicBlocks) {

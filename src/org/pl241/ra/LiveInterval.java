@@ -6,7 +6,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.ListIterator;
 
-public class LiveInterval implements Comparable<LiveInterval> {
+class LiveInterval implements Comparable<LiveInterval> {
 
     LiveInterval(String _varName, boolean _useRegister) {
 		varName = _varName ;
@@ -18,7 +18,7 @@ public class LiveInterval implements Comparable<LiveInterval> {
 	private class Range implements Comparable<Range> {
 		int start ;
         int finish;
-		public Range(int _start , int _finish) {
+		Range(int _start, int _finish) {
 			start = _start ;
 			finish = _finish; 
 		}
@@ -121,7 +121,7 @@ public class LiveInterval implements Comparable<LiveInterval> {
 		}
 		return ret.toString();
 	}
-	
+
 	public List<Range> getRanges() {
 		return ranges;
 	}
@@ -184,7 +184,7 @@ public class LiveInterval implements Comparable<LiveInterval> {
     public Allocation allocatedLocation;
     private List<Range> ranges; // Sorted
     public String varName;
-    public List<Integer> referencesList;
+    private List<Integer> referencesList;
     public Integer definitionPoint;
-    boolean useRegister;
+    private boolean useRegister;
 }

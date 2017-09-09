@@ -16,8 +16,7 @@ public class IONode extends AbstractNode  {
                 default: throw new IllegalArgumentException();
             }
         }
-
-    };
+    }
 
     public IONode() {
         super();

@@ -16,16 +16,21 @@ public class DLX {
 	/* for easier debug */
 	 
 	// there will be an exception if you enter less than required
-	static int[] INPUT_ARRAY = {}; // add your inputs to here 
-	static int INPUT_ARRAY_COUNTER = 0; // do not change this
+	private static int[] INPUT_ARRAY = {}; // add your inputs to here
+	private static int INPUT_ARRAY_COUNTER = 0; // do not change this
 	
 	// processor state variables
-	static int R[] = new int [32];
-	static int PC, op, a, b, c, format; 
+	private static int[] R = new int [32];
+	private static int PC;
+	private static int op;
+	private static int a;
+	private static int b;
+	private static int c;
+	private static int format;
 
 	// emulated memory
-	static final int MemSize = 50000; // bytes in memory (divisible by 4)
-	static int M[] = new int [MemSize/4];
+	private static final int MemSize = 50000; // bytes in memory (divisible by 4)
+	private static int[] M = new int [MemSize/4];
 
 	public static void load(ArrayList<Integer> program ) {
 		int i;
@@ -39,7 +44,7 @@ public class DLX {
 	
 	public static void execute() throws IOException {
 		int origc = 0; // used for F2 instruction RET
-		for (int i = 0; i < 32; i++) { R[i] = 0; };
+		for (int i = 0; i < 32; i++) { R[i] = 0; }
 		PC = 0; R[30] = MemSize - 1;
 
 		try {
@@ -256,7 +261,7 @@ public class DLX {
 	}
 
 	// Mnemonic-to-Opcode mapping
-	static final String mnemo[] = {
+	private static final String[] mnemo = {
 	"ADD","SUB","MUL","DIV","MOD","CMP","ERR","ERR","OR","AND","BIC","XOR","LSH","ASH","CHK","ERR",
 	"ADDI","SUBI","MULI","DIVI","MODI","CMPI","ERRI","ERRI","ORI","ANDI","BICI","XORI","LSHI","ASHI","CHKI","ERR",
 	"LDW","LDX","POP","ERR","STW","STX","PSH","ERR","BEQ","BNE","BLT","BGE","BLE","BGT","BSR","ERR",
@@ -266,34 +271,34 @@ public class DLX {
 	static final int SUB = 1;
 	static final int MUL = 2;
 	static final int DIV = 3;
-	static final int MOD = 4;
+	private static final int MOD = 4;
 	static final int CMP = 5;
-	static final int OR  = 8;
-	static final int AND = 9;
-	static final int BIC = 10;
-	static final int XOR = 11;
-	static final int LSH = 12;
-	static final int ASH = 13;
-	static final int CHK = 14;
+	private static final int OR  = 8;
+	private static final int AND = 9;
+	private static final int BIC = 10;
+	private static final int XOR = 11;
+	private static final int LSH = 12;
+	private static final int ASH = 13;
+	private static final int CHK = 14;
 
 	static final int ADDI = 16;
 	static final int SUBI = 17;
 	static final int MULI = 18;
 	static final int DIVI = 19;
-	static final int MODI = 20;
+	private static final int MODI = 20;
 	static final int CMPI = 21;
-	static final int ORI  = 24;
-	static final int ANDI = 25;
-	static final int BICI = 26;
-	static final int XORI = 27;
-	static final int LSHI = 28;
-	static final int ASHI = 29;
-	static final int CHKI = 30;
+	private static final int ORI  = 24;
+	private static final int ANDI = 25;
+	private static final int BICI = 26;
+	private static final int XORI = 27;
+	private static final int LSHI = 28;
+	private static final int ASHI = 29;
+	private static final int CHKI = 30;
 
-	static final int LDW = 32;
+	private static final int LDW = 32;
 	static final int LDX = 33;
 	static final int POP = 34;
-	static final int STW = 36;
+	private static final int STW = 36;
 	static final int STX = 37;
 	static final int PSH = 38; 
 
@@ -309,13 +314,13 @@ public class DLX {
 
 	static final int RDI = 50;
 	static final int WRD = 51;
-	static final int WRH = 52;
+	private static final int WRH = 52;
 	static final int WRL = 53;
 	
-	static final int ERR = 63; // error opcode which is insertered by loader 
+	private static final int ERR = 63; // error opcode which is insertered by loader
 	                           // after end of program code
 
-	static void disassem(int instructionWord) {
+	private static void disassem(int instructionWord) {
 		op = instructionWord >>> 26; // without sign extension
 		switch (op) {	
 			
@@ -391,7 +396,7 @@ public class DLX {
 		}
 	}
 	
-	public static String disassemble(int instructionWord) {
+	private static String disassemble(int instructionWord) {
 		
 		disassem(instructionWord);
 		String line = mnemo[op] + "  ";
@@ -588,15 +593,16 @@ public class DLX {
 		return op << 26 | c;
 	}
 	
-	static void bug(int n) {
+	private static void bug(int n) {
 		System.out.println("bug number: " + n);
 		try{ 
 			System.in.read(); 
-		} catch (Exception ee) {;}
+		} catch (Exception ee) {
+		}
 		System.exit(n);
 	}
 	
-	static String print(int opcode, int arg1, int arg2, int arg3) {
+	private static String print(int opcode, int arg1, int arg2, int arg3) {
 		
 		String line = mnemo[opcode] + "  ";
 		

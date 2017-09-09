@@ -1,6 +1,6 @@
 package org.pl241.frontend;
 
-public class Token {
+class Token {
 	public static final int EPSILON = 0;
 
 	public static final int MAIN = 1;

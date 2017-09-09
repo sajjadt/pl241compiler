@@ -8,7 +8,7 @@ public class VarSetNode extends AbstractNode {
         originalMemAddress = memAddress;
 
     }
-	
+
 	void setSrcOperand(AbstractNode srcOperand) {
 		super.addOperand(srcOperand);
 	}

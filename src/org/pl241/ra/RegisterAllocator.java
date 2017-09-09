@@ -19,16 +19,17 @@ public class RegisterAllocator { // Allocate Registers for one function
 
         // Create Live Intervals
         IntervalBuilder intervalBuilder = new IntervalBuilder();
+        System.out.println("For function " + function.name);
         intervalBuilder.build(function.getBlocksInLayoutOrder());
         intervalBuilder.printIntervals();
 
         // Linear Scanner works with non-splitted intervals
-        scanner = new LinearScanner(intervalBuilder.getLiveIntervals(), numPhysicalRegisters);
+        LinearScanner scanner = new LinearScanner(intervalBuilder.getLiveIntervals(), numPhysicalRegisters);
         scanner.scan();
 
         List<LiveInterval> alloc = scanner.handled;
 
-        System.out.println(alloc);
+        //System.out.println(alloc);
 
         // At this point we need a list of allocations with these properties for resolve function:
         // access to all live intervals at given time
@@ -41,7 +42,7 @@ public class RegisterAllocator { // Allocate Registers for one function
         }
 
         //assert intervalMap.keySet().equals(alloc)
-
+        System.out.println(function.name + "  allocations :");
         intervalBuilder.printIntervals();
         return intervalMap;
     }
@@ -148,8 +149,7 @@ public class RegisterAllocator { // Allocate Registers for one function
 
 
 
-    public HashMap<String, ArrayList<LiveInterval>> intervalMap;
+    private HashMap<String, ArrayList<LiveInterval>> intervalMap;
     private int numPhysicalRegisters;
-    private LinearScanner scanner ;
 
 }

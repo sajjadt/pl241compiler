@@ -56,12 +56,12 @@ public class Tokenizer {
 		this.add("\\;", Token.SEMICOLON); // ;
 	}
 	public Tokenizer() {
-	  tokenInfos = new LinkedList<TokenInfo>();
-	  tokens = new LinkedList<Token>();
+	  tokenInfos = new LinkedList<>();
+	  tokens = new LinkedList<>();
 	  this.registerTokens();
 	}
 	
-	public void add(String regex, int token) {
+	private void add(String regex, int token) {
 		  tokenInfos.add(
 		  new TokenInfo(
 		  Pattern.compile("^("+regex+")"), token));
@@ -72,7 +72,7 @@ public class Tokenizer {
 	}
 	
 	public void tokenize(String str) throws Exception {
-		  String s = new String(str);
+		  String s = str;
 		  tokens.clear();
 		  while (!s.equals("")) {
 			  boolean match = false;
@@ -101,10 +101,10 @@ public class Tokenizer {
 		  }
 	}
 	  private class TokenInfo {
-	    public final Pattern regex;
-	    public final int token;
+	    final Pattern regex;
+	    final int token;
 	
-	    public TokenInfo(Pattern regex, int token) {
+	    TokenInfo(Pattern regex, int token) {
 	      super();
 	      this.regex = regex;
 	      this.token = token;
