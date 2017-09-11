@@ -314,17 +314,18 @@ public class IRBuilderVisitor implements ParseTreeNodeVisitor {
 
 		String varName = node.getChild(0).getText() ;
 
-        // params, local vars, global vars
-        Variable var = currentFunction.parameters.getVar(varName);
-        if( var == null )
-            var = currentFunction.localVariables.getVar(varName);
+        // Fetch local/global vars dimension info
+        Variable var = currentFunction.localVariables.getVar(varName);
 		if( var == null )
 			var = mainFunction.localVariables.getVar(varName);
-		assert var != null: "Variable " + varName + " not found";
 
         // Array of Integers
 		if (node.children.size() > 1) {
-			// Need to calculate the access jumpAddress first
+
+            assert var != null: "Array variable " + varName + " not found";
+
+
+            // Need to calculate the access jumpAddress first
 			int index = 0;
 			AbstractNode offsetCalcNode = null;
 			AbstractNode tempOffsetCalcNode = null;
@@ -373,7 +374,11 @@ public class IRBuilderVisitor implements ParseTreeNodeVisitor {
 			// Integer variable
             // It is not clear if this is being allocated on the stack or a register
             // For now we emit regular load/store nodes
-			if (lvalue)
+
+
+
+
+            if (lvalue)
 				expressionStack.push(new VarSetNode(varName));
 			else
 				expressionStack.push(new VarGetNode(varName));
@@ -547,7 +552,7 @@ public class IRBuilderVisitor implements ParseTreeNodeVisitor {
 	public void exit(FormalParamNode node) {
 		if( node.children.size() > 2 )
 			for( int i = 1 ; i < node.children.size(); i+=2)
-				currentFunction.parameters.add( new Variable( node.children.get(i).getText() , VariableType.INTEGER));
+				currentFunction.parameters.put(node.children.get(i).getText(), i/2);
 	}
 
 	@Override

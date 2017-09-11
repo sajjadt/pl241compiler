@@ -55,7 +55,7 @@ public class DLX {
 			disassem(M[PC]); // initializes op, a, b, c
 
             if (printDisassembly)
-                System.out.print(print(op, a, b, c));
+                System.out.print(PC*4 + ":" + print(op, a, b, c));
 
 			int nextPC = PC + 1;
 			if (format==2) {
@@ -298,10 +298,10 @@ public class DLX {
 	private static final int ASHI = 29;
 	private static final int CHKI = 30;
 
-	private static final int LDW = 32;
+    static final int LDW = 32;
 	static final int LDX = 33;
 	static final int POP = 34;
-	private static final int STW = 36;
+    static final int STW = 36;
 	static final int STX = 37;
 	static final int PSH = 38; 
 

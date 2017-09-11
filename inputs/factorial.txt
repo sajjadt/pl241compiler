@@ -1,5 +1,5 @@
 main
-var input;
+var input, x;
 function factIter(n);
 var i, f, x;
 {
@@ -21,10 +21,11 @@ function factRec(n);
 };
 
 {
-	#let input <- call InputNum();
+	let input <- call InputNum();
 	#call OutputNum(call factIter(input));
 	#call OutputNewLine();
-	call OutputNum(call factRec(input));
+	let x <- call factRec(input);
+	call OutputNum(x);
 	call OutputNewLine()
 }
 .

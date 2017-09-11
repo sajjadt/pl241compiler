@@ -158,22 +158,22 @@ public class BasicBlock {
 	}
 
 
-	public boolean hasAssignmentTo(Variable var) {
+	public boolean hasAssignmentTo(String variableName) {
 		for (AbstractNode node: getNodes()) {
 			if (node instanceof PhiFunctionNode)
-				if (((PhiFunctionNode)node).variableName.equals(var.name))
+				if (((PhiFunctionNode)node).variableName.equals(variableName))
 					return true;
 
 			if (node instanceof VarSetNode)
-				if (((VarSetNode)node).memAddress.equals(var.name))
+				if (((VarSetNode)node).memAddress.equals(variableName))
 					return true;
 		}
 		return false;
 	}
 
 
-	public void addPhiNode(Variable var) {
-		PhiFunctionNode phi = new PhiFunctionNode(var.name) ;
+	public void addPhiNode(String variableName) {
+		PhiFunctionNode phi = new PhiFunctionNode(variableName) ;
 		if (this.lineIndex != null)
 			phi.sourceIndex = this.lineIndex ;
 		else {

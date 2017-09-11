@@ -11,7 +11,7 @@ public class Function  {
     public Function(){
         basicBlocks = new ArrayList<>();
         localVariables = new VarInfoTable();
-        parameters = new VarInfoTable();
+        parameters = new HashMap<>();
         _index = _sindex++;
         this.program = null;
     }
@@ -45,41 +45,6 @@ public class Function  {
 			}
 		}
 	}
-
-    public void insertReadVars() {
-	    // We add load instructions for all the varialbes
-        // There might be a case of duplicates
-        // This will be taken care of by DeadCodeElimination
-
-        HashSet<String> vars = new HashSet<>();
-
-	    for (Variable var: parameters.getVars()) {
-	        AbstractNode labelNode = new LabelNode(var.name);
-	        AbstractNode memLoadNode = new MemoryLoadNode(labelNode);
-	        AbstractNode varSetNode = new VarSetNode(var.name, memLoadNode);
-
-	        this.getEntryBlock().getNodes().add(0, varSetNode);
-            this.getEntryBlock().getNodes().add(0, memLoadNode);
-	        this.getEntryBlock().getNodes().add(0, labelNode);
-	        vars.add(var.name);
-        }
-
-        // TODO issue variable get for global variables
-        assert program != null;
-        for (Variable var: program.getMainFunction().localVariables.getVars()) {
-
-            assert (!vars.contains(var.name)) : "Variable " + var.name + " is already defined in globals";
-
-            AbstractNode labelNode = new LabelNode(var.name);
-            AbstractNode memLoadNode = new MemoryLoadNode(labelNode);
-            AbstractNode varSetNode = new VarSetNode(var.name, memLoadNode);
-
-            this.getEntryBlock().getNodes().add(0, varSetNode);
-            this.getEntryBlock().getNodes().add(0, memLoadNode);
-            this.getEntryBlock().getNodes().add(0, labelNode);
-            vars.add(var.name);
-        }
-    }
 
 	public void toDot(PrintWriter pw, boolean standalone, boolean main, boolean printAllocation) {
 
@@ -252,13 +217,13 @@ public class Function  {
 
 	public void insertPhiFunctions() {
 
-	    List<Variable> vars = new ArrayList<>();
-	    vars.addAll(parameters.getVars());
-	    vars.addAll(localVariables.getVars());
+	    List<String> vars = new ArrayList<>();
+	    vars.addAll(parameters.keySet());
+	    vars.addAll(localVariables.getVariableNames());
 	    // TODO global vars as well??
         // TODO must be unique?
 
-		for (Variable var: vars) {
+		for (String var: vars) {
 			Set<BasicBlock> workList = new HashSet<>();
 			Set<BasicBlock> everOnWorkList =  new HashSet<>();
 			Set<BasicBlock> alreadyHasPhiFunc =  new HashSet<>();
@@ -385,10 +350,10 @@ public class Function  {
         for (Variable var: localVariables.getVars())
             System.out.println(var.toString());
 
-        if (parameters.getVars().size() > 0) {
+        if (parameters.size() > 0) {
             System.out.println(name + " parameters");
-            for (Variable var : parameters.getVars())
-                System.out.println(var.toString());
+            for (String var : parameters.keySet())
+                System.out.println(var);
         }
     }
 
@@ -398,7 +363,7 @@ public class Function  {
     private static int _sindex = 0;
     private int _index;
     public VarInfoTable localVariables;
-    public VarInfoTable parameters;
+    public Map<String, Integer> parameters;
     public List<BasicBlock> basicBlocks;
     private Program program;
 

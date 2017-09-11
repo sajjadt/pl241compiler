@@ -27,7 +27,7 @@ class run
         boolean genCode = true;
         boolean execute = true;
         boolean invoke_png_gen_script = true;
-        boolean print_disassembly = false;
+        boolean print_disassembly = true;
 
         int numberOfRegisters = 16;
 		String testName = "factorial";
@@ -118,18 +118,18 @@ class run
                     // Deconstructs SSA form
                     // Inserts additional moves if necessary
                     allocator.resolve(f);
-                }
-                if (visualize) {
-                    program.visualize("Vis" + File.separator + testName + "_pass_4_ir.dot", false);
-                    program.visualize("Vis" + File.separator + testName + "_pass_4_allocated.dot", true);
-                }
 
-                for (Function f : program.getFunctions()) {
+                    //if (visualize) {
+                    //    program.visualize("Vis" + File.separator + testName + "_pass_4_ir.dot", false);
+                    //    program.visualize("Vis" + File.separator + testName + "_pass_4_allocated.dot", true);
+                    //}
+
                     // At this point all nodes have been assigned an allocation
                     // Lower them to machine level instructions
                     // Emit branch instructions with proper offset values
                     // Also insert additional instructions such as memory operands access
-                    lowLevelProgram.lowerAndAddFunction(f);
+
+                    lowLevelProgram.lowerAndAddFunction(f, allocator);
                     lowLevelProgram.visualizeFunction("Vis" + File.separator + testName + "_" + f.name + "_pass_5_lowered.dot", f.name);
                 }
 

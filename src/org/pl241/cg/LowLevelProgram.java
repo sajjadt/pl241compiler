@@ -5,6 +5,7 @@ import org.pl241.ir.AbstractNode;
 import org.pl241.ir.BasicBlock;
 import org.pl241.ir.Function;
 import org.pl241.ir.Variable;
+import org.pl241.ra.Allocation;
 import org.pl241.ra.RegisterAllocator;
 
 import java.io.File;
@@ -38,7 +39,7 @@ public class LowLevelProgram {
 
 
 
-    public void lowerAndAddFunction(Function f) {
+    public void lowerAndAddFunction(Function f, RegisterAllocator allocator) {
         List<Instruction> instructions = new ArrayList<>();
         Map<Integer, Integer> blockMap = new HashMap<>();
 
@@ -90,21 +91,37 @@ public class LowLevelProgram {
             currentIndex += 1;
         }
 
-        // Save SP in FrameP for user access to variables
-        instructions.add(0, new Instruction(Instruction.Type.MOV,
-                new Operand(Operand.Type.REGISTER, SP),
-                null,
-                new Operand(Operand.Type.REGISTER, FRAMEP)));
-        // Make room for local variables
-        instructions.add(1, new Instruction(Instruction.Type.ADDI,
-                new Operand(Operand.Type.REGISTER, SP),
-                new Operand(Operand.Type.IMMEDIATE, displacement),
-                new Operand(Operand.Type.REGISTER, SP))
-        );
 
         // Transfer parameters to their allocated space
-        for (Variable var: f.localVariables.getVars()) {
+        // Add them to the beginning of the function
+        for (String param: f.parameters.keySet()) {
 
+            if(f.getEntryBlock().liveIn.contains(param)) {
+                Allocation allocation = allocator.getAllocationAt(param, 0);
+                assert allocation != null;
+                assert allocation.type == Allocation.Type.GENERAL_REGISTER;
+
+                instructions.add(0, new Instruction(Instruction.Type.LOADI,
+                        new Operand(Operand.Type.REGISTER, FRAMEP),
+                        new Operand(Operand.Type.IMMEDIATE, f.parameters.get(param) * 4),
+                        new Operand(Operand.Type.REGISTER, allocation.address)));
+
+            }
+        }
+
+        if (!f.name.equals("main")){
+            // Save SP in FrameP to access parameters/local variables
+            instructions.add(0, new Instruction(Instruction.Type.MOV,
+                    new Operand(Operand.Type.REGISTER, SP),
+                    null,
+                    new Operand(Operand.Type.REGISTER, FRAMEP)));
+
+            // Make room for local variables
+            if (f.localVariables.getVars().size() > 0)
+                instructions.add(1, new Instruction(Instruction.Type.ADDI,
+                        new Operand(Operand.Type.REGISTER, SP),
+                        new Operand(Operand.Type.IMMEDIATE, displacement),
+                        new Operand(Operand.Type.REGISTER, SP)));
         }
 
         System.out.println("Bmap:" + blockMap);

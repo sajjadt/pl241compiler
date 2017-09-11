@@ -17,11 +17,16 @@ public class VarInfoTable {
 	Variable getVar(String id){
 		return variables.get(id) ;
 	}
+
 	public List<Variable> getVars(){
 		return new ArrayList<>(variables.values());
 	}
-	
-	@Override
+
+    public List<String> getVariableNames(){
+	    return new ArrayList<>(variables.keySet());
+    }
+
+    @Override
 	public String toString() {
 		StringBuilder ret = new StringBuilder();
 		for( Variable s: variables.values() ){

@@ -146,16 +146,17 @@ public class DLXCodeGenerator {
                 else
                     return DLX.assemble(DLX.ADD, ins.destinationOperand.value, ins.sourceOperand1.value, ZERO);
             case PSH:
-                return DLX.assemble(DLX.PSH, ins.sourceOperand1.value, SP, -4);
+                return DLX.assemble(DLX.PSH, ins.sourceOperand1.value, SP, 4);
             case POP:
-                return DLX.assemble(DLX.POP, ins.sourceOperand1.value, SP, 4);
+                return DLX.assemble(DLX.POP, ins.destinationOperand.value, SP, 4);
             case JSR:
                 return DLX.assemble(DLX.JSR, ((CallInstruction)ins).jumpAddress);
             case STORE:
                 return DLX.assemble(DLX.STX, ins.sourceOperand1.value, ins.destinationOperand.value, ZERO);
             case LOAD:
                 return DLX.assemble(DLX.LDX, ins.destinationOperand.value, ins.sourceOperand1.value, ins.sourceOperand2.value);
-
+            case LOADI:
+                return DLX.assemble(DLX.LDW, ins.destinationOperand.value, ins.sourceOperand1.value, ins.sourceOperand2.value);
 
             default:
                 throw new IllegalArgumentException();

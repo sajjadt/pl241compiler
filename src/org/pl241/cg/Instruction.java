@@ -34,6 +34,7 @@ public class Instruction {
         CMPI,
         // Load/Store
         LOAD,
+        LOADI,
         POP,
         STORE,
         PSH,
@@ -455,13 +456,19 @@ public class Instruction {
         instructions.add(new CallInstruction(callNode.callTarget));
 
         //Discard parameters
-        instructions.add(new Instruction(Type.ADDI, new Operand(Operand.Type.REGISTER, RA), new Operand(Operand.Type.IMMEDIATE, 4*callNode.getInputOperands().size()), new Operand(Operand.Type.REGISTER, RA)));
+        for (AbstractNode node: callNode.getInputOperands()) {
+            assert node.hasOutputVirtualRegister();
+            Allocation srcAllocation = node.allocation; // allocator.getAllocationAt(node.getOutputVirtualReg(), callNode.sourceIndex);
+            assert srcAllocation.type == Allocation.Type.GENERAL_REGISTER;
+            instructions.add(new Instruction(Type.POP, null, null, new Operand(Operand.Type.REGISTER, ZERO)));
+        }
+        //instructions.add(new Instruction(Type.ADDI, new Operand(Operand.Type.REGISTER, SP), new Operand(Operand.Type.IMMEDIATE, 4*callNode.getInputOperands().size()), new Operand(Operand.Type.REGISTER, SP)));
 
         //Restore Registers
         for (int i = DLXCodeGenerator.NUM_REGISTERS -1; i > 0; i--) {
             if (i == SCRATCH_REGISTER)
                 continue;
-            instructions.add(new Instruction(Type.POP, new Operand(Operand.Type.REGISTER, i), null, null));
+            instructions.add(new Instruction(Type.POP, null, null, new Operand(Operand.Type.REGISTER, i)));
         }
 
         // Move return value
