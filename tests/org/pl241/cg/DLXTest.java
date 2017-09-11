@@ -15,7 +15,7 @@ class DLXTest {
 		//ArrayList<Integer> program = generator.generateSampleCode() ;
 		//DLX.load( program );
 		try {
-			DLX.execute();
+			DLX.execute(false);
 		} catch (IOException e) {
 			e.printStackTrace();
 		}

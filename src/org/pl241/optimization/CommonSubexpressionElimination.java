@@ -19,9 +19,9 @@ public class CommonSubexpressionElimination implements Optimization {
 	private void fixBlock(BasicBlock block){
 		// Foreach phi function
         for (AbstractNode node: block.getNodes()) {
-            if (node instanceof PhiNode) { // Handle Phis
-                Expression exp = Expression.fromPhi((PhiNode)node);
-                String V = node.getOutputOperand();
+            if (node instanceof PhiFunctionNode) { // Handle Phis
+                Expression exp = Expression.fromPhi((PhiFunctionNode)node);
+                String V = node.getOutputVirtualReg();
 
                 if (expressionMap.containsKey(exp)) {
 
@@ -39,8 +39,8 @@ public class CommonSubexpressionElimination implements Optimization {
 				AbstractNode node1 = node.getOperandAtIndex(0) ;
 				AbstractNode node2 = node.getOperandAtIndex(1) ;
 
-				String operand1 = node1.getOutputOperand();
-				String operand2 = node2.getOutputOperand();
+				String operand1 = node1.getOutputVirtualReg();
+				String operand2 = node2.getOutputVirtualReg();
 
 				while (copyMap.containsKey(operand1))
 					operand1 = copyMap.get(operand1);
@@ -65,7 +65,7 @@ public class CommonSubexpressionElimination implements Optimization {
                     node2.removeReason = "CSE";
 
                 } else {
-                    expressionMap.put(exp, node.getOutputOperand());
+                    expressionMap.put(exp, node.getOutputVirtualReg());
                 }
 			} else if (node instanceof VarSetNode) {
 		        // Handle copies
@@ -77,7 +77,7 @@ public class CommonSubexpressionElimination implements Optimization {
 		for (BasicBlock nextBlock: block.getSuccessors()) {
 			// handle phi functions
             for (AbstractNode node: nextBlock.getNodes()) {
-                if (node instanceof PhiNode) { // Handle Phis
+                if (node instanceof PhiFunctionNode) { // Handle Phis
 
                 }
             }

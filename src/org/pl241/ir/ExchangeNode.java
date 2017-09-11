@@ -4,15 +4,15 @@ package org.pl241.ir;
 import org.pl241.ra.Allocation;
 
 // A transfer between two allocations
-public class MoveNode extends AbstractNode implements NodeInterface {
-    public MoveNode(Allocation from, Allocation to) {
+public class ExchangeNode extends AbstractNode implements NodeInterface {
+    public ExchangeNode(Allocation from, Allocation to) {
         this.from = from;
         this.to = to;
     }
 
     @Override
     public String toString() {
-        return to.toString() + " = " + from.toString();
+        return to.toString() + " Xchange " + from.toString();
     }
 
     // Node interface implementation
@@ -28,7 +28,7 @@ public class MoveNode extends AbstractNode implements NodeInterface {
 
     @Override
     public String printAllocation() {
-        return to.toString() + " = " + from.toString();
+        return toString();
     }
 
     public Allocation from;

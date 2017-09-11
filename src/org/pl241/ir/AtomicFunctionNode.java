@@ -1,6 +1,6 @@
 package org.pl241.ir;
 
-public class IONode extends AbstractNode  {
+public class AtomicFunctionNode extends AbstractNode implements NodeInterface {
 
     public enum IOType {
         READ,
@@ -18,64 +18,62 @@ public class IONode extends AbstractNode  {
         }
     }
 
-    public IONode() {
+    public AtomicFunctionNode() {
         super();
     }
 
-    public IONode(IOType type , AbstractNode operand) {
+    public AtomicFunctionNode(IOType type , AbstractNode operand) {
         super();
         setParams(type, operand);
     }
 
     public void setParams(IOType type , AbstractNode operand) {
         this.type = type;
-        _readData = _writeData = false;
-        if (type.equals(IOType.WRITE)) {
-            operands.add(operand);
+        isAMemoryLoad = isAMemoryStore = false;
+        if (type.equals(IOType.WRITE)){
+            if (operands.isEmpty())
+                operands.add(operand);
+            else
+                operands.set(0, operand);
         }
-        if (type.equals(IOType.READ)) {
-            _readData = true;
-        } else if( type.equals(IOType.WRITE)) {
-            _writeData = true;
-        }
+
+        if (type.equals(IOType.READ))
+            isAMemoryLoad = true;
+        else if( type.equals(IOType.WRITE))
+            isAMemoryStore = true;
     }
 
     @Override
     public String toString() {
         String ret = super.toString() + " ";
         if (type == IOType.WRITE)
-            ret  += (type + "(" + getOperandAtIndex(0).getOutputOperand() + ")");
+            ret  += (type + "(" + getOperandAtIndex(0).getOutputVirtualReg() + ")");
         else
             ret  += (type + "()");
         return ret;
     }
 
-    public boolean readData() {
-        return this._readData;
-    }
-    public boolean writeData() {
-        return this._writeData;
-    }
-
-    public String getOutputOperand() {
-        if( this._readData ){
+    public String getOutputVirtualReg() {
+        if( this.isAMemoryLoad){
             return super.nodeId;
         } else {
             return null;
         }
     }
 
-	private boolean _readData ;
-	private boolean _writeData ;
+	public boolean isAMemoryLoad;
+    public boolean isAMemoryStore;
 	public IOType type;
 
 
     @Override
-    public boolean hasOutputRegister() {
-        return _readData;
+    public boolean hasOutputVirtualRegister() {
+        return isAMemoryLoad;
     }
-    @Override
     public boolean isExecutable() {
+        return true;
+    }
+    public boolean visualize() {
         return true;
     }
 }

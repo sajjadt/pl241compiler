@@ -71,7 +71,7 @@ class LinearScanner {
 				allocateBlockedRegister(current, position);
 			}
 
-			if (current.allocatedLocation != null && current.allocatedLocation.type == Type.REGISTER) {
+			if (current.allocatedLocation != null && current.allocatedLocation.type == Type.GENERAL_REGISTER) {
 				active.add(current);
 			}
 		}
@@ -91,7 +91,7 @@ class LinearScanner {
 		
 		// Set allocated registers busy
 		for (LiveInterval interval: active) {
-			if (interval.allocatedLocation.type == Type.REGISTER) {
+			if (interval.allocatedLocation.type == Type.GENERAL_REGISTER) {
 				freeUntilPosition.set(interval.allocatedLocation.address, 0);
 			}
 		}
@@ -121,10 +121,10 @@ class LinearScanner {
 			throw new AllocationFailedException();
 		} else if (current.finish() < freeUntilPosition.get(bestReg)) {
 			// Reg available for whole interval
-			current.allocatedLocation = new Allocation(Type.REGISTER, bestReg);
+			current.allocatedLocation = new Allocation(Type.GENERAL_REGISTER, bestReg);
 		} else {
 			// register available for the first part of the interval
-			current.allocatedLocation =  new Allocation(Type.REGISTER, bestReg);
+			current.allocatedLocation =  new Allocation(Type.GENERAL_REGISTER, bestReg);
 			LiveInterval newInterval = current.split(freeUntilPosition.get(bestReg));
 			unhandled.add(newInterval);
             Collections.sort(unhandled);
@@ -141,7 +141,7 @@ class LinearScanner {
 		}
 
 		for (LiveInterval interval: active) {
-			if ( interval.allocatedLocation.type == Type.REGISTER) {
+			if ( interval.allocatedLocation.type == Type.GENERAL_REGISTER) {
 				int nextUse = interval.nextUseAfter(position);
 				nextUsePosition.set(interval.allocatedLocation.address, nextUse);
 			}

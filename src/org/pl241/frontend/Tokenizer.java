@@ -4,9 +4,17 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 public class Tokenizer {
-	
-	private LinkedList<TokenInfo> tokenInfos;
-	private LinkedList<Token> tokens;
+    private class TokenInfo {
+        final Pattern regex;
+        final int token;
+
+        TokenInfo(Pattern regex, int token) {
+            super();
+            this.regex = regex;
+            this.token = token;
+        }
+    }
+
 	private void registerTokens(){
 		// Keywords
 		this.add("\\,", Token.COMMA); // ==
@@ -100,16 +108,7 @@ public class Tokenizer {
 					"Unexpected character in input: "+s);
 		  }
 	}
-	  private class TokenInfo {
-	    final Pattern regex;
-	    final int token;
-	
-	    TokenInfo(Pattern regex, int token) {
-	      super();
-	      this.regex = regex;
-	      this.token = token;
-	    }
-	  }
-	  
-	  
+
+    private LinkedList<TokenInfo> tokenInfos;
+    private LinkedList<Token> tokens;
 }

@@ -1,9 +1,6 @@
 package org.pl241.ir;
 
-import java.util.HashMap;
-import java.util.Map;
-
-public class AddressCalcNode extends AbstractNode {
+public class AddressCalcNode extends AbstractNode implements NodeInterface {
 
     public AddressCalcNode(String variableName, AbstractNode offset) {
         super();
@@ -11,26 +8,29 @@ public class AddressCalcNode extends AbstractNode {
         this.addOperand(offset);
     }
 
+    // Override methods
+    @Override
     public String toString() {
         String ret = super.toString() +  "ADDA ";
         if (this.operands.size() > 0)
-            ret += variableName + "," + this.operands.get(0).getOutputOperand();
+            ret += variableName + "," + this.operands.get(0).getOutputVirtualReg();
         return ret;
     }
-
     @Override
-    public String getOutputOperand() {
+    public String getOutputVirtualReg() {
         return nodeId;
     }
-    @Override
-    public boolean hasOutputRegister() {
+
+    // Node interface implementations
+    public boolean hasOutputVirtualRegister() {
         return true;
     }
-    @Override
     public boolean isExecutable() {
         return true;
     }
-
+    public boolean visualize() {
+        return true;
+    }
 
     public String variableName;
 

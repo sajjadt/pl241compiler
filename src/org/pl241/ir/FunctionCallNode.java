@@ -2,11 +2,12 @@ package org.pl241.ir;
 
 import java.util.stream.Collectors;
 
-public class FunctionCallNode extends AbstractNode {
+public class FunctionCallNode extends AbstractNode implements NodeInterface{
 
     public FunctionCallNode(String callTarget) {
         super();
         this.callTarget = callTarget;
+        hasReturnValue = true;
     }
 
     @Override
@@ -15,7 +16,7 @@ public class FunctionCallNode extends AbstractNode {
         ret += (callTarget + "(");
 
         String joinedOperands = this.getInputOperands().stream()
-                .map(AbstractNode::getOutputOperand)
+                .map(AbstractNode::getOutputVirtualReg)
                 .collect(Collectors.joining(", ")); // "John, Anna, Paul"
 
         ret += joinedOperands;
@@ -24,18 +25,8 @@ public class FunctionCallNode extends AbstractNode {
     }
 
     @Override
-    public boolean hasOutputRegister() {
-        return returnsStuff;
-    }
-    @Override
-    public boolean isExecutable() {
-        return true;
-    }
-
-
-    @Override
-    public String getOutputOperand() {
-        if (returnsStuff)
+    public String getOutputVirtualReg() {
+        if (hasReturnValue)
             return nodeId;
         else
             return null;
@@ -47,6 +38,17 @@ public class FunctionCallNode extends AbstractNode {
         operands.add(0, node);
     }
 
+
+    public boolean hasOutputVirtualRegister() {
+        return hasReturnValue;
+    }
+    public boolean isExecutable() {
+        return true;
+    }
+    public boolean visualize() {
+        return true;
+    }
+
     public String callTarget;
-    public boolean returnsStuff;
+    public boolean hasReturnValue;
 }

@@ -36,13 +36,14 @@ public class LowLevelProgram {
     }
 
 
-    public void lowerAndAddFunction(Function f, RegisterAllocator allocator) {
+
+
+    public void lowerAndAddFunction(Function f) {
         List<Instruction> instructions = new ArrayList<>();
         Map<Integer, Integer> blockMap = new HashMap<>();
 
         Integer currentIndex = 0;
         HashMap<String, Integer> localVarMap = new HashMap<>();
-
 
         // Allocate space for local vars (no need to initialize)
         // Also use this table keeps displacement of vars in regard of SP
@@ -66,7 +67,7 @@ public class LowLevelProgram {
             ListIterator bi = blockNodes.listIterator(blockNodes.size());
             while (bi.hasPrevious()) {
                 AbstractNode node = (AbstractNode) bi.previous();
-                List<Instruction> ints = Instruction.lowerIRNode(node, allocator, currentIndex, blockMap, localVarMap, f.name.equals("main"));
+                List<Instruction> ints = Instruction.lowerIRNode(node, currentIndex, blockMap, localVarMap, f.name.equals("main"));
                 blockInstructions.addAll(0, ints);
                 currentIndex += ints.size();
             }
@@ -156,6 +157,7 @@ public class LowLevelProgram {
 
         pw.print("BB"  + " [shape=record label=\"{");
         pw.print( "Function " + functionName+ "\n");
+
 
         for (Instruction n: lowLevelIR.get(functionName)) {
             pw.print('|' + n.toString());

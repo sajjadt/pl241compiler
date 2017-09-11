@@ -11,17 +11,18 @@ public class CopyPropagation implements Optimization {
     public void apply(Function function) {
         Map<String, String> copyTable = new HashMap<>();
 
-        for (BasicBlock block : function.basicBlocks) {
-            for (AbstractNode node : block.getNodes()) {
+        for (BasicBlock block: function.basicBlocks) {
+
+            for (AbstractNode node: block.getNodes()) {
                 // Left Side
                 if (node instanceof VarSetNode) {
                     // Find source operand
                     AbstractNode tnode = node.getOperandAtIndex(0);
 
-                    if (tnode.hasOutputRegister()) {
+                    if (tnode.hasOutputVirtualRegister()) {
                         System.out.println("Has output reg");
                         String dst = ((VarSetNode) node).memAddress;
-                        String src = tnode.getOutputOperand();
+                        String src = tnode.getOutputVirtualReg();
                         System.out.println("Copy from " + src + " to " + dst);
 
                         if (copyTable.containsKey(src))
@@ -61,11 +62,11 @@ public class CopyPropagation implements Optimization {
         for (BasicBlock block : function.basicBlocks) {
             for (AbstractNode node : block.getNodes()) {
 
-                if (node instanceof PhiNode) { // rhs phi
-                     for (int key: ((PhiNode)node).rightOperands.keySet()) {
-                        AbstractNode label = ((PhiNode)node).rightOperands.get(key);
+                if (node instanceof PhiFunctionNode) { // rhs phi
+                     for (int key: ((PhiFunctionNode)node).rightOperands.keySet()) {
+                        AbstractNode label = ((PhiFunctionNode)node).rightOperands.get(key);
                         if (copyTable.containsKey(((LabelNode)label).getLabel())) {
-                            ((PhiNode)node).rightOperands.put(key, new LabelNode(copyTable.get(((LabelNode) label).getLabel())));
+                            ((PhiFunctionNode)node).rightOperands.put(key, new LabelNode(copyTable.get(((LabelNode) label).getLabel())));
                         }
                     }
                 }

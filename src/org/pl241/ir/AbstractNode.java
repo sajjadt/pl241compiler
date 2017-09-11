@@ -1,9 +1,9 @@
 package org.pl241.ir;
 
 import org.pl241.ra.Allocation;
-
 import java.util.*;
-public class AbstractNode {
+
+public class AbstractNode implements NodeInterface {
 
     AbstractNode() {
         nodeId = generateId("L");
@@ -26,20 +26,10 @@ public class AbstractNode {
 		return null;
 	}
 
-    public void setOperandAtIndex(int index, AbstractNode node) {
-        if (operands.size() > index)
-            operands.set(index, node);
-        else
-            throw new Error("no operands at index" + index);
-    }
-
-    public static void reset() {
+    public static void resetNodeCounter() {
         counter = 0;
     }
 
-    public String getOutputOperand() {
-        return null;
-    }
     public void setAllocation(Allocation allocation) {
         this.allocation = allocation;
     }
@@ -55,16 +45,14 @@ public class AbstractNode {
         if (sourceIndex != -1)
             ret = sourceIndex + ":";
 
-        ret += "[" + nodeId + "]";
+        if (hasOutputVirtualRegister())
+            ret += "[" + nodeId + "]";
 
         if (allocation != null)
             ret += allocation.toString();
         return ret;
     }
 
-    public boolean accessVariable(String variableId) {
-        return false;
-    }
 
     // Show compact representation of node in CFGs
     String displayId() {
@@ -78,30 +66,42 @@ public class AbstractNode {
         operands.add(node);
     }
 
-    List<AbstractNode> operands ;
-    public String nodeId;
 
-    public int sourceIndex; // In source code
-
-    public boolean removed;
-	public String removeReason;
-
+    public int numInputOperands() {
+        return getInputOperands().size();
+    }
 
 	public int getSourceIndex() {
 		return sourceIndex;
 	}
-    private static int counter = 0;
-	Allocation allocation;
 
-    // These function should be overriden by executable nodes
-    public boolean isExecutable() {
-        return false;
-    }
-    public boolean hasOutputRegister() {
-        return false;
-    }
 
     public String printAllocation() {
         return null;
+    }
+
+    // Node interface implementation
+    public boolean isExecutable() {
+        return false;
+    }
+    public boolean hasOutputVirtualRegister() {
+        return false;
+    }
+    public String getOutputVirtualReg() {
+        return null;
+    }
+
+
+    private static int counter = 0;
+    public Allocation allocation;
+    List<AbstractNode> operands ;
+    public String nodeId;
+    public int sourceIndex; // In source code
+    public boolean removed;
+    public String removeReason;
+
+    @Override
+    public boolean visualize() {
+        return false;
     }
 }

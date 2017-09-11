@@ -6,13 +6,14 @@ import java.util.List;
 import java.util.ArrayList;
 import java.util.Map;
 
+
 import org.pl241.ir.*;
 
 public class RegisterAllocator { // Allocate Registers for one function
 
     public RegisterAllocator(int _numRegs) { // SSA Form
 		intervalMap = new HashMap<>();
-        numPhysicalRegisters = _numRegs ;
+        numPhysicalRegisters = _numRegs;
 	}
 
 	public HashMap<String, ArrayList<LiveInterval>> allocate(Function function) {
@@ -52,7 +53,23 @@ public class RegisterAllocator { // Allocate Registers for one function
         Allocation moveFrom = null;
         Allocation moveTo= null;
 
-        Map<Allocation, Allocation> mapping = new HashMap<>();
+        class Move {
+            public Move(Allocation from, Allocation to, boolean isExchange) {
+                this.from = from;
+                this.to = to;
+                this.isExchange = isExchange;
+            }
+            Allocation from;
+            Allocation to;
+            Boolean isExchange;
+
+            @Override
+            public String toString() {
+                return from + " to " + to;
+            }
+        }
+
+        Map<Integer, List<Move>> mapping = new HashMap<>();
 
         for (BasicBlock current: function.basicBlocks) {
             for (BasicBlock successor: current.getSuccessors()) {
@@ -65,21 +82,18 @@ public class RegisterAllocator { // Allocate Registers for one function
                     if (interval.start() == successor.bFrom) {
                         AbstractNode node = successor.getPhiOperand(interval.varName, current.getIndex());
                         if (node != null)
-                            moveFrom = liveIntervalAllocationAt(intervalMap, node.getOutputOperand(), current.bTo);
+                            moveFrom = liveIntervalAllocationAt(intervalMap, node.getOutputVirtualReg(), current.bTo);
                     } else {
                         moveFrom = liveIntervalAllocationAt(intervalMap, interval.varName, current.bTo);
                     }
 
                     moveTo = liveIntervalAllocationAt(intervalMap, interval.varName, successor.bFrom);
 
-                    if ( moveFrom!= null && !moveFrom.equals(moveTo)) {
-                        mapping.put(moveFrom, moveTo);
-                        AbstractNode lastNode = current.getNodes().get(current.getNodes().size()-1);
+                    if (moveFrom!= null && !moveFrom.equals(moveTo)) {
+                        if (!mapping.containsKey(current.getID()))
+                            mapping.put(current.getID(), new ArrayList<>());
 
-                        if (lastNode instanceof BranchNode || lastNode instanceof FunctionCallNode)
-                            current.getNodes().add(current.getNodes().size()-1, new MoveNode(moveFrom, moveTo));
-                        else
-                            current.getNodes().add(current.getNodes().size(), new MoveNode(moveFrom, moveTo));
+                        mapping.get(current.getID()).add(new Move(moveFrom, moveTo, false));
                     }
 
                 }
@@ -87,14 +101,98 @@ public class RegisterAllocator { // Allocate Registers for one function
         }
 
         System.out.println("************ Moves ***********");
-        System.out.println(mapping);
+        // Reorder and insert moves
+        for (Integer blockID: mapping.keySet()) {
+            // Reorder and insert temp reg if they from a cycle
+            List<Move> moves = mapping.get(blockID);
+            System.out.println("block " + blockID + " " + moves);
+            List<Move> newMoves = new ArrayList<>();
+
+            while (!moves.isEmpty()){
+                // Find a move which the destination is not a source for another move
+                Move selected = null;
+
+                for (Move move: moves) {
+                    boolean usedForRead = false;
+                    //boolean usedForWrite = true;
+
+                    for (Move otherMove: moves) {
+                        if (otherMove.equals(move))
+                            continue;
+                        if (otherMove.from.equals(move.to))
+                            usedForRead = true;
+                    }
+                    if (!usedForRead) {
+                        selected = move;
+                        break;
+                    }
+                }
+
+                if (selected != null) {
+                    moves.remove(selected);
+                    newMoves.add(selected);
+                } else {
+                    // There was a cycle(s)
+                    List<Move> cycle = new ArrayList<>();
+
+                    selected = moves.get(0);
+                    cycle.add(selected);
+                    moves.remove(selected);
+
+                    // Find the others on this cycle
+                    boolean foundOneOnCycle = true;
+                    while (foundOneOnCycle) {
+                        foundOneOnCycle = false;
+                        Move move = cycle.get(cycle.size()-1);
+                        for (Move otherMove: moves) {
+                            if (otherMove.from.equals(move.to)) {
+                                foundOneOnCycle = true;
+                                selected = otherMove;
+                                break;
+                            }
+                        }
+                        if (foundOneOnCycle) {
+                            moves.remove(selected);
+                            cycle.add(selected);
+                        }
+                    }
+                    assert (cycle.size() > 1) : "Cycle of less than two elements found";
+
+                    newMoves.add(new Move(cycle.get(0).from, Allocation.getScratchRegister(), false));
+                    for (Move move: cycle) {
+                        newMoves.add(new Move(move.to, Allocation.getScratchRegister(), true));
+                    }
+                }
+            }
+
+            // Insert moves to basic block
+            List<AbstractNode> moveNodes = new ArrayList<>();
+            BasicBlock current = function.getBlockByID(blockID);
+            for (Move move: newMoves) {
+                assert (move.to.type != Allocation.Type.STACK &&
+                        move.from.type != Allocation.Type.STACK) : "Move from/to non-registers are not implemented";
+                if (move.isExchange)
+                    moveNodes.add(new ExchangeNode(move.from, move.to));
+                else
+                    moveNodes.add(new MoveNode(move.from, move.to));
+            }
+
+
+            AbstractNode lastNode = current.getNodes().get(current.getNodes().size()-1);
+            if (lastNode instanceof BranchNode || lastNode instanceof FunctionCallNode)
+                current.getNodes().addAll(current.getNodes().size()-1, moveNodes);
+            else
+                current.getNodes().addAll(current.getNodes().size(), moveNodes);
+        }
+
+
         System.out.println("********** End Moves **********");
 
         // Remove Phi nodes
         for (BasicBlock current: function.basicBlocks) {
             List<AbstractNode> found = new ArrayList<>();
             for (AbstractNode node: current.getNodes()) {
-                if (node instanceof PhiNode)
+                if (node instanceof PhiFunctionNode)
                     found.add(node);
             }
             current.getNodes().removeAll(found);
@@ -140,16 +238,17 @@ public class RegisterAllocator { // Allocate Registers for one function
     public void toPhysical(Function f) {
         for (BasicBlock block: f.basicBlocks) {
             for (AbstractNode node: block.getNodes()) {
-                if (node.hasOutputRegister()) {
-                    node.setAllocation(liveIntervalAllocationAt(intervalMap, node.getOutputOperand(), node.sourceIndex));
+                if (node.hasOutputVirtualRegister()) {
+                    node.setAllocation(liveIntervalAllocationAt(intervalMap, node.getOutputVirtualReg(), node.sourceIndex));
+                }
+
+                for (AbstractNode child: node.getInputOperands()) {
+                    child.setAllocation(liveIntervalAllocationAt(intervalMap, child.getOutputVirtualReg(), node.sourceIndex));
                 }
             }
         }
      }
 
-
-
     private HashMap<String, ArrayList<LiveInterval>> intervalMap;
     private int numPhysicalRegisters;
-
 }

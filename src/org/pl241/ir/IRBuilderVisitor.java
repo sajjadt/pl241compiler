@@ -32,7 +32,7 @@ import org.pl241.frontend.Parser.TypeDeclNode;
 import org.pl241.frontend.Parser.VarDeclNode;
 import org.pl241.frontend.Parser.VarNode;
 import org.pl241.frontend.Parser.WhileStmtNode;
-import org.pl241.ir.IONode.IOType;
+import org.pl241.ir.AtomicFunctionNode.IOType;
 import org.pl241.ir.Variable.VariableType;
 
 public class IRBuilderVisitor implements ParseTreeNodeVisitor {
@@ -320,7 +320,7 @@ public class IRBuilderVisitor implements ParseTreeNodeVisitor {
             var = currentFunction.localVariables.getVar(varName);
 		if( var == null )
 			var = mainFunction.localVariables.getVar(varName);
-		assert var != null;
+		assert var != null: "Variable " + varName + " not found";
 
         // Array of Integers
 		if (node.children.size() > 1) {
@@ -365,7 +365,7 @@ public class IRBuilderVisitor implements ParseTreeNodeVisitor {
 
 			bblStack.peek().addNode(calcAddress);
 			if (lvalue) {
-				expressionStack.push(new MemoryStoreNode(calcAddress));
+				expressionStack.push(new MemoryStoreNode(calcAddress, null));
 			} else{
 				expressionStack.push(new MemoryLoadNode(calcAddress)) ;
 			}
@@ -498,13 +498,13 @@ public class IRBuilderVisitor implements ParseTreeNodeVisitor {
 
 		// Function is used in the right side
         // It's return values is used
-		if(exp instanceof  FunctionCallNode)
-            ((FunctionCallNode)exp).returnsStuff = true;
+		//if(exp instanceof  FunctionCallNode)
+        //    ((FunctionCallNode)exp).hasReturnValue = true;
 
         if (des instanceof VarSetNode)
 		    ((VarSetNode)des).setSrcOperand(exp);
         else
-            ((MemoryStoreNode)des).setSrcOperand(exp);
+            ((MemoryStoreNode)des).setValueNode(exp);
 
 		bblStack.peek().addNode(des) ;
 	}
@@ -527,7 +527,7 @@ public class IRBuilderVisitor implements ParseTreeNodeVisitor {
             if (!(exp instanceof FunctionCallNode))
 			    bblStack.peek().addNode(exp) ;
             else {
-                ((FunctionCallNode)functionCallStack.peek()).returnsStuff = true;
+               // ((FunctionCallNode)functionCallStack.peek()).hasReturnValue = true;
                 functionCallStack.pop();
             }
 
@@ -566,9 +566,10 @@ public class IRBuilderVisitor implements ParseTreeNodeVisitor {
 
         if (!specialCall) {
             callNode = new FunctionCallNode(functionName);
-
+            if (node.parent instanceof StatementNode)
+                ((FunctionCallNode)callNode).hasReturnValue = false;
         } else {
-            callNode = new IONode();
+            callNode = new AtomicFunctionNode();
         }
 
         // Handle Args( as Expressions on the Stack )
@@ -581,7 +582,7 @@ public class IRBuilderVisitor implements ParseTreeNodeVisitor {
                 if (!(aanode instanceof FunctionCallNode))
                     bblStack.peek().addNode(aanode);
                 else {
-                    ((FunctionCallNode) functionCallStack.peek()).returnsStuff = true;
+                    //((FunctionCallNode) functionCallStack.peek()).hasReturnValue = true;
                     functionCallStack.pop();
                 }
 
@@ -608,18 +609,18 @@ public class IRBuilderVisitor implements ParseTreeNodeVisitor {
 		else {
 			// Special Instructions
 			if( functionName.equals("InputNum") ){
-                ((IONode)callNode).setParams(IOType.READ, null);
+                ((AtomicFunctionNode)callNode).setParams(IOType.READ, null);
 			} else if ( functionName.equals("OutputNum") ){
                 if (bblStack.peek().getNodes().size() > 0)
-                    ((IONode)callNode).setParams(IOType.WRITE, bblStack.peek().getLastNode());
+                    ((AtomicFunctionNode)callNode).setParams(IOType.WRITE, bblStack.peek().getLastNode());
                 // Function call has been added to the previous block
                 // This is the first op in new block with no other ops
                 else
-                    ((IONode)callNode).setParams(IOType.WRITE, functionCallStack.peek());
+                    ((AtomicFunctionNode)callNode).setParams(IOType.WRITE, functionCallStack.peek());
 
                 bblStack.peek().addNode(callNode);
 			} else if ( functionName.equals("OutputNewLine") ){
-                ((IONode)callNode).setParams(IOType.WRITELINE, null);
+                ((AtomicFunctionNode)callNode).setParams(IOType.WRITELINE, null);
                 bblStack.peek().addNode(callNode);
 			}
 		}

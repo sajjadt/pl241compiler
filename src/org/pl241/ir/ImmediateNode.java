@@ -1,6 +1,6 @@
 package org.pl241.ir;
 
-public class ImmediateNode extends AbstractNode{
+public class ImmediateNode extends AbstractNode implements NodeInterface {
 
     public ImmediateNode(String _value) {
 		super();
@@ -11,11 +11,6 @@ public class ImmediateNode extends AbstractNode{
 	public String toString() {
 		return super.toString() + " Imm=" + value;
 	}
-
-    @Override
-    public boolean isExecutable() {
-        return false;
-    }
 
 	public int getValue() {
 	    return value;
@@ -29,7 +24,18 @@ public class ImmediateNode extends AbstractNode{
     private Integer value;
 
     @Override
-    public String getOutputOperand() {
+    public String getOutputVirtualReg() {
         return value.toString();
+    }
+
+    // Node interface implementations
+    public boolean isExecutable() {
+        return false;
+    }
+    public boolean hasOutputVirtualRegister() {
+        return false;
+    }
+    public boolean visualize() {
+        return false;
     }
 }

@@ -112,6 +112,7 @@ public class DLXCodeGenerator {
             case DIV:
             case CMP:
             case NEG:
+            case XOR:
                 return generateRegisterArithmetic(ins.type, ins.destinationOperand, ins.sourceOperand1, ins.sourceOperand2);
             case CMPI:
             case ADDI:
@@ -155,6 +156,7 @@ public class DLXCodeGenerator {
             case LOAD:
                 return DLX.assemble(DLX.LDX, ins.destinationOperand.value, ins.sourceOperand1.value, ins.sourceOperand2.value);
 
+
             default:
                 throw new IllegalArgumentException();
         }
@@ -194,6 +196,8 @@ public class DLXCodeGenerator {
                 && src2Allocation.type == Operand.Type.REGISTER;
 
         switch (operation) {
+            case XOR:
+                return DLX.assemble(DLX.XOR, destAllocation.value, src1Allocation.value, src2Allocation.value);
             case ADD:
                 return DLX.assemble(DLX.ADD, destAllocation.value, src1Allocation.value, src2Allocation.value);
             case SUB:
@@ -201,7 +205,9 @@ public class DLXCodeGenerator {
             case MUL:
                 return DLX.assemble(DLX.MUL, destAllocation.value, src1Allocation.value, src2Allocation.value);
             case CMP:
-                return DLX.assemble(DLX.CMP, destAllocation.value, src1Allocation.value, src2Allocation.value);
+                Integer ins = DLX.assemble(DLX.CMP, destAllocation.value, src1Allocation.value, src2Allocation.value);
+                System.out.println(DLX.disassemble(ins));
+                return ins;
             case DIV:
                 return DLX.assemble(DLX.DIV, destAllocation.value, src1Allocation.value, src2Allocation.value);
             case NEG:
@@ -232,7 +238,7 @@ public class DLXCodeGenerator {
             case BNE:
                 return DLX.assemble(DLX.BNE, operand1.value, operand2.value);
             case BRA:
-                return DLX.assemble(DLX.BSR, operand2.value);
+                return DLX.assemble(DLX.BEQ, ZERO, operand2.value);
             case BLT:
                 return DLX.assemble(DLX.BLT, operand1.value, operand2.value);
             case RET:

@@ -1,11 +1,11 @@
 package org.pl241.optimization;
 
 import org.pl241.ir.ArithmeticNode;
-import org.pl241.ir.PhiNode;
+import org.pl241.ir.PhiFunctionNode;
 
 public class Expression {
 
-    public static Expression fromPhi(PhiNode node) {
+    public static Expression fromPhi(PhiFunctionNode node) {
         Object[] operands = node.rightOperands.values().toArray();
         return new Expression(operands[0], operands[1], ExpressionType.PHI);
     }

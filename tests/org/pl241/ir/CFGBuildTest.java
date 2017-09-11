@@ -39,7 +39,7 @@ class CFGBuildTest {
 
 					// Reset data structures
 					BasicBlock.reset();
-					AbstractNode.reset();
+					AbstractNode.resetNodeCounter();
 					Variable.reset();
 
                     for (Function f : program.getFunctions()) {

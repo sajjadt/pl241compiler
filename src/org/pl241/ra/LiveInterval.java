@@ -101,7 +101,7 @@ class LiveInterval implements Comparable<LiveInterval> {
 			// Error
 		} else {
 			for (Range range:ranges) {
-				if (range.start < _from && range.finish > _from) {
+				if (range.start <= _from && range.finish >= _from) {
 					range.start = _from ;
 				}
 			}

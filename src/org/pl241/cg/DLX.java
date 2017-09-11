@@ -42,7 +42,7 @@ public class DLX {
 	}
 	
 	
-	public static void execute() throws IOException {
+	public static void execute(boolean printDisassembly) throws IOException {
 		int origc = 0; // used for F2 instruction RET
 		for (int i = 0; i < 32; i++) { R[i] = 0; }
 		PC = 0; R[30] = MemSize - 1;
@@ -54,13 +54,16 @@ public class DLX {
 			R[0] = 0;
 			disassem(M[PC]); // initializes op, a, b, c
 
+            if (printDisassembly)
+                System.out.print(print(op, a, b, c));
+
 			int nextPC = PC + 1;
 			if (format==2) {
 				origc = c; // used for RET
 				c = R[c];  // dirty trick
 			}
 			
-			System.out.print(print(op, a, b, c));
+
 			
 			switch (op) {
 				case ADD:
@@ -276,7 +279,7 @@ public class DLX {
 	private static final int OR  = 8;
 	private static final int AND = 9;
 	private static final int BIC = 10;
-	private static final int XOR = 11;
+    static final int XOR = 11;
 	private static final int LSH = 12;
 	private static final int ASH = 13;
 	private static final int CHK = 14;
@@ -396,7 +399,7 @@ public class DLX {
 		}
 	}
 	
-	private static String disassemble(int instructionWord) {
+	public static String disassemble(int instructionWord) {
 		
 		disassem(instructionWord);
 		String line = mnemo[op] + "  ";

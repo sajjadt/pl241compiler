@@ -8,22 +8,35 @@ public class ReturnNode extends AbstractNode {
 		if (_returnValue != null)
 		    this.addOperand(_returnValue);
 	}
-	public void setReturnValue (AbstractNode _returnValue) {
-		this.returnValue = _returnValue ;
-	}
 
-    @Override
-    public boolean isExecutable() {
-        return true;
-    }
 
     public String toString() {
         String ret =  super.toString() + " return ";
         if (returnValue != null)
-            ret += returnValue.getOutputOperand();
+            ret += returnValue.getOutputVirtualReg();
         return ret;
     }
+
+    @Override
+    public String printAllocation() {
+        String ret =  super.toString() + " return ";
+        if (returnValue != null)
+            ret += returnValue.allocation;
+        return ret;
+    }
+
     private AbstractNode returnValue;
+
+    // Node interface implementation
+    public boolean isExecutable() {
+        return true;
+    }
+    public boolean hasOutputVirtualRegister() {
+        return false;
+    }
+    public boolean visualize() {
+        return true;
+    }
 }
 
 

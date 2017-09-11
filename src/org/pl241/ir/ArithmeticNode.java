@@ -5,7 +5,7 @@ import org.pl241.ra.Allocation;
 import java.util.HashMap;
 import java.util.Map;
 
-public class ArithmeticNode extends AbstractNode {
+public class ArithmeticNode extends AbstractNode implements NodeInterface {
 
     public enum Type {
         NEG,
@@ -27,6 +27,9 @@ public class ArithmeticNode extends AbstractNode {
                 default: throw new IllegalArgumentException();
             }
         }
+        public boolean isSymmetric () {
+            return this == Type.ADD || this == Type.MUL;
+        }
     }
 
     public ArithmeticNode(AbstractNode _operand1, AbstractNode _operand2, Type _operator) {
@@ -34,14 +37,6 @@ public class ArithmeticNode extends AbstractNode {
         operator = _operator;
     }
 
-    public static Type toType(String textOperator) {
-        return operatorMap.get(textOperator);
-    }
-
-
-    public boolean isSymmetric () {
-        return operator == Type.ADD || operator == Type.MUL;
-    }
 
     public String toString() {
         String operands = this.operands.get(0).displayId();
@@ -65,6 +60,21 @@ public class ArithmeticNode extends AbstractNode {
         return this.allocation + " "+ operatorMapR.get(operator) + " " + ret;
     }
 
+    @Override
+    public String getOutputVirtualReg() {
+        return nodeId;
+    }
+
+    public boolean hasOutputVirtualRegister() {
+        return true;
+    }
+    public boolean isExecutable() {
+        return true;
+    }
+    public boolean visualize() {
+        return true;
+    }
+
     public Type operator;
     public static Map<String, Type> operatorMap;
     private static Map<Type,String> operatorMapR;
@@ -83,18 +93,4 @@ public class ArithmeticNode extends AbstractNode {
         operatorMapR.put( Type.DIV ,"/");
         operatorMapR.put( Type.CMP ,"cmp");
     }
-
-    @Override
-    public String getOutputOperand() {
-        return nodeId;
-    }
-    @Override
-    public boolean hasOutputRegister() {
-        return true;
-    }
-    @Override
-    public boolean isExecutable() {
-        return true;
-    }
-
 }

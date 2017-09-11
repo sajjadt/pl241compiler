@@ -1,3 +1,4 @@
+# Expected output: 8 2 9 4 6 6 8
 main
 
 function foo();

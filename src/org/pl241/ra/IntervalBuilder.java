@@ -10,7 +10,7 @@ import java.util.Set;
 import org.pl241.ir.AbstractNode;
 import org.pl241.ir.BasicBlock;
 import org.pl241.ir.ImmediateNode;
-import org.pl241.ir.PhiNode;
+import org.pl241.ir.PhiFunctionNode;
 
 class IntervalBuilder {
     public IntervalBuilder() {
@@ -40,10 +40,10 @@ class IntervalBuilder {
 		    // Getting phi info from successors
 		    for (BasicBlock successor:block.getSuccessors()) {
 		    	for (AbstractNode node: successor.getNodes()) {
-		    		if (node instanceof PhiNode) {
-		    			if (((PhiNode)node).inputOf(block) != null) {
-		    				live.add(((PhiNode)node).inputOf(block).getOutputOperand());
-		    				System.out.println("Phi node: adding " + ((PhiNode)node).inputOf(block));
+		    		if (node instanceof PhiFunctionNode) {
+		    			if (((PhiFunctionNode)node).inputOf(block) != null) {
+		    				live.add(((PhiFunctionNode)node).inputOf(block).getOutputVirtualReg());
+		    				System.out.println("Phi node: adding " + ((PhiFunctionNode)node).inputOf(block));
 		    			}
 		    		}
 		    	}
@@ -63,17 +63,17 @@ class IntervalBuilder {
 			    AbstractNode node =  (AbstractNode) ii.previous();
 
 			    if (!node.isExecutable())
-	    			continue ;
+	    			continue;
 
-	    		if (node instanceof PhiNode) //Phi nodes will be handled in special way
+	    		if (node instanceof PhiFunctionNode) //Phi nodes will be handled in special way
 	    		    continue;
 
-			    if (node.getOutputOperand() != null) {
-			    	String opd = node.getOutputOperand();
+			    if (node.hasOutputVirtualRegister()) {
+			    	String opd = node.getOutputVirtualReg();
 			    	System.out.println("Removing " + opd + " @ output side");
-			    	if( !  intervals.containsKey(opd) ){
+			    	if(!intervals.containsKey(opd))
 			    		intervals.put(opd, new LiveInterval(opd, false));
-			    	}
+
 			    	intervals.get(opd).setFrom(node.getSourceIndex());
 			    	intervals.get(opd).definitionPoint = node.getSourceIndex();
 			    	intervals.get(opd).addReference(node.getSourceIndex());
@@ -84,18 +84,18 @@ class IntervalBuilder {
 			    if (!node.getInputOperands().isEmpty()) {
 			    	List<AbstractNode> opds = node.getInputOperands();
 			    	for(AbstractNode opd:opds) {
-			    		if (opd instanceof ImmediateNode) {
-                            System.out.println("Ignoring imm " + opd + " @ input side");
+			    		if (!opd.hasOutputVirtualRegister()) {
+                            System.out.println("Ignoring  " + opd + " @ input side");
                             continue;
 			    		}
-				    	if (!intervals.containsKey(opd.getOutputOperand())) {
-				    		intervals.put(opd.getOutputOperand(), new LiveInterval(opd.getOutputOperand(), false));
+				    	if (!intervals.containsKey(opd.getOutputVirtualReg())) {
+				    		intervals.put(opd.getOutputVirtualReg(), new LiveInterval(opd.getOutputVirtualReg(), false));
 				    	}
-				    	System.out.println(opd.getOutputOperand());
-				    	intervals.get(opd.getOutputOperand()).addRange(block.bFrom, node.getSourceIndex());
-				    	intervals.get(opd.getOutputOperand()).addReference(node.getSourceIndex());
-				    	live.add(opd.getOutputOperand());
-				    	System.out.println("Adding [" + opd.getOutputOperand() + "] input operand  from [" + node.toString()+ "] node");
+				    	System.out.println(opd.getOutputVirtualReg());
+				    	intervals.get(opd.getOutputVirtualReg()).addRange(block.bFrom, node.getSourceIndex());
+				    	intervals.get(opd.getOutputVirtualReg()).addReference(node.getSourceIndex());
+				    	live.add(opd.getOutputVirtualReg());
+				    	System.out.println("Adding [" + opd.getOutputVirtualReg() + "] input operand  from [" + node.toString()+ "] node");
 			    	}
 			    }
 			    
@@ -103,10 +103,13 @@ class IntervalBuilder {
 		    
 		    // is done in above step
 		    for (AbstractNode node: block.getNodes()) {
-		        if (node instanceof PhiNode) {
-	    			live.remove(node.getOutputOperand());
-	    			intervals.get(node.getOutputOperand()).definitionPoint = node.getSourceIndex();
-	    		}
+		        if (node instanceof PhiFunctionNode) {
+		            // Phi outputs might not be used
+		            if (live.contains(node.getOutputVirtualReg())) {
+                        live.remove(node.getOutputVirtualReg());
+                        intervals.get(node.getOutputVirtualReg()).definitionPoint = node.getSourceIndex();
+                    }
+                }
 	    	}
 		    
 		    if (block.loopHeader) {

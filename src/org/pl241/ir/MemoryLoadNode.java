@@ -2,26 +2,33 @@ package org.pl241.ir;
 
 
 public class MemoryLoadNode extends AbstractNode {
-    public AbstractNode offsetCalculatioNode;
-    public MemoryLoadNode(AbstractNode offsetCalculatioNode) {
+    public MemoryLoadNode(AbstractNode addressNode) {
         super();
-        this.offsetCalculatioNode = offsetCalculatioNode;
+        this.addOperand(addressNode);
     }
 
     public String toString() {
-        String ret  = super.nodeId +  "Mem[" + offsetCalculatioNode.getOutputOperand() + "]";
-        if (operands.size() > 0)
-            ret += ( "=" + getOperandAtIndex(0).getOutputOperand());
+        String ret  = super.nodeId +  "Mem[" + this.getOperandAtIndex(0).getOutputVirtualReg() + "]";
         return ret;
     }
 
-    @Override
-    public String getOutputOperand() {
-        return nodeId;
+    public AbstractNode getAddressCalcNode() {
+        return this.getOperandAtIndex(0);
     }
 
     @Override
+    public String getOutputVirtualReg() {
+        return nodeId;
+    }
+
+    // Node interface implementation
     public boolean isExecutable() {
+        return true;
+    }
+    public boolean hasOutputVirtualRegister() {
+        return true;
+    }
+    public boolean visualize() {
         return true;
     }
 }

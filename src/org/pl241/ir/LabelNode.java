@@ -1,6 +1,7 @@
 package org.pl241.ir;
 
-public class LabelNode extends AbstractNode{
+// This node is used to reference to variables
+public class LabelNode extends AbstractNode implements  NodeInterface{
     private String label ;
     public LabelNode(String _label){
         super();
@@ -15,7 +16,19 @@ public class LabelNode extends AbstractNode{
     }
 
     @Override
-    public String getOutputOperand() {
+    public String getOutputVirtualReg() {
         return label;
+    }
+
+
+    // Node interface implementation
+    public boolean isExecutable() {
+        return false;
+    }
+    public boolean hasOutputVirtualRegister() {
+        return false;
+    }
+    public boolean visualize() {
+        return false;
     }
 }

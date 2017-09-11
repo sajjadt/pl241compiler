@@ -3,7 +3,7 @@ package org.pl241.ir;
 import java.util.HashMap;
 import java.util.Map;
 
-public class BranchNode extends AbstractNode{
+public class BranchNode extends AbstractNode implements NodeInterface{
 
     public enum Type {
         BRA, // Used for returns as well
@@ -13,7 +13,6 @@ public class BranchNode extends AbstractNode{
         BLT,
         BGE,
         BGT;
-
         @Override
         public String toString() {
             switch(this) {
@@ -26,6 +25,9 @@ public class BranchNode extends AbstractNode{
                 case BGT: return "bgt";
                 default: throw new IllegalArgumentException();
             }
+        }
+        public boolean isConditioned() {
+            return this != Type.BRA;
         }
     }
 
@@ -56,22 +58,38 @@ public class BranchNode extends AbstractNode{
         return ret;
     }
 
-    public boolean isConditioned() {
-        return type != Type.BRA;
-    }
-
 
     @Override
-    public String getOutputOperand() {
+    public String printAllocation() {
+        String ret = super.toString() + " " + type;
+
+        if (isCall) {
+            ret += ("(" + callTarget + ")");
+        } else {
+            if (operands.size() > 0)
+                ret += " " + getOperandAtIndex(0).allocation;
+            if (takenBlock != null) ret += (", TakenBl " + takenBlock.getID());
+            if (fallThroughBlock != null) ret += (", FallThBl " + fallThroughBlock.getID());
+        }
+        return ret;
+    }
+
+    public boolean isConditioned() {
+        return type.isConditioned();
+    }
+
+    @Override
+    public String getOutputVirtualReg() {
         return null;
     }
 
-    @Override
-    public boolean hasOutputRegister() {
+    public boolean hasOutputVirtualRegister() {
         return false;
     }
-    @Override
     public boolean isExecutable() {
+        return true;
+    }
+    public boolean visualize() {
         return true;
     }
 
@@ -95,7 +113,6 @@ public class BranchNode extends AbstractNode{
         branchMap.put(">", Type.BGT );
         branchMap.put(">=", Type.BGE );
 
-
         branchMapReversed = new HashMap<>();
         branchMapReversed.put("==", Type.BNE);
         branchMapReversed.put("!=", Type.BEQ);
@@ -103,7 +120,6 @@ public class BranchNode extends AbstractNode{
         branchMapReversed.put("<=", Type.BGT);
         branchMapReversed.put(">", Type.BLE);
         branchMapReversed.put(">=", Type.BLT);
-
 
         branchMapR = new HashMap <>();
         branchMapR.put( Type.BEQ , "==");

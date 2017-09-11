@@ -1,31 +1,39 @@
 package org.pl241.ir;
 
-import java.util.Objects;
-
 public class MemoryStoreNode extends AbstractNode {
-    public AbstractNode offsetCalculatioNode;
-    public MemoryStoreNode(AbstractNode offsetCalculatioNode) {
-        super();
-        this.offsetCalculatioNode = offsetCalculatioNode;
+    public MemoryStoreNode(AbstractNode addressNOde, AbstractNode valueNode) {
+        super(addressNOde, valueNode);
     }
     public String toString() {
-        String ret  = super.nodeId +  "Mem[" + offsetCalculatioNode.getOutputOperand() + "]";
-        if (operands.size() > 0)
-            ret += ( "=" + getOperandAtIndex(0).getOutputOperand());
+        String ret  = this.getOperandAtIndex(1).toString() +  "to Mem[" + this.getOperandAtIndex(0).toString() + "]";
         return ret;
     }
 
-    void setSrcOperand(AbstractNode srcOperand) {
-        super.addOperand(srcOperand);
+    //void setSrcOperand(AbstractNode srcOperand) {
+    //    super.addOperand(srcOperand);
+    //}
+
+    public AbstractNode getAddressCalcNode() {
+        return super.getOperandAtIndex(0);
+    }
+
+    public void setValueNode(AbstractNode node) {
+        this.getInputOperands().set(1, node);
     }
 
     @Override
-    public String getOutputOperand() {
+    public String getOutputVirtualReg() {
         return null;
     }
-
-    @Override
+    // Node interface implementation
     public boolean isExecutable() {
         return true;
     }
+    public boolean hasOutputVirtualRegister() {
+        return false;
+    }
+    public boolean visualize() {
+        return true;
+    }
+
 }

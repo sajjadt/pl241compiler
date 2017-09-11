@@ -3,26 +3,26 @@ package org.pl241.ra;
 public class Allocation implements Comparable<Allocation> {
     public enum Type{
 		STACK,
-		REGISTER,
-        IMMEDIATE
+		GENERAL_REGISTER,
+        SCRATCH_REGISTER
 	}
 
-	public Allocation(Allocation.Type type, int address){
+	public Allocation(Allocation.Type type, Integer address){
 		this.type = type ;
 		this.address = address ;
 	}
 
     @Override
     public String toString() {
-	    if (type == Type.REGISTER)
+	    if (type == Type.GENERAL_REGISTER)
 	        return "R." + address;
-	    else
+	    else if (type == Type.SCRATCH_REGISTER)
+            return "R.scratch" ;
+        else if (type == Type.STACK)
             return "Stack[" + address + "]";
+        else
+            throw new Error("Undefined allocation type");
     }
-
-	public Allocation.Type type;
-	public int address ; // Reg number or spill jumpAddress
-
 	@Override
 	public int compareTo(Allocation allocation) {
 		if (this.type == allocation.type &&
@@ -39,4 +39,12 @@ public class Allocation implements Comparable<Allocation> {
                 this.type == ((Allocation)obj).type &&
                 this.address == ((Allocation)obj).address);
     }
+
+    public static Allocation getScratchRegister() {
+	    return new Allocation(Type.SCRATCH_REGISTER, null);
+    }
+
+    public Allocation.Type type;
+    public Integer address ; // Reg number or spill jumpAddress
+
 }

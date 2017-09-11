@@ -5,25 +5,25 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-public class PhiNode extends AbstractNode {
+public class PhiFunctionNode extends AbstractNode {
 
     // Mapping from block index to instruction node
 	public Map<Integer, AbstractNode> rightOperands;
 
 	public String variableName;
-	public String originalVarName;
+	public String originalVariableName;
 	
-	public PhiNode (String variableName) {
+	public PhiFunctionNode(String variableName) {
         super();
         this.variableName = variableName;
-        this.originalVarName = variableName;
+        this.originalVariableName = variableName;
         rightOperands = new HashMap<>();
     }
 
 	public String toString() {
 		StringBuilder oSet = new StringBuilder();
 		for (Integer key: rightOperands.keySet()) {
-			oSet.append(key.toString()).append(":").append(rightOperands.get(key).getOutputOperand()).append(", ");
+			oSet.append(key.toString()).append(":").append(rightOperands.get(key).getOutputVirtualReg()).append(", ");
 		}
 		return super.toString() +   ": [" + sourceIndex +"]  " + variableName +  " phi: " + oSet;
 	}
@@ -31,23 +31,24 @@ public class PhiNode extends AbstractNode {
 	public AbstractNode inputOf(BasicBlock block) {
 		return rightOperands.get(block.getIndex());
 	}
-
-	public String getOutputOperand() {
-		return variableName;
-	}
-
 	@Override
 	public List<AbstractNode> getInputOperands() {
 	    return new ArrayList<> (rightOperands.values());
 	}
 
-    @Override
+
+    // Node interface implementation
     public boolean isExecutable() {
         return true;
     }
-
-	public boolean hasOutputRegister() {
-		return true;
-	}
+    public boolean hasOutputVirtualRegister() {
+        return true;
+    }
+    public String getOutputVirtualReg() {
+        return variableName;
+    }
+    public boolean visualize() {
+        return true;
+    }
 
 }

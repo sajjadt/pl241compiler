@@ -1,19 +1,24 @@
 package org.pl241.ir;
 
+import org.pl241.Program;
+
 import java.io.PrintWriter;
 import java.util.*;
 
 
 public class Function  {
 
-
     public Function(){
         basicBlocks = new ArrayList<>();
         localVariables = new VarInfoTable();
         parameters = new VarInfoTable();
         _index = _sindex++;
+        this.program = null;
     }
 
+    public void setProgram(Program program){
+        this.program = program;
+    }
 
 	public BasicBlock getEntryBlock() {
 		return basicBlocks.get(0);
@@ -41,21 +46,39 @@ public class Function  {
 		}
 	}
 
-    public void insertReadParams() {
-
-	    // We add load op for all the varialbes
+    public void insertReadVars() {
+	    // We add load instructions for all the varialbes
         // There might be a case of duplicates
         // This will be taken care of by DeadCodeElimination
 
-	    for (Variable var: localVariables.getVars()) {
-	        this.getEntryBlock().getNodes().add(0,
-                    new VarGetNode(var.name));
+        HashSet<String> vars = new HashSet<>();
+
+	    for (Variable var: parameters.getVars()) {
+	        AbstractNode labelNode = new LabelNode(var.name);
+	        AbstractNode memLoadNode = new MemoryLoadNode(labelNode);
+	        AbstractNode varSetNode = new VarSetNode(var.name, memLoadNode);
+
+	        this.getEntryBlock().getNodes().add(0, varSetNode);
+            this.getEntryBlock().getNodes().add(0, memLoadNode);
+	        this.getEntryBlock().getNodes().add(0, labelNode);
+	        vars.add(var.name);
         }
-        for (Variable var: parameters.getVars()) {
-            this.getEntryBlock().getNodes().add(0,
-                    new VarGetNode(var.name));
-        }
+
         // TODO issue variable get for global variables
+        assert program != null;
+        for (Variable var: program.getMainFunction().localVariables.getVars()) {
+
+            assert (!vars.contains(var.name)) : "Variable " + var.name + " is already defined in globals";
+
+            AbstractNode labelNode = new LabelNode(var.name);
+            AbstractNode memLoadNode = new MemoryLoadNode(labelNode);
+            AbstractNode varSetNode = new VarSetNode(var.name, memLoadNode);
+
+            this.getEntryBlock().getNodes().add(0, varSetNode);
+            this.getEntryBlock().getNodes().add(0, memLoadNode);
+            this.getEntryBlock().getNodes().add(0, labelNode);
+            vars.add(var.name);
+        }
     }
 
 	public void toDot(PrintWriter pw, boolean standalone, boolean main, boolean printAllocation) {
@@ -122,6 +145,14 @@ public class Function  {
 			pw.flush();
 		}
 	}
+
+    public BasicBlock getBlockByID(Integer blockID) {
+	    for (BasicBlock block: basicBlocks) {
+	        if (block.getID().equals(blockID))
+	            return block;
+        }
+        return null;
+    }
 	
 	private void setPredecessors() {
 		 for (BasicBlock i: getBasicBlocks())
@@ -369,6 +400,9 @@ public class Function  {
     public VarInfoTable localVariables;
     public VarInfoTable parameters;
     public List<BasicBlock> basicBlocks;
+    private Program program;
+
+
 }
 	
 	
