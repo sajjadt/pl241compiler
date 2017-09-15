@@ -7,10 +7,7 @@ import java.util.ListIterator;
 import java.util.Map;
 import java.util.Set;
 
-import org.pl241.ir.AbstractNode;
-import org.pl241.ir.BasicBlock;
-import org.pl241.ir.ImmediateNode;
-import org.pl241.ir.PhiFunctionNode;
+import org.pl241.ir.*;
 
 class IntervalBuilder {
     public IntervalBuilder() {
@@ -98,13 +95,11 @@ class IntervalBuilder {
 				    	System.out.println("Adding [" + opd.getOutputVirtualReg() + "] input operand  from [" + node.toString()+ "] node");
 			    	}
 			    }
-			    
 		    }
 		    
 		    // is done in above step
 		    for (AbstractNode node: block.getNodes()) {
 		        if (node instanceof PhiFunctionNode) {
-		            // Phi outputs might not be used
 		            if (live.contains(node.getOutputVirtualReg())) {
                         live.remove(node.getOutputVirtualReg());
                         intervals.get(node.getOutputVirtualReg()).definitionPoint = node.getSourceIndex();
@@ -115,6 +110,7 @@ class IntervalBuilder {
 		    if (block.loopHeader) {
 		    	// TODO last block of the loop body?
 		    }
+
 		    block.liveIn = live ;
 		    System.out.println( block.getIndex() + ".live-in:" +  block.liveIn.toString() );
 		    System.out.println( block.getIndex() + "intervals:" +  intervals.toString() );

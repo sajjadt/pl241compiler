@@ -4,7 +4,8 @@ public class Allocation implements Comparable<Allocation> {
     public enum Type{
 		STACK,
 		GENERAL_REGISTER,
-        SCRATCH_REGISTER
+        SCRATCH_REGISTER,
+        IMMEDIATE
 	}
 
 	public Allocation(Allocation.Type type, Integer address){
@@ -20,6 +21,8 @@ public class Allocation implements Comparable<Allocation> {
             return "R.scratch" ;
         else if (type == Type.STACK)
             return "Stack[" + address + "]";
+        else if (type == Type.IMMEDIATE)
+            return "Imm:" + address;
         else
             throw new Error("Undefined allocation type");
     }

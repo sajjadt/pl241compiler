@@ -243,7 +243,10 @@ public class RegisterAllocator { // Allocate Registers for one function
                 }
 
                 for (AbstractNode child: node.getInputOperands()) {
-                    child.setAllocation(liveIntervalAllocationAt(intervalMap, child.getOutputVirtualReg(), node.sourceIndex));
+                    if (child instanceof ImmediateNode)
+                        child.setAllocation(new Allocation(Allocation.Type.IMMEDIATE, ((ImmediateNode) child).getValue()));
+                    else
+                        child.setAllocation(liveIntervalAllocationAt(intervalMap, child.getOutputVirtualReg(), node.sourceIndex));
                 }
             }
         }

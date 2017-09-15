@@ -23,7 +23,7 @@ public class VarSetNode extends AbstractNode implements NodeInterface {
 	}
 	
 	public String toString() {
-	    String ret = super.toString();
+	    String ret = this.sourceIndex + ": ";
 		if (operands.size()>0) {
             ret += memAddress + "=" + getOperandAtIndex(0).getOutputVirtualReg();
         }

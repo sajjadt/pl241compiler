@@ -43,10 +43,10 @@ public class AbstractNode implements NodeInterface {
         String ret = "";
 
         if (sourceIndex != -1)
-            ret = sourceIndex + ":";
+            ret = sourceIndex + ": ";
 
         if (hasOutputVirtualRegister())
-            ret += "[" + nodeId + "]";
+            ret += nodeId + " = ";
 
         if (allocation != null)
             ret += allocation.toString();
@@ -102,6 +102,15 @@ public class AbstractNode implements NodeInterface {
 
     @Override
     public boolean visualize() {
+        return false;
+    }
+
+    public void setOperandAtIndex(int i, AbstractNode abstractNode) {
+        assert operands.size() > i;
+        operands.set(i, abstractNode);
+    }
+
+    public boolean isControlFlow() {
         return false;
     }
 }

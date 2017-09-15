@@ -73,7 +73,7 @@ public class Variable {
 	    return dimensions;
     }
 
-    private VariableType type;
+    public VariableType type;
 	private ArrayList<Integer> dimensions;
 
 	private static HashMap<String, Integer> counters;

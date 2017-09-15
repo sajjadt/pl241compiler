@@ -2,7 +2,8 @@
 main
 var a, b, c, d;
 {
-	let a <- call InputNum( );
+    let b <- 10;
+	let c <- call InputNum( );
 	call OutputNum( a );
 	call OutputNewLine( );
 	
@@ -14,7 +15,7 @@ var a, b, c, d;
 		call OutputNum( d );
 		call OutputNewLine( );
 		
-		let b <- b + 1
+		let b <- b - 1
 	od
 }
 .

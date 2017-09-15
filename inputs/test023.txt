@@ -1,13 +1,15 @@
 # Nested if/while testcase
 # Based on discussions with Alex, Marcelo, and Babak
+# expected to print: 3 2 4
 main
 var a, b, c, d, e;
 {
 	let a <- 1;
 	let b <- 2;
 	let c <- 3;
-	let d <- 4;
+	let d <- a - b + c;
 	let e <- 5;
+
 	
 	while ( c + 4 ) < d do
 		if ( a + 5 - b ) > ( b * 6 ) then
@@ -19,6 +21,9 @@ var a, b, c, d, e;
 	od;
 	
 	let e <- c - a + b;
-	let a <- a + b
+	let a <- a + b;
+	call OutputNum(a);
+	call OutputNum(b);
+	call OutputNum(e)
 }
 .

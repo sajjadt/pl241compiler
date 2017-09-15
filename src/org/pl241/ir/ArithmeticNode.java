@@ -13,17 +13,19 @@ public class ArithmeticNode extends AbstractNode implements NodeInterface {
         SUB,
         MUL,
         DIV,
-        CMP;
+        CMP,
+        ADDA;
 
         @Override
         public String toString() {
             switch(this) {
                 case NEG: return "!";
                 case ADD: return "+";
+                case ADDA: return "+";
                 case SUB: return "-";
                 case MUL: return "*";
                 case DIV: return "/";
-                case CMP: return "check";
+                case CMP: return "cmp";
                 default: throw new IllegalArgumentException();
             }
         }
@@ -37,12 +39,14 @@ public class ArithmeticNode extends AbstractNode implements NodeInterface {
         operator = _operator;
     }
 
-
     public String toString() {
-        String operands = this.operands.get(0).displayId();
-        if (this.operands.size() > 1)
-            operands +=  ", " + this.operands.get(1).displayId();
-        return super.toString() + " "+ operatorMapR.get(operator) + " " + operands;
+        String ret = super.toString();
+
+        if (this.operands.size() == 1)
+            ret += operator.toString() + " " + this.operands.get(0).displayId();
+        else
+            ret += this.operands.get(0).displayId() + " " + operator.toString() + " " + this.operands.get(1).displayId();
+        return ret;
     }
 
     @Override

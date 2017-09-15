@@ -1,6 +1,9 @@
 package org.pl241.optimization;
 
 import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Iterator;
+
 import org.pl241.ir.Function;
 import org.pl241.ir.*;
 
@@ -13,80 +16,116 @@ public class CommonSubexpressionElimination implements Optimization {
 	}
 
 	public void apply(Function function) {
-		fixBlock(function.getEntryBlock());
+        HashMap<String, AbstractNode> nodesMap = new HashMap<>();
+        fixBlock(function.getEntryBlock(), nodesMap);
 	}
 
-	private void fixBlock(BasicBlock block){
-		// Foreach phi function
+	private void fixBlock(BasicBlock block, HashMap<String, AbstractNode> nodesMap){
+
+	    System.out.println("CSE. processing block " + block.getID());
+
+        HashSet<Expression> localExpressionSet = new HashSet<>();
+        HashSet<String> localCopySet = new HashSet<>();
+
         for (AbstractNode node: block.getNodes()) {
-            if (node instanceof PhiFunctionNode) { // Handle Phis
-                Expression exp = Expression.fromPhi((PhiFunctionNode)node);
-                String V = node.getOutputVirtualReg();
-
-                if (expressionMap.containsKey(exp)) {
-
-                } else {
-
-                }
-            }
+            if (node.hasOutputVirtualRegister())
+                nodesMap.put(node.getOutputVirtualReg(), node);
         }
 
-		// Foreach Statement
 		for (AbstractNode node: block.getNodes()) {
-
-		    if(node instanceof ArithmeticNode) {
-				// look for operands
+		    if(node instanceof ArithmeticNode ||
+                    node instanceof PhiFunctionNode) {
 				AbstractNode node1 = node.getOperandAtIndex(0) ;
 				AbstractNode node2 = node.getOperandAtIndex(1) ;
-
 				String operand1 = node1.getOutputVirtualReg();
 				String operand2 = node2.getOutputVirtualReg();
 
-				while (copyMap.containsKey(operand1))
-					operand1 = copyMap.get(operand1);
+				if (node1.hasOutputVirtualRegister() && copyMap.containsKey(operand1)) {
+                    operand1 = copyMap.get(operand1);
+                    node.setOperandAtIndex(0, nodesMap.get(operand1));
+                    node1 = nodesMap.get(operand1);
+                }
+				if (node2.hasOutputVirtualRegister() && copyMap.containsKey(operand2)) {
+                    operand2 = copyMap.get(operand2);
+                    node.setOperandAtIndex(1, nodesMap.get(operand2));
+                    node2 = nodesMap.get(operand2);
+                }
 
-				while (copyMap.containsKey(operand2))
-					operand2 = copyMap.get(operand2);
+                assert node1 != null: "CSE: Node associated with " + operand1 + " not found!";;
+                assert node2 != null : "CSE: Node associated with " + operand2 + " not found!";
 
-                Expression exp = new Expression(operand1, operand2,
-                        Expression.fromArithExpressions(((ArithmeticNode)node).operator)
-                );
+                Expression exp = null;
+                if (node instanceof ArithmeticNode)
+                    exp = new Expression(operand1, operand2, Expression.fromArithExpressions(((ArithmeticNode)node).operator));
+                else if (node instanceof PhiFunctionNode)
+                    exp = Expression.fromPhi((PhiFunctionNode)node);
+                assert exp != null;
 
                 if (expressionMap.containsKey(exp)) {
-                    copyMap.put(node.nodeId, expressionMap.get(exp));
-
                     node.removed = true;
-                    node.removeReason = "CSE";
-
-                    node1.removed = true;
-                    node1.removeReason = "CSE";
-
-                    node2.removed = true;
-                    node2.removeReason = "CSE";
-
+                    copyMap.put(node.nodeId, expressionMap.get(exp));
+                    localCopySet.add(node.nodeId);
                 } else {
                     expressionMap.put(exp, node.getOutputVirtualReg());
+                    localExpressionSet.add(exp);
                 }
-			} else if (node instanceof VarSetNode) {
-		        // Handle copies
+			}
+			// A new copy
+			else if (node instanceof VarSetNode) {
+                String operand = node.getOperandAtIndex(0).getOutputVirtualReg();
+                if (copyMap.containsKey(operand)) {
+                    operand = copyMap.get(operand);
+                    node.setOperandAtIndex(0, nodesMap.get(operand));
+                }
+                if (node.getOperandAtIndex(0).hasOutputVirtualRegister()){
+                    String dst = node.getOperandAtIndex(0).getOutputVirtualReg();
+                    if (copyMap.containsKey(dst))
+                        dst = copyMap.get(dst);
+                    copyMap.put(node.getOutputVirtualReg(), dst);
+                    localCopySet.add(node.getOutputVirtualReg());
+                }
+            } else if (node.isExecutable()) {
+		        for (int i = 0; i < node.getInputOperands().size(); i++) {
+		            AbstractNode operand = node.getOperandAtIndex(i);
+		            if (operand.hasOutputVirtualRegister() &&
+                            copyMap.containsKey(operand.getOutputVirtualReg())) {
+		                node.setOperandAtIndex(i, nodesMap.get(copyMap.get(operand.getOutputVirtualReg())));
+                    }
+                }
             }
-
         }
 
 		// Foreach successor
 		for (BasicBlock nextBlock: block.getSuccessors()) {
 			// handle phi functions
             for (AbstractNode node: nextBlock.getNodes()) {
-                if (node instanceof PhiFunctionNode) { // Handle Phis
+                if (node instanceof PhiFunctionNode) {
+                    // Check if phi node parameters are in the copy table
+                    // Replace them with the copy
 
+                    AbstractNode node1 = node.getOperandAtIndex(0) ;
+                    AbstractNode node2 = node.getOperandAtIndex(1) ;
+                    String operand1 = node1.getOutputVirtualReg();
+                    String operand2 = node2.getOutputVirtualReg();
+
+                    if (node1.hasOutputVirtualRegister() && copyMap.containsKey(operand1)) {
+                        operand1 = copyMap.get(operand1);
+                        node.setOperandAtIndex(0, nodesMap.get(operand1));
+                    }
+                    if (node2.hasOutputVirtualRegister() && copyMap.containsKey(operand2)) {
+                        operand2 = copyMap.get(operand2);
+                        node.setOperandAtIndex(1, nodesMap.get(operand2));
+                    }
                 }
             }
 		}
 		
 		// Foreach child in DFT
 		for (BasicBlock iBlock: block.immediateDominants) {
-			fixBlock(iBlock);
+			fixBlock(iBlock, nodesMap);
 		}
+        copyMap.keySet().removeAll(localCopySet);
+        expressionMap.keySet().removeAll(localExpressionSet);
 
 		block.getNodes().removeIf(node -> node.removed);
 

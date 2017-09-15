@@ -227,7 +227,6 @@ public class BasicBlock {
 		}
 
 		for( AbstractNode node: getNodes()) {
-
 		    // LHS
 			if (node instanceof VarGetNode) {
 				String src = ((VarGetNode)node).variableId;
@@ -241,7 +240,6 @@ public class BasicBlock {
                 String newName = Variable.generateNewName(name);
                 ((VarSetNode)node).memAddress = newName;
             }
-
 			if (node instanceof AtomicFunctionNode && ((AtomicFunctionNode)node).isAMemoryStore) {
 				AbstractNode src = node.getOperandAtIndex(0);
 				//String address = Variable.getTopmostName(src);

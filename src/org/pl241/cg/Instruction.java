@@ -69,6 +69,7 @@ public class Instruction {
                     else
                         return Type.NEG;
                 case ADD:
+                case ADDA:
                     if (withImmediateOperand)
                         return Type.ADDI;
                     else
@@ -158,18 +159,38 @@ public class Instruction {
         String ret = "";
 
         if (destinationOperand != null)
-            ret += destinationOperand.toString();
+            ret += destinationOperand.toString() + "=";
 
-        ret += "=";
 
-        if (sourceOperand1 != null)
-            ret += " " + sourceOperand1.toString();
-
-        ret += this.type.toString() + " ";
-
-        if (sourceOperand2 != null)
-            ret += " " + sourceOperand2.toString();
-        return ret;
+        switch (this.type) {
+            case LOAD:
+            case LOADI:
+                return destinationOperand.toString() + " = Mem[" + sourceOperand1.toString() + "+" + sourceOperand2.toString() + "]" ;
+            case STORE:
+                return "Mem[" + destinationOperand.toString() + " + " + sourceOperand2.toString() + "] = " + sourceOperand1.toString();
+            case MOV:
+                return destinationOperand.toString() + " = " + sourceOperand1.toString();
+            case WRD:
+                return "WRD " + sourceOperand1.toString();
+            case WRL:
+                return "WRL";
+            case RET:
+                return "RET";
+            case ADD:
+            case SUB:
+            case MUL:
+            case DIV:
+            case CMP:
+            case XOR:
+            case ADDI:
+            case SUBI:
+            case MULI:
+            case DIVI:
+            case CMPI:
+                return destinationOperand.toString() + " = " + sourceOperand1.toString() + " " + type.toString() + " " + sourceOperand2.toString() ;
+            default :
+                return "x"
+;        }
     }
 
     // Lowers one IR instruction into DLX equivalent
@@ -277,7 +298,6 @@ public class Instruction {
                 operand1 = new Operand(Operand.Type.REGISTER, src1.address);
                 instructions.add(new BranchInstruction(Instruction.Type.fromBranchType(((BranchNode) node).type), operand1, offset1));
             } else {
-
                 if (offset1 == null) {
                     instructions.add(new BranchInstruction(Instruction.Type.fromBranchType(((BranchNode) node).type),
                             operand1,
@@ -344,8 +364,7 @@ public class Instruction {
                 }
                 instructions.add(new BranchInstruction(Type.RET, new Operand(Operand.Type.REGISTER, RA), (Integer) null));
             }
-        }
-        else if (node instanceof MoveNode) {
+        } else if (node instanceof MoveNode) {
 
             Operand src = null;
             Operand destination = null;
@@ -377,15 +396,15 @@ public class Instruction {
             Allocation base = ((MemoryStoreNode) node).getAddressCalcNode().allocation; //allocator.getAllocationAt(((MemoryStoreNode) node).getAddressCalcNode().getOutputVirtualReg(), ((MemoryStoreNode) node).getAddressCalcNode().sourceIndex);
 
             Allocation src = null;
-            if (node.getOperandAtIndex(0) instanceof ImmediateNode) {
+            if (((MemoryStoreNode) node).getValueNode() instanceof ImmediateNode) {
                 // Move it to temp register
                 instructions.add(new Instruction(Type.ADDI,
                         new Operand(Operand.Type.REGISTER, (Integer)0),
-                        new Operand(Operand.Type.IMMEDIATE, ((ImmediateNode)node.getOperandAtIndex(0)).getValue()),
+                        new Operand(Operand.Type.IMMEDIATE, ((ImmediateNode)((MemoryStoreNode) node).getValueNode()).getValue()),
                         new Operand(Operand.Type.REGISTER, SCRATCH_REGISTER)));
                 src = new Allocation(Allocation.Type.GENERAL_REGISTER, SCRATCH_REGISTER);
             } else {
-                src = node.getOperandAtIndex(0).allocation; //allocator.getAllocationAt(node.getOperandAtIndex(0).getOutputVirtualReg(), node.sourceIndex);
+                src = ((MemoryStoreNode) node).getValueNode().allocation; //allocator.getAllocationAt(node.getOperandAtIndex(0).getOutputVirtualReg(), node.sourceIndex);
             }
             assert src.type == Allocation.Type.GENERAL_REGISTER;
 
@@ -393,31 +412,7 @@ public class Instruction {
                     new Operand(Operand.Type.REGISTER, src.address),
                     new Operand(Operand.Type.REGISTER, 0),
                     new Operand(Operand.Type.REGISTER, base.address)));
-        }
-        else if (node instanceof AddressCalcNode) {
-            // Add variable address on stack to operand
-            assert localVarMap.containsKey(((AddressCalcNode) node).variableName);
-
-            int displacement = localVarMap.get(((AddressCalcNode) node).variableName);
-            Allocation dst = node.allocation; //allocator.getAllocationAt(node.getOutputVirtualReg(), node.sourceIndex);
-            assert dst.type == Allocation.Type.GENERAL_REGISTER;
-
-            if (node.getOperandAtIndex(0) instanceof ImmediateNode) {
-                instructions.add(new Instruction(Type.ADDI,
-                        new Operand(Operand.Type.REGISTER, FRAMEP),
-                        new Operand(Operand.Type.IMMEDIATE, displacement - 4* ((ImmediateNode)node.getOperandAtIndex(0)).getValue()),
-                        new Operand(Operand.Type.REGISTER, dst.address)));
-            } else {
-
-                assert node.getOperandAtIndex(0).allocation.type == Allocation.Type.GENERAL_REGISTER;
-                Operand addressCalc = Operand.fromAllocation(node.getOperandAtIndex(0).allocation);
-                instructions.add(new Instruction(Type.ADD,
-                        new Operand(Operand.Type.REGISTER, FRAMEP),
-                        addressCalc,
-                        new Operand(Operand.Type.REGISTER, dst.address)));
-            }
-        }
-        else if (node instanceof ExchangeNode) {
+        } else if (node instanceof ExchangeNode) {
             assert ((ExchangeNode) node).from.type != Allocation.Type.STACK &&
                     ((ExchangeNode) node).to.type != Allocation.Type.STACK : "Exchange of non registers not implemented";
 
@@ -431,7 +426,6 @@ public class Instruction {
         else {
             throw new Error("Unsupported instruction type " + node);
         }
-
         return instructions;
     }
 
@@ -446,10 +440,15 @@ public class Instruction {
         }
         //Pass parameters
         for (AbstractNode node: callNode.getInputOperands()) {
-            assert node.hasOutputVirtualRegister();
-            Allocation srcAllocation = node.allocation; // allocator.getAllocationAt(node.getOutputVirtualReg(), callNode.sourceIndex);
-            assert srcAllocation.type == Allocation.Type.GENERAL_REGISTER;
-            instructions.add(new Instruction(Type.PSH, new Operand(Operand.Type.REGISTER, srcAllocation.address), null, null));
+            if (node.hasOutputVirtualRegister()) {
+                Allocation srcAllocation = node.allocation; // allocator.getAllocationAt(node.getOutputVirtualReg(), callNode.sourceIndex);
+                assert srcAllocation.type == Allocation.Type.GENERAL_REGISTER;
+                instructions.add(new Instruction(Type.PSH, new Operand(Operand.Type.REGISTER, srcAllocation.address), null, null));
+            } else if (node instanceof ImmediateNode) {
+                instructions.add(new Instruction(Type.ADDI, new Operand(Operand.Type.REGISTER, ZERO), new Operand(Operand.Type.IMMEDIATE, ((ImmediateNode) node).getValue()), new Operand(Operand.Type.REGISTER, SCRATCH_REGISTER)));
+                instructions.add(new Instruction(Type.PSH, new Operand(Operand.Type.REGISTER, SCRATCH_REGISTER), null, null));
+            }
+            assert true : "Unexpected parameter for function call";
         }
 
         // Call
@@ -457,9 +456,6 @@ public class Instruction {
 
         //Discard parameters
         for (AbstractNode node: callNode.getInputOperands()) {
-            assert node.hasOutputVirtualRegister();
-            Allocation srcAllocation = node.allocation; // allocator.getAllocationAt(node.getOutputVirtualReg(), callNode.sourceIndex);
-            assert srcAllocation.type == Allocation.Type.GENERAL_REGISTER;
             instructions.add(new Instruction(Type.POP, null, null, new Operand(Operand.Type.REGISTER, ZERO)));
         }
         //instructions.add(new Instruction(Type.ADDI, new Operand(Operand.Type.REGISTER, SP), new Operand(Operand.Type.IMMEDIATE, 4*callNode.getInputOperands().size()), new Operand(Operand.Type.REGISTER, SP)));
@@ -480,8 +476,6 @@ public class Instruction {
                     null,
                     new Operand(Operand.Type.REGISTER, retVal.address)));
         }
-
-
         return instructions;
     }
 
@@ -489,13 +483,5 @@ public class Instruction {
     public Operand sourceOperand1;
     public Operand sourceOperand2;
     public Instruction.Type type;
-
-    public Integer assemble () {
-        Integer ins = 0;
-        return ins;
-    }
-
-
-
 }
 

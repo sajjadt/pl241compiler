@@ -1,5 +1,7 @@
 package org.pl241.ir;
 
+import org.pl241.ra.Allocation;
+
 public class AtomicFunctionNode extends AbstractNode implements NodeInterface {
 
     public enum IOType {
@@ -65,6 +67,23 @@ public class AtomicFunctionNode extends AbstractNode implements NodeInterface {
     public boolean isAMemoryStore;
 	public IOType type;
 
+
+    @Override
+    public String printAllocation() {
+        String ret = "";
+
+        if (this.allocation != null)
+                ret += this.allocation.toString();
+
+        ret += this.type.toString();
+
+        if (this.operands.size() > 0) {
+            Allocation al = this.operands.get(0).allocation;
+            if (al != null)
+                ret +=  ", " + al.toString();
+        }
+        return ret;
+    }
 
     @Override
     public boolean hasOutputVirtualRegister() {

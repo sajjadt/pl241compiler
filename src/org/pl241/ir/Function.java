@@ -313,13 +313,13 @@ public class Function  {
 	// Insert branches to end of basic blocks
     public void insertBranches() {
 		for (BasicBlock block: getBasicBlocks()) {
-			if (block.successors.size() == 1
-                    && !(block.getLastNode() instanceof BranchNode)
-                    && !(block.getLastNode() instanceof ReturnNode)) {
-                BranchNode node = new BranchNode();
-                //node.takenBlock = block.successors.get(0);
+			if (block.successors.size() == 1 && block.fallThrough == null) {
                 block.fallThrough = block.successors.get(0);
-                block.addNode(node);
+                if (!(block.getLastNode() instanceof ReturnNode) &&
+                        !(block.getLastNode() instanceof BranchNode)){
+                    BranchNode node = new BranchNode();
+                    block.addNode(node);
+                }
 			}
 
 			// Return statement for procedures (they have no return)

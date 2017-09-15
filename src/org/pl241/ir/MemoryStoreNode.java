@@ -5,18 +5,14 @@ public class MemoryStoreNode extends AbstractNode {
         super(addressNOde, valueNode);
     }
     public String toString() {
-        String ret  = this.getOperandAtIndex(1).toString() +  "to Mem[" + this.getOperandAtIndex(0).toString() + "]";
-        return ret;
+        return sourceIndex + ": " +  "Mem[" + this.getOperandAtIndex(0).getOutputVirtualReg() + "] = " + this.getOperandAtIndex(1).getOutputVirtualReg();
     }
-
-    //void setSrcOperand(AbstractNode srcOperand) {
-    //    super.addOperand(srcOperand);
-    //}
-
     public AbstractNode getAddressCalcNode() {
         return super.getOperandAtIndex(0);
     }
-
+    public AbstractNode getValueNode() {
+        return super.getOperandAtIndex(1);
+    }
     public void setValueNode(AbstractNode node) {
         this.getInputOperands().set(1, node);
     }

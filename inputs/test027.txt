@@ -2,6 +2,7 @@ main
     array [3] foo,boo;
     var a,b,c;
     {
+        let a <- 4;
         let c <- foo[2*a-6];
         while 2 < 3 do
             let b <- foo[2*a-6];

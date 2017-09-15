@@ -13,6 +13,8 @@ var i, f, x;
 	return f
 };
 function factRec(n);
+var a, b;
+array [5][5] c;
 {
 	if n <= 1 then
 		return 1

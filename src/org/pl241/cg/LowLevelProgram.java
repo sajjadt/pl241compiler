@@ -1,5 +1,6 @@
 package org.pl241.cg;
 
+import com.sun.xml.internal.fastinfoset.util.ValueArray;
 import org.pl241.Program;
 import org.pl241.ir.AbstractNode;
 import org.pl241.ir.BasicBlock;
@@ -103,11 +104,29 @@ public class LowLevelProgram {
 
                 instructions.add(0, new Instruction(Instruction.Type.LOADI,
                         new Operand(Operand.Type.REGISTER, FRAMEP),
-                        new Operand(Operand.Type.IMMEDIATE, f.parameters.get(param) * 4),
+                        new Operand(Operand.Type.IMMEDIATE, f.parameters.get(param)),
                         new Operand(Operand.Type.REGISTER, allocation.address)));
 
             }
         }
+
+        for (Variable variable: f.localVariables.getVars()) {
+
+            if(variable.type == Variable.VariableType.ARRAY &&
+                    f.getEntryBlock().liveIn.contains(variable.name)) {
+                Allocation allocation = allocator.getAllocationAt(variable.name, 0);
+                assert allocation != null;
+                assert allocation.type == Allocation.Type.GENERAL_REGISTER;
+
+                instructions.add(0, new Instruction(Instruction.Type.ADDI,
+                        new Operand(Operand.Type.REGISTER, FRAMEP),
+                        new Operand(Operand.Type.IMMEDIATE, localVarMap.get(variable.name)),
+                        new Operand(Operand.Type.REGISTER, allocation.address)));
+
+            }
+        }
+
+        //
 
         if (!f.name.equals("main")){
             // Save SP in FrameP to access parameters/local variables
@@ -165,7 +184,6 @@ public class LowLevelProgram {
     }
 
     private void visualizeFunction(String functionName, PrintWriter pw) {
-        //pw.println("subgraph " + "cluster" + function. + " {");
         pw.println("label=" + functionName );
         pw.println("labelloc=\"t\";");
         pw.println("fontsize=18;");
@@ -175,12 +193,10 @@ public class LowLevelProgram {
         pw.print("BB"  + " [shape=record label=\"{");
         pw.print( "Function " + functionName+ "\n");
 
-
         for (Instruction n: lowLevelIR.get(functionName)) {
             pw.print('|' + n.toString());
         }
         pw.print("}\" ] " + "\n");
-//        pw.println("}");
     }
 
     public Program getIRProgram() {

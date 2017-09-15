@@ -52,8 +52,8 @@ public class BranchNode extends AbstractNode implements NodeInterface{
         } else {
             if (operands.size() > 0)
                 ret += " " + getOperandAtIndex(0).nodeId;
-            if (takenBlock != null) ret += (", TakenBl " + takenBlock.getID());
-            if (fallThroughBlock != null) ret += (", FallThBl " + fallThroughBlock.getID());
+            if (takenBlock != null) ret += (" TakenBl:" + takenBlock.getID());
+            if (fallThroughBlock != null) ret += (" FallThBl:" + fallThroughBlock.getID());
         }
         return ret;
     }
@@ -130,4 +130,8 @@ public class BranchNode extends AbstractNode implements NodeInterface{
         branchMapR.put( Type.BGE  , ">=");
     }
 
+    @Override
+    public boolean isControlFlow() {
+        return true;
+    }
 }

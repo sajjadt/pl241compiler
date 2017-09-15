@@ -51,4 +51,9 @@ public class FunctionCallNode extends AbstractNode implements NodeInterface{
 
     public String callTarget;
     public boolean hasReturnValue;
+
+    @Override
+    public boolean isControlFlow() {
+        return true;
+    }
 }

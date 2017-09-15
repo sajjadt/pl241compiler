@@ -131,14 +131,12 @@ public class DLXCodeGenerator {
             case BGT:
             case BRA:
                 return generateBranch(ins.type, ins.sourceOperand1, new Operand(Operand.Type.IMMEDIATE, ((BranchInstruction)ins).offset));
-            // TODO function call case JSR:
             case RDD:
                 return generateIO(ins.type, ins.destinationOperand);
             case WRD:
                 return generateIO(ins.type, ins.sourceOperand1);
             case WRL:
                 return generateIO(ins.type, null);
-                //TODO true for read instructions as well??
             case MOV:
                 assert ins.sourceOperand2 == null;
                 if (ins.sourceOperand1.type == Operand.Type.IMMEDIATE)

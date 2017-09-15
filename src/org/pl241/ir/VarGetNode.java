@@ -36,7 +36,7 @@ public class VarGetNode extends AbstractNode implements NodeInterface{
         return true;
     }
     public boolean visualize() {
-        return false;
+        return true;
     }
 
 }

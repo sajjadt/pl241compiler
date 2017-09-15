@@ -8,8 +8,7 @@ public class MemoryLoadNode extends AbstractNode {
     }
 
     public String toString() {
-        String ret  = super.nodeId +  "Mem[" + this.getOperandAtIndex(0).getOutputVirtualReg() + "]";
-        return ret;
+        return sourceIndex + ": " + getOutputVirtualReg() +  " = Mem[" + this.getOperandAtIndex(0).getOutputVirtualReg() + "]";
     }
 
     public AbstractNode getAddressCalcNode() {

@@ -20,6 +20,8 @@ public class Expression {
                 return ExpressionType.MUL;
             case DIV:
                 return ExpressionType.DIV;
+            case CMP:
+                return ExpressionType.CMP;
             default:
                 return ExpressionType.NONE;
         }
@@ -31,7 +33,13 @@ public class Expression {
         SUB,
         MUL,
         DIV,
-        NONE
+        CMP,
+        NONE;
+
+
+        public boolean isSymmetric() {
+            return this.equals(ADD) || this.equals(MUL);
+        }
     }
 
 
@@ -50,11 +58,17 @@ public class Expression {
 		if (getClass() != obj.getClass())
 			return false;
 		Expression other = (Expression)obj;
-		// TODO symmetric operations
-		if (other.operator.equals(operator) &&
-                other.operand1.equals(operand1) &&
-                other.operand2.equals(operand2)) {
-			return true;
+		if (other.operator.equals(operator)) {
+
+		    if (operator.isSymmetric()) {
+                return (other.operand1.equals(operand1) && other.operand2.equals(operand2)) ||
+                        (other.operand1.equals(operand2) && other.operand2.equals(operand1));
+
+            } else {
+		        return other.operand1.equals(operand1) &&
+                        other.operand2.equals(operand2);
+            }
+
 		}
 		return false;
 	}

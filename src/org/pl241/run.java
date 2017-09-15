@@ -22,15 +22,15 @@ class run
 	{
 		// Settings
         boolean visualize = true;
-        boolean optimize = true;
+        boolean optimize = false;
         boolean allocateRegisters = true;
         boolean genCode = true;
         boolean execute = true;
-        boolean invoke_png_gen_script = true;
-        boolean print_disassembly = true;
+        boolean invokePngGenScript = true;
+        boolean printDisassembly = false;
 
         int numberOfRegisters = 16;
-		String testName = "factorial";
+		String testName = "test005";
         String testPath = "inputs" + File.separator + testName + ".txt";
 
         // Tokenize the input
@@ -45,6 +45,7 @@ class run
 			e.printStackTrace();
 			return;
 		}
+
         // Parse the input and create IR representation
 		try {
             Parser parser = new Parser();
@@ -75,19 +76,16 @@ class run
             program.indexIR();
             program.printVarInfo();
 
-            //program.dce();
-            //program.indexIR();
-
             if (visualize) {
                 program.visualize("Vis" + File.separator + testName + "_pass_1_ssa.dot", false);
                 program.visualizeDominatorTree("Vis" + File.separator + testName + "_dom_tree.dot");
             }
 
             if (optimize) {
-                //program.cse();
-                //program.indexIR();
-                //if (visualize)
-                //    program.visualize("Vis" + File.separator + testName + "_pass_2_cse.dot", false);
+                program.cse();
+                program.indexIR();
+                if (visualize)
+                    program.visualize("Vis" + File.separator + testName + "_pass_2_cse.dot", false);
 
                 program.copyPropagate();
                 program.indexIR();
@@ -133,7 +131,11 @@ class run
                     lowLevelProgram.visualizeFunction("Vis" + File.separator + testName + "_" + f.name + "_pass_5_lowered.dot", f.name);
                 }
 
-                if (invoke_png_gen_script) {
+
+                program.visualize("Vis" + File.separator + testName + "_pass_6_alloc.dot", true);
+
+
+                if (invokePngGenScript) {
                     String command = "bash ./genpng.sh";
                     Runtime.getRuntime().exec(command);
                 }
@@ -147,7 +149,7 @@ class run
                         DLX.load(executable);
                         System.out.println("MEM:" + executable);
                         System.out.println("Starting execution on DLX emulator...");
-                        DLX.execute(print_disassembly);
+                        DLX.execute(printDisassembly);
                     }
                 }
             }
@@ -159,5 +161,4 @@ class run
 
 		System.out.println("All done...");
 	}
-
 }

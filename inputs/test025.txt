@@ -3,6 +3,9 @@
 main
 var a, b, c, d, e, f, g;
 {
+    let b <- 1;
+    let e <- b;
+    let c <- 4;
 	let a <- b + c;
 	let d <- b + c;
 	let e <- c + b + d;
@@ -12,13 +15,18 @@ var a, b, c, d, e, f, g;
 		let f <- a * d;
 		let g <- d * a + 4;
 		let b <- 5;
-		let e <- c + b + d
+		let e <- c + b + d;
+		call OutputNum(e)
 	else
 		let f <- a / d;
-		let g <- d / a
+		let g <- d / a;
+		call OutputNum(f);
+		call OutputNum(g)
 	fi;
 	
 	let f <- a * d;
-	let g <- d / a
+	let g <- d / a;
+    call OutputNum(f);
+	call OutputNum(g)
 }
 .

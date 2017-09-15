@@ -1,5 +1,6 @@
 package org.pl241.ir;
 
+import java.lang.reflect.Array;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -23,9 +24,9 @@ public class PhiFunctionNode extends AbstractNode {
 	public String toString() {
 		StringBuilder oSet = new StringBuilder();
 		for (Integer key: rightOperands.keySet()) {
-			oSet.append(key.toString()).append(":").append(rightOperands.get(key).getOutputVirtualReg()).append(", ");
+			oSet.append(key.toString()).append(":").append(rightOperands.get(key).getOutputVirtualReg()).append(",");
 		}
-		return super.toString() +   ": [" + sourceIndex +"]  " + variableName +  " phi: " + oSet;
+		return this.sourceIndex +   ": " + variableName +  " phi:(" + oSet + ")";
 	}
 
 	public AbstractNode inputOf(BasicBlock block) {
@@ -36,6 +37,20 @@ public class PhiFunctionNode extends AbstractNode {
 	    return new ArrayList<> (rightOperands.values());
 	}
 
+	@Override
+    public AbstractNode getOperandAtIndex(int index) {
+        ArrayList<AbstractNode> nodes = new ArrayList<> (rightOperands.values());
+        if (nodes.size() > index) {
+            return nodes.get(index);
+        }
+        return null;
+    }
+
+    @Override
+    public void setOperandAtIndex(int index, AbstractNode abstractNode) {
+        ArrayList<AbstractNode> nodes = new ArrayList<> (rightOperands.values());
+        nodes.set(index, abstractNode);
+    }
 
     // Node interface implementation
     public boolean isExecutable() {
