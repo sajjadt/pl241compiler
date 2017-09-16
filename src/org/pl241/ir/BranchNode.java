@@ -61,7 +61,7 @@ public class BranchNode extends AbstractNode implements NodeInterface{
 
     @Override
     public String printAllocation() {
-        String ret = super.toString() + " " + type;
+        String ret = type.toString();
 
         if (isCall) {
             ret += ("(" + callTarget + ")");

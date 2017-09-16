@@ -22,7 +22,7 @@ class run
 	{
 		// Settings
         boolean visualize = true;
-        boolean optimize = false;
+        boolean optimize = true;
         boolean allocateRegisters = true;
         boolean genCode = true;
         boolean execute = true;
@@ -30,7 +30,7 @@ class run
         boolean printDisassembly = false;
 
         int numberOfRegisters = 16;
-		String testName = "test005";
+		String testName = "test001";
         String testPath = "inputs" + File.separator + testName + ".txt";
 
         // Tokenize the input
@@ -128,10 +128,10 @@ class run
                     // Also insert additional instructions such as memory operands access
 
                     lowLevelProgram.lowerAndAddFunction(f, allocator);
-                    lowLevelProgram.visualizeFunction("Vis" + File.separator + testName + "_" + f.name + "_pass_5_lowered.dot", f.name);
                 }
 
 
+                lowLevelProgram.visualize("Vis" + File.separator + testName + "_pass_5_lowered.dot");
                 program.visualize("Vis" + File.separator + testName + "_pass_6_alloc.dot", true);
 
 

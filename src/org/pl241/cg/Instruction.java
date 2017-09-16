@@ -188,6 +188,10 @@ public class Instruction {
             case DIVI:
             case CMPI:
                 return destinationOperand.toString() + " = " + sourceOperand1.toString() + " " + type.toString() + " " + sourceOperand2.toString() ;
+            case PSH:
+                return "Push " + sourceOperand1.toString();
+            case POP:
+                return "Pop " + destinationOperand.toString();
             default :
                 return "x"
 ;        }

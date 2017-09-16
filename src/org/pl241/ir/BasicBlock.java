@@ -112,8 +112,11 @@ public class BasicBlock {
 		return _index;
 	}
 	
-	public void addNode( AbstractNode node ){
-		nodes.add(node);
+	public void addNode (AbstractNode node) {
+	    //assert (!nodes.contains(node)) : "Duplicate node " + node.toString() + " added to " + this.toString() ;
+        // TODO: modify IR-builder to prevent duplicate adds
+        if(!nodes.contains(node))
+            nodes.add(node);
 	}
 	
 	public List<AbstractNode> getNodes() {
@@ -240,12 +243,6 @@ public class BasicBlock {
                 String newName = Variable.generateNewName(name);
                 ((VarSetNode)node).memAddress = newName;
             }
-			if (node instanceof AtomicFunctionNode && ((AtomicFunctionNode)node).isAMemoryStore) {
-				AbstractNode src = node.getOperandAtIndex(0);
-				//String address = Variable.getTopmostName(src);
-				//saji TODO new
-				// ((IONode)node).operands.set(0, new LabelNode(address));
-			}
 		}
 		
 		for (BasicBlock b: getSuccessors()) {

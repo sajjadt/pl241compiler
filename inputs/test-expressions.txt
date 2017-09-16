@@ -16,19 +16,14 @@ function foo(p);
 {
 	let a <- ( ( ( 1 + 4 ) * 3 ) / 2 ) - 1;
 	call OutputNum(a);
-
 	let a <- 2 - 3 + 5;
 	call OutputNum(a);
-
 	let a <- 2 * 3 / 2 / 2 + 4 * 4 - 1 * 5;
     call OutputNum(a);
-
     call foo(a);
     call foo( 4 / 1 / 4 * 16);
-
     call bar(5);
     call foo(5);
-
     call OutputNum(call bar(5) + call foo(5));
     call OutputNum(call bar(5))
 }.

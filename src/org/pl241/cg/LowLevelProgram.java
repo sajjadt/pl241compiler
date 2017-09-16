@@ -147,7 +147,6 @@ public class LowLevelProgram {
         lowLevelIR.put(f.name, instructions);
     }
 
-    private HashMap<String, List<Instruction>> lowLevelIR;
 
     public List<Instruction> getFuncitonInstructions (Function func) {
         return lowLevelIR.get(func.name);
@@ -155,12 +154,14 @@ public class LowLevelProgram {
 
     public void visualize(String path) throws IOException {
         File file = new File(path);
+        file.getParentFile().mkdirs();
         file.createNewFile();
 
         try (PrintWriter writer = new PrintWriter(file)) {
             writer.println("digraph {");
             for (String functionName: lowLevelIR.keySet()) {
-                visualizeFunction(functionName, writer);
+                String n = toDot(functionName);
+                writer.print(n);
             }
             writer.println("}");
 
@@ -169,34 +170,32 @@ public class LowLevelProgram {
         }
     }
 
-    public void visualizeFunction(String path, String functionName) throws IOException {
-        File file = new File(path);
-        file.createNewFile();
-
-        try (PrintWriter writer = new PrintWriter(file)) {
-            writer.println("digraph {");
-            visualizeFunction(functionName, writer);
-            writer.println("}");
-
-        } catch (FileNotFoundException e) {
-            e.printStackTrace();
-        }
+    public String toDot(String functionName) throws IOException {
+        String ret ="" ;
+        ret += "subgraph " +  functionName +"{";
+        ret += visualizeFunction(functionName);
+        ret += "}\n";
+        return ret;
     }
 
-    private void visualizeFunction(String functionName, PrintWriter pw) {
-        pw.println("label=" + functionName );
-        pw.println("labelloc=\"t\";");
-        pw.println("fontsize=18;");
+    private String visualizeFunction(String functionName) {
 
-        pw.println("rankdir=\"TD\"");
+        String ret = "";
+        ret = ret + ("label=" + functionName ) + "\n";
+        ret = ret +("labelloc=\"t\";") + "\n";
+        ret = ret +("fontsize=18;")+ "\n";
 
-        pw.print("BB"  + " [shape=record label=\"{");
-        pw.print( "Function " + functionName+ "\n");
+        ret = ret +("rankdir=\"TD\"")+ "\n";
+
+        ret = ret +("Fun" + functionName  + " [shape=record label=\"{");
+        ret = ret +( "Function " + functionName+ "\n");
 
         for (Instruction n: lowLevelIR.get(functionName)) {
-            pw.print('|' + n.toString());
+            ret = ret +('|' + n.toString());
         }
-        pw.print("}\" ] " + "\n");
+        ret = ret +("}\" ] " + "\n");
+
+        return ret;
     }
 
     public Program getIRProgram() {
@@ -206,4 +205,7 @@ public class LowLevelProgram {
         this.irProgram = irProgram;
     }
     private Program irProgram;
+
+    private HashMap<String, List<Instruction>> lowLevelIR;
+
 }

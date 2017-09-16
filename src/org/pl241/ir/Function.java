@@ -161,8 +161,6 @@ public class Function  {
     }
 	
 	public void computeDominatorTree() throws AnalysisException {
-		//TODO clean the map mess
-		//TODO is screwing dominance information
 		for( BasicBlock b: getBasicBlocks()) {
 			b.dominatorsTemp.addAll(b.dominators);
 		}
@@ -221,7 +219,6 @@ public class Function  {
 	    vars.addAll(parameters.keySet());
 	    vars.addAll(localVariables.getVariableNames());
 	    // TODO global vars as well??
-        // TODO must be unique?
 
 		for (String var: vars) {
 			Set<BasicBlock> workList = new HashSet<>();

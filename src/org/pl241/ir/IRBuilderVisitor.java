@@ -197,14 +197,9 @@ public class IRBuilderVisitor implements ParseTreeNodeVisitor {
 			expressionStack.push(new VarGetNode( node.getChild(0).getText()  ) ) ; // "load ARRAY l:" + lvalue + ctx.getText() ));
 		} else {
 			// Var
-			if( lvalue ){
-				/// TODO pop stack here?
-				//expressionStack.push(new CopyNode( node.getChild(0).getText() ) );
-			} else{
+			if(!lvalue)
 				expressionStack.push(new VarGetNode( node.getChild(0).getText() ) ) ; // "load Var l:" + lvalue +  ctx.getText() ) );
-			}
 		}
-		/// TODO add if condition
 		BasicBlock bblOld = bblStack.peek();
 		BasicBlock bblAfterIf = new BasicBlock(currentFunction ,"after if");
 		bblAfterIf.successors.addAll( bblOld.successors ) ;
@@ -407,13 +402,18 @@ public class IRBuilderVisitor implements ParseTreeNodeVisitor {
 
             for (int i=0; i < operatorsList.size(); i++) {
                 AbstractNode op1;
+                AbstractNode op2 = nodesList.get(i + 1);
 
-                if (i == 0)
+                if (i == 0) {
                     op1 = nodesList.get(i);
-                else
+                    // They are added to the previous block
+                    if (!op1.isControlFlow())
+                        bblStack.peek().addNode(op1);
+                    if (!op2.isControlFlow())
+                        bblStack.peek().addNode(op2);
+                } else {
                     op1 = expressionStack.pop();
-
-                AbstractNode op2 = nodesList.get(i+1);
+                }
 
                 AbstractNode anode = new ArithmeticNode(op1, op2, ArithmeticNode.operatorMap.get(operatorsList.get(i)));
                 bblStack.peek().addNode(anode);
@@ -447,13 +447,19 @@ public class IRBuilderVisitor implements ParseTreeNodeVisitor {
 
             for (int i=0; i < operatorsList.size(); i++) {
                 AbstractNode op1;
+                AbstractNode op2 = nodesList.get(i+1);
 
-                if (i == 0)
+                if (i == 0) {
                     op1 = nodesList.get(i);
+
+                    if (!op1.isControlFlow()) // They are added to the previous block
+                        bblStack.peek().addNode(op1);
+                    if (!op2.isControlFlow())
+                        bblStack.peek().addNode(op2);
+                }
                 else
                     op1 = expressionStack.pop();
 
-                AbstractNode op2 = nodesList.get(i+1);
 
                 AbstractNode anode = new ArithmeticNode(op1, op2, ArithmeticNode.operatorMap.get(operatorsList.get(i)));
                 bblStack.peek().addNode(anode);
@@ -594,8 +600,8 @@ public class IRBuilderVisitor implements ParseTreeNodeVisitor {
 
 		// Function is used in the right side
         // It's return values is used
-		//if(exp instanceof  FunctionCallNode)
-        //    ((FunctionCallNode)exp).hasReturnValue = true;
+		if(exp instanceof  FunctionCallNode)
+            ((FunctionCallNode)exp).hasReturnValue = true;
 
         if (des instanceof VarSetNode)
 		    ((VarSetNode)des).setSrcOperand(exp);
@@ -654,7 +660,6 @@ public class IRBuilderVisitor implements ParseTreeNodeVisitor {
 
 	@Override
 	public void exit(FuncCallNode node) {
-		LOGGER.log(Level.FINE,"Exiting Func Call node");
         AbstractNode callNode  = null;
 
         String functionName = node.getChild(1).getText() ;
@@ -668,30 +673,34 @@ public class IRBuilderVisitor implements ParseTreeNodeVisitor {
                 ((FunctionCallNode)callNode).hasReturnValue = false;
         }
 
+        if (atomicCall) {
+            if( functionName.equals("InputNum") ){
+                ((AtomicFunctionNode)callNode).setParams(IOType.READ, null);
+            } else if ( functionName.equals("OutputNum") ){
+            } else if ( functionName.equals("OutputNewLine") ){
+                ((AtomicFunctionNode)callNode).setParams(IOType.WRITELINE, null);
+            }
+        }
+
         // Handle Args( as Expressions on the Stack )
 		// Pop per each argument
 		for(ParseTreeNode child: node.children ){
 			if (child instanceof ExpressionNode) {
 				AbstractNode aanode =  expressionStack.pop();
 
-
-
-                bblStack.peek().addNode(aanode);
+				// They are added in exit(expression)
+				if (!(aanode instanceof ArithmeticNode))
+                    bblStack.peek().addNode(aanode);
 
                 // Function call has been added to the previous block
-                if (!(aanode instanceof FunctionCallNode)) {
-                    //TODO new Impl:
-                    // bblStack.peek().addNode(aanode);
-                }
-                else {
-                    //((FunctionCallNode) functionCallStack.peek()).hasReturnValue = true;
+                if ((aanode instanceof FunctionCallNode))
                     functionCallStack.pop();
-                }
 
                 // Adds operands for function calls
                 // Write takes one parameter which will be handled later
-				if (callNode instanceof  AtomicFunctionNode)
+				if (callNode instanceof AtomicFunctionNode) {
                     ((AtomicFunctionNode)callNode).setParams(IOType.WRITE, aanode);
+                }
                 else
                     callNode.addOperand(aanode);
 			}
@@ -712,25 +721,10 @@ public class IRBuilderVisitor implements ParseTreeNodeVisitor {
 			bblStack.pop();
 		}
 		else {
-			// Special Instructions
-			if( functionName.equals("InputNum") ){
-                ((AtomicFunctionNode)callNode).setParams(IOType.READ, null);
-			} else if ( functionName.equals("OutputNum") ){
-                if (bblStack.peek().getNodes().size() > 0)
-                    ((AtomicFunctionNode)callNode).setParams(IOType.WRITE, bblStack.peek().getLastNode());
-                // Function call has been added to the previous block
-                // This is the first op in new block with no other ops
-                else
-                    ;//((AtomicFunctionNode)callNode).setParams(IOType.WRITE, functionCallStack.peek());
-
-                bblStack.peek().addNode(callNode);
-			} else if ( functionName.equals("OutputNewLine") ){
-                ((AtomicFunctionNode)callNode).setParams(IOType.WRITELINE, null);
-                bblStack.peek().addNode(callNode);
-			}
+            bblStack.peek().addNode(callNode);
 		}
-		functionCallStack.push(callNode);
 
+		functionCallStack.push(callNode);
 		if (node.parent instanceof FactorNode) {
 			expressionStack.push(callNode);
 		}

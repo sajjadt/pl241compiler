@@ -1,5 +1,7 @@
 package org.pl241.ir;
 
+import org.pl241.ra.Allocation;
+
 import java.util.stream.Collectors;
 
 public class FunctionCallNode extends AbstractNode implements NodeInterface{
@@ -38,6 +40,24 @@ public class FunctionCallNode extends AbstractNode implements NodeInterface{
         operands.add(0, node);
     }
 
+
+    @Override
+    public String printAllocation() {
+        String ret = "";
+
+        if (this.allocation != null)
+            ret += this.allocation.toString();
+
+        ret += this.callTarget + "(";
+
+        if (this.operands.size() > 0) {
+            Allocation al = this.operands.get(0).allocation;
+            if (al != null)
+                ret +=  ", " + al.toString();
+        }
+        ret += ")";
+        return ret;
+    }
 
     public boolean hasOutputVirtualRegister() {
         return hasReturnValue;

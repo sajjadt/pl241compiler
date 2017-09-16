@@ -3,9 +3,11 @@ main
 var x, y;
 {
     let x <- call InputNum();
+    call OutputNum(x);
+
 
     if x < 5 then
-    	call OutputNum(x+50)
+    	call OutputNum(x*50)
     else
     	call OutputNum(x-50)
     fi
