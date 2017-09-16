@@ -62,4 +62,9 @@ class Token {
 		this.token = token;
 		this.sequence = sequence;
 	}
+
+    @Override
+    public String toString() {
+        return this.sequence;
+    }
 }

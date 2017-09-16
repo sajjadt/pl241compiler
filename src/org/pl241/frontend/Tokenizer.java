@@ -4,6 +4,7 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 public class Tokenizer {
+
     private class TokenInfo {
         final Pattern regex;
         final int token;
@@ -16,30 +17,30 @@ public class Tokenizer {
     }
 
 	private void registerTokens(){
-		// Keywords
+        // Keywords
 		this.add("\\,", Token.COMMA); // ==
 		this.add("#", Token.SHARP); // ==
 		this.add("\\.", Token.DOT); // <-
 		this.add("<-", Token.GETS); // <-
-		this.add("main", Token.MAIN); // main
-		this.add("let", Token.LET); // let
-		this.add("var", Token.VAR); // var
-		this.add("InputNum", Token.INPUT_NUM); // InputNum
-		this.add("OutputNum", Token.OUTPUT_NUM); // OutputNum
-		this.add("OutputNewLine", Token.OUTPUT_NEW_LINE); // OutputNum
+		this.add("main\\b", Token.MAIN); // main
+		this.add("let\\b", Token.LET); // let
+		this.add("var\\b", Token.VAR); // var
+		this.add("InputNum\\b", Token.INPUT_NUM); // InputNum
+		this.add("OutputNum\\b", Token.OUTPUT_NUM); // OutputNum
+		this.add("OutputNewLine\\b", Token.OUTPUT_NEW_LINE); // OutputNum
 		// Condition keywords
-		this.add("array", Token.ARRAY); 
-		this.add("call", Token.CALL); 
-		this.add("if", Token.IF); 
-		this.add("fi", Token.FI); 
-		this.add("then", Token.THEN); 
-		this.add("else", Token.ELSE);  
-		this.add("do", Token.DO);
-		this.add("while", Token.WHILE);
-		this.add("od", Token.OD); 
-		this.add("return", Token.RETURN); 
-		this.add("procedure", Token.PROCEDURE);
-		this.add("function" , Token.FUNCTION) ;
+		this.add("array\\b", Token.ARRAY);
+		this.add("call\\b", Token.CALL);
+		this.add("if\\b", Token.IF);
+		this.add("fi\\b", Token.FI);
+		this.add("then\\b", Token.THEN);
+		this.add("else\\b", Token.ELSE);
+		this.add("do\\b", Token.DO);
+		this.add("while\\b", Token.WHILE);
+		this.add("od\\b", Token.OD);
+		this.add("return\\b", Token.RETURN);
+		this.add("procedure\\b", Token.PROCEDURE);
+		this.add("function\\b" , Token.FUNCTION) ;
 		// Conditional operators
 		this.add("==", Token.EQ); // ==
 		this.add("!=", Token.NEQ); // !=
@@ -64,51 +65,50 @@ public class Tokenizer {
 		this.add("\\;", Token.SEMICOLON); // ;
 	}
 	public Tokenizer() {
-	  tokenInfos = new LinkedList<>();
+	  tokenInfo = new LinkedList<>();
 	  tokens = new LinkedList<>();
 	  this.registerTokens();
 	}
 	
 	private void add(String regex, int token) {
-		  tokenInfos.add(
-		  new TokenInfo(
-		  Pattern.compile("^("+regex+")"), token));
+	    tokenInfo.add(new TokenInfo(Pattern.compile("^("+regex+")"), token));
 	}
 	
 	public LinkedList<Token> getTokens() {
-		  return tokens;
+	    return tokens;
 	}
 	
 	public void tokenize(String str) throws Exception {
-		  String s = str;
-		  tokens.clear();
-		  while (!s.equals("")) {
-			  boolean match = false;
-			  for (TokenInfo info : tokenInfos) {
-			      Matcher m = info.regex.matcher(s);
-			      if (m.find()) {
-			        match = true;
+	    String s = str;
+	    tokens.clear();
+	    while (!s.equals("")) {
+            boolean match = false;
+            for (TokenInfo info : tokenInfo) {
+                Matcher m = info.regex.matcher(s);
+                if (m.find()) {
+                    match = true;
 
-			        String tok = m.group().trim();
-			        if( tok.equals("#")) // Remove comment
-			        {
-			        	String newline = "\n";
-			        	int newLineIndex = s.indexOf(newline);
-			        	s = s.substring(newLineIndex+newline.length());
-			        	s = s.trim();
-			        } else {
-			        	tokens.add(new Token(info.token, tok));
-			        	s = m.replaceFirst("");
-			        	s = s.trim();
-			        }
-			        break;
-			      }
-			  }
-			  if (!match) throw new Exception(
-					"Unexpected character in input: "+s);
-		  }
+                    boolean x = m.hitEnd();
+                    String tok = m.group().trim();
+                    if(tok.equals("#")) {
+                        // Remove the comment
+                        String newline = "\n";
+                        int newLineIndex = s.indexOf(newline);
+                        s = s.substring(newLineIndex+newline.length());
+                        s = s.trim();
+                    } else {
+                        tokens.add(new Token(info.token, tok));
+                        s = m.replaceFirst("");
+                        s = s.trim();
+                    }
+                    break;
+                }
+            }
+            if (!match)
+                throw new Exception("Unexpected character in input: " + s);
+	    }
 	}
 
-    private LinkedList<TokenInfo> tokenInfos;
+    private LinkedList<TokenInfo> tokenInfo;
     private LinkedList<Token> tokens;
 }

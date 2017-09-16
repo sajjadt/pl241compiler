@@ -22,7 +22,7 @@ class run
 	{
 		// Settings
         boolean visualize = true;
-        boolean optimize = true;
+        boolean optimize = false;
         boolean allocateRegisters = true;
         boolean genCode = true;
         boolean execute = true;
@@ -30,7 +30,7 @@ class run
         boolean printDisassembly = false;
 
         int numberOfRegisters = 16;
-		String testName = "test001";
+		String testName = "test-call";
         String testPath = "inputs" + File.separator + testName + ".txt";
 
         // Tokenize the input

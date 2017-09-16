@@ -12,7 +12,7 @@ public class Parser {
 	public ParseTreeNode parse(List<Token> tokens) throws Exception
 	{
 		this.tokens = new LinkedList<>();
-		this.tokens.addAll( tokens);
+		this.tokens.addAll(tokens);
 		lookahead = this.tokens.getFirst();
 		ParseTreeNode root = pl241();
 
@@ -215,7 +215,7 @@ public class Parser {
 			return node;
 		}
 		else {
-			throw new Exception("Unreachlabe has been reached");
+			throw new Exception("Unexpected token " + lookahead.token);
 		}
 	}
 	

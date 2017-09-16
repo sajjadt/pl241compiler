@@ -1,0 +1,46 @@
+# expected output:
+# 100  101  200  200  300  40  40  41  3  40 81
+main
+array [4][3][2] x;
+var b;
+var c;
+function inc(num);
+{
+    return num + 1
+};
+function bar();
+{
+    call OutputNum(12);
+	let b <- 3;
+	let c <- 4;
+	return 7
+};
+
+{
+    let x[3][2][1] <- 100;
+    let x[1][2][0] <- 3;
+    call OutputNum(x[3][2][1]);
+    call OutputNum(x[3][2][1] + 1);
+    call OutputNum(x[3][2][1] * 2);
+    call OutputNum(2 * x[3][2][1]);
+    call OutputNum(x[1][2][0] * x[3][2][1]);
+
+    let x[3][2][1] <- 40;
+    let b <- x[3][2][1];
+    call OutputNum(x[3][2][1]);
+    call OutputNum(b);
+    let b <-  x[3][2][1] + 1;
+    call OutputNum(b);
+
+    let c <- 1;
+    let b <- x[c][c+1][c-1];
+    call OutputNum(b);
+
+
+    let b <- x[x[1][2][0]][2][1];
+    call OutputNum(b);
+
+    let b <- call inc(x[3][2][1] + x[3][2][1]);
+    call OutputNum(b);
+
+}.

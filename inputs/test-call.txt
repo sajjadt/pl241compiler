@@ -1,6 +1,6 @@
 main
-var input, x;
-function factIter(n);
+var input;
+function factIter (n);
 var i, f, x;
 {
     let x <- 4;
@@ -12,22 +12,19 @@ var i, f, x;
 	od;
 	return f
 };
-function factRec(n);
-var a, b;
-array [5][5] c;
+function callo(n);
 {
 	if n <= 1 then
 		return 1
 	fi;
-	return call factRec(n - 1) * n
+	return call callo(n - 1) +  call callo(n - 2)
 };
-
 {
-	let input <- call InputNum();
+	#let input <- call InputNum();
 	#call OutputNum(call factIter(input));
 	#call OutputNewLine();
-	let x <- call factRec(input);
-	call OutputNum(x);
-	call OutputNewLine()
+	#let x <- call factRec(input);
+	#call OutputNum(x);
+	return 0
 }
 .
