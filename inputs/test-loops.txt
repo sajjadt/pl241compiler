@@ -1,0 +1,21 @@
+main
+var a, b, c, d, e;
+{
+	let a <- call InputNum();
+	let b <- a;
+
+	while a < 10 do
+        let a <- a + 1;
+        call OutputNum(a)
+    od;
+
+    call OutputNewLine();
+
+    while b < 10 do
+        let b <- b + 1;
+        call OutputNum(b)
+    od;
+
+    call OutputNewLine()
+}
+.

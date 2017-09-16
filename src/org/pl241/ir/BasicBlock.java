@@ -90,10 +90,10 @@ public class BasicBlock {
 		return dominators;
 	}
 
-	public void addPredecessor(BasicBlock succ) {
-		if (succ == null)
-			throw new NullPointerException("Setting predecessor of basic block to null");
-		predecessors.add(succ);
+	public void addPredecessor(BasicBlock pred) {
+		assert (pred != null): "Adding null block";
+        if (!predecessors.contains(pred))
+		    predecessors.add(pred);
 	}
 
 	public void removePredecessor(BasicBlock succ) throws AnalysisException {
@@ -136,6 +136,9 @@ public class BasicBlock {
 
 		pw.print("BB" + _index + " [shape=record label=\"{");
         pw.print( "Block " + id + " from " + bFrom + " to " + bTo + "\n");
+
+        if (isLoopHeader())
+            pw.print("*Header*");
 
 		for (AbstractNode n: getNodes()) {
             if (n.visualize())
@@ -230,14 +233,14 @@ public class BasicBlock {
 		}
 
 		for( AbstractNode node: getNodes()) {
-		    // LHS
+		    // RHS
 			if (node instanceof VarGetNode) {
 				String src = ((VarGetNode)node).variableId;
 				String address = Variable.getTopmostName(src);
 				((VarGetNode)node).variableId = address;
 			}
 
-			// RHS
+			// LHS
             if (node instanceof VarSetNode) {
                 String name = ((VarSetNode)node).originalMemAddress;
                 String newName = Variable.generateNewName(name);
@@ -318,7 +321,12 @@ public class BasicBlock {
 	private Function parentFunction;
 
 
-	public boolean loopHeader ;
+	public boolean isLoopHeader() {
+	    return loopHeader;
+    }
+	public boolean loopHeader;
+
+
 	private boolean loopBody ;
 	public Set<String> liveIn ;
 

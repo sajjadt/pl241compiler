@@ -30,7 +30,7 @@ class run
         boolean printDisassembly = false;
 
         int numberOfRegisters = 16;
-		String testName = "test-call";
+		String testName = "test-loops";
         String testPath = "inputs" + File.separator + testName + ".txt";
 
         // Tokenize the input

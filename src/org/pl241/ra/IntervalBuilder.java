@@ -40,7 +40,7 @@ class IntervalBuilder {
 		    		if (node instanceof PhiFunctionNode) {
 		    			if (((PhiFunctionNode)node).inputOf(block) != null) {
 		    				live.add(((PhiFunctionNode)node).inputOf(block).getOutputVirtualReg());
-		    				System.out.println("Phi node: adding " + ((PhiFunctionNode)node).inputOf(block));
+		    				System.out.println("adding " + ((PhiFunctionNode)node).inputOf(block) + " to live set from succ phi function");
 		    			}
 		    		}
 		    	}
@@ -52,7 +52,8 @@ class IntervalBuilder {
 		    		intervals.put(var, new LiveInterval(var, false));
 		    	}
 		    	intervals.get(var).addRange(block.bFrom, block.bTo);
-		    }
+                System.out.println("Add Range for the whole block " + block.bFrom + " to " + block.bTo + " to var " + var);
+            }
 
 		    // Process block operations in the reverse order
 		    ListIterator ii = block.getNodes().listIterator(block.getNodes().size());
@@ -67,10 +68,12 @@ class IntervalBuilder {
 
 			    if (node.hasOutputVirtualRegister()) {
 			    	String opd = node.getOutputVirtualReg();
-			    	System.out.println("Removing " + opd + " @ output side");
+			    	//System.out.println("Removing " + opd + " from live");
+
 			    	if(!intervals.containsKey(opd))
 			    		intervals.put(opd, new LiveInterval(opd, false));
 
+                    //System.out.println("Setting from for " + opd + " at " + node.getSourceIndex() );
 			    	intervals.get(opd).setFrom(node.getSourceIndex());
 			    	intervals.get(opd).definitionPoint = node.getSourceIndex();
 			    	intervals.get(opd).addReference(node.getSourceIndex());
@@ -82,17 +85,17 @@ class IntervalBuilder {
 			    	List<AbstractNode> opds = node.getInputOperands();
 			    	for(AbstractNode opd:opds) {
 			    		if (!opd.hasOutputVirtualRegister()) {
-                            System.out.println("Ignoring  " + opd + " @ input side");
+                           // System.out.println("Ignoring  " + opd);
                             continue;
 			    		}
-				    	if (!intervals.containsKey(opd.getOutputVirtualReg())) {
+				    	if (!intervals.containsKey(opd.getOutputVirtualReg()))
 				    		intervals.put(opd.getOutputVirtualReg(), new LiveInterval(opd.getOutputVirtualReg(), false));
-				    	}
-				    	System.out.println(opd.getOutputVirtualReg());
+
 				    	intervals.get(opd.getOutputVirtualReg()).addRange(block.bFrom, node.getSourceIndex());
 				    	intervals.get(opd.getOutputVirtualReg()).addReference(node.getSourceIndex());
 				    	live.add(opd.getOutputVirtualReg());
-				    	System.out.println("Adding [" + opd.getOutputVirtualReg() + "] input operand  from [" + node.toString()+ "] node");
+				    	//System.out.println("Adding [" + opd.getOutputVirtualReg() + "] input operand  from [" + node.toString()+ "] node to live");
+				    	//System.out.println("Range is " + block.bFrom + " to " + node.getSourceIndex());
 			    	}
 			    }
 		    }
@@ -107,8 +110,19 @@ class IntervalBuilder {
                 }
 	    	}
 		    
-		    if (block.loopHeader) {
-		    	// TODO last block of the loop body?
+		    if (block.isLoopHeader()) {
+                BasicBlock lastLoopBlock = null;
+                for (BasicBlock pred: block.getPredecessors()) {
+                    if (pred.dominators.contains(block)) {
+                        assert lastLoopBlock == null;
+                        lastLoopBlock = pred;
+                    }
+                }
+                assert lastLoopBlock != null;
+                for (String var: live){
+                    intervals.get(var).addRange(block.bFrom, lastLoopBlock.bTo);
+                }
+
 		    }
 
 		    block.liveIn = live ;

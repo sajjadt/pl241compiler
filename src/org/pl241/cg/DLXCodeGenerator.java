@@ -18,7 +18,7 @@ public class DLXCodeGenerator {
     public DLXCodeGenerator(LowLevelProgram program) {
         this.lowLevelProgram = program;
         this.irProgram = lowLevelProgram.getIRProgram();
-        int MEMORY_SIZE = 2000;
+        int MEMORY_SIZE = 20000;
         this.memLayout = new ArrayList<>(Collections.nCopies(MEMORY_SIZE /4, 0));
         this.functionMap = new HashMap<>();
         //this.globalVarMap = new HashMap<>();
@@ -41,7 +41,7 @@ public class DLXCodeGenerator {
         // Other initializations go here!
         int currentIndex;
         // Set SP
-        int STACK_ADDRESS = 2000;
+        int STACK_ADDRESS = 20000;
         initCode.add(DLX.assemble(DLX.ADDI, this.SP, this.ZERO, STACK_ADDRESS));
 
         // Reserve spot for jump to main
@@ -272,7 +272,7 @@ public class DLXCodeGenerator {
     public static final int FRAMEP = 28;
     public static final int SP = 29; // Register 29 is the stack pointer
     public static final int NUM_REGISTERS = 32;
-    private final int GLOBALS_ADDRESS = 1000 ; // Grows upwards
+    private final int GLOBALS_ADDRESS = 10000 ; // Grows upwards
 
     // Input program representations
 	private LowLevelProgram lowLevelProgram;

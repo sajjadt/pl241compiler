@@ -143,13 +143,14 @@ public class IRBuilderVisitor implements ParseTreeNodeVisitor {
 		LOGGER.log( Level.FINE,"Entering whilestmt node");
 		BasicBlock bblOld = bblStack.peek();
 
-		BasicBlock bblLoopBody =  new BasicBlock(currentFunction , "Loop body");
-		BasicBlock bblAfterWhile = new BasicBlock(currentFunction , "after while");
+		BasicBlock bblLoopBody =  new BasicBlock(currentFunction, "Loop body");
+		BasicBlock bblAfterWhile = new BasicBlock(currentFunction, "after while");
 
-		bblAfterWhile.successors.addAll( bblOld.successors ) ;
+		bblAfterWhile.successors.addAll(bblOld.successors);
 		bblOld.successors.clear();
 
-		if( bblOld.getNodes().size() == 0 ){
+		if (bblOld.getNodes().size() == 0) {
+		    bblOld.loopHeader = true;
 			bblOld.fallThrough = bblLoopBody;
 			bblOld.taken = bblAfterWhile;
 			bblOld.successors.add(bblLoopBody);
@@ -158,14 +159,14 @@ public class IRBuilderVisitor implements ParseTreeNodeVisitor {
 			bblLoopBody.successors.add(bblOld);
             bblLoopBody.fallThrough = bblOld;
 
-			BasicBlock top = bblStack.pop() ;
-			bblStack.push( bblAfterWhile );
-			bblStack.push( bblLoopBody );
+			BasicBlock top = bblStack.pop();
+			bblStack.push(bblAfterWhile);
+			bblStack.push(bblLoopBody);
 			bblStack.push(top);
 			
-		}
-		else {
-			BasicBlock bblCheck = new BasicBlock(currentFunction , "while check");
+		} else {
+			BasicBlock bblCheck = new BasicBlock(currentFunction, "while check");
+			bblCheck.loopHeader = true;
 			bblCheck.fallThrough = bblLoopBody;
 			bblCheck.taken = bblAfterWhile;
 			bblOld.successors.add(bblCheck);
@@ -174,12 +175,12 @@ public class IRBuilderVisitor implements ParseTreeNodeVisitor {
 			bblLoopBody.successors.add(bblCheck);
 			bblLoopBody.fallThrough = bblCheck;
 			
-			currentFunction.basicBlocks.add( bblStack.peek() );
+			currentFunction.basicBlocks.add(bblStack.peek());
 			bblStack.pop();
 
-			bblStack.push( bblAfterWhile );
-			bblStack.push( bblLoopBody );
-			bblStack.push( bblCheck );
+			bblStack.push(bblAfterWhile);
+			bblStack.push(bblLoopBody);
+			bblStack.push(bblCheck);
 		}
 	}
 
@@ -597,11 +598,6 @@ public class IRBuilderVisitor implements ParseTreeNodeVisitor {
 
 		assert des instanceof VarSetNode || des instanceof MemoryStoreNode;
 
-        // Function call has been added to the previous block
-		//TODO: New impl add all the exps
-        // if (!(exp instanceof FunctionCallNode))
-		//    bblStack.peek().addNode(exp);
-
 		// Function is used in the right side
         // It's return values is used
 		if(exp instanceof  FunctionCallNode)
@@ -612,7 +608,10 @@ public class IRBuilderVisitor implements ParseTreeNodeVisitor {
         else
             ((MemoryStoreNode)des).setValueNode(exp);
 
-		bblStack.peek().addNode(des) ;
+        // They have been added to the previous block
+        if (!exp.isControlFlow())
+            bblStack.peek().addNode(exp);
+		bblStack.peek().addNode(des);
 	}
 
 	@Override
