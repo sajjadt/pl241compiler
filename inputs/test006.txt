@@ -1,8 +1,9 @@
+#expected: 11 13
 main
 var a;
 function foo( );
 var i;
-array [5]j;
+array [5] j;
 {
 	let j[0] <- 3 + 5 ;
 	let j[2] <- 35 ;

@@ -16,6 +16,7 @@ var a, b, c, d, e;
         call OutputNum(b)
     od;
 
+
     call OutputNewLine()
 }
 .

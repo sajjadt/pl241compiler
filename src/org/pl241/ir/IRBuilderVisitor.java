@@ -365,7 +365,8 @@ public class IRBuilderVisitor implements ParseTreeNodeVisitor {
 			bblStack.peek().addNode(calcAddress);
 			if (lvalue) {
                 AbstractNode n = new MemoryStoreNode(calcAddress, null);
-                bblStack.peek().addNode(n);
+                // This node should be inserted after right hand side
+                //bblStack.peek().addNode(n);
                 expressionStack.push(n);
 			} else{
 			    AbstractNode n = new MemoryLoadNode(calcAddress);

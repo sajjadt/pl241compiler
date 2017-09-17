@@ -1,3 +1,4 @@
+# output is expected to be a + 2 * b = 11
 main
 var a,b,c,y,d;
 {
@@ -15,5 +16,4 @@ var a,b,c,y,d;
 	fi;
 	let d <- b + y;
 	call OutputNum(d)
-	# d is expected to be a + 2 * b
 }.

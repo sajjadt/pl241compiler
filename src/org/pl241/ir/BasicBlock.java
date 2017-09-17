@@ -212,6 +212,15 @@ public class BasicBlock {
         return null;
     }
 
+
+    public AbstractNode getPhiNode(String variableName) {
+        for (AbstractNode node: getNodes()) {
+            if (node instanceof PhiFunctionNode && ((PhiFunctionNode)node).variableName.equals(variableName))
+                return node;
+        }
+        return null;
+    }
+
 	public void addPhiOperand(Variable leftOperands, AbstractNode lastAssignment, int bblIndex) {
 		for (AbstractNode node: getNodes()) {
 			if (node instanceof PhiFunctionNode) {
@@ -318,7 +327,7 @@ public class BasicBlock {
 	public HashSet<BasicBlock> immediateDominants;
 	//public HashSet<BasicBlock> dominants; // Blocks this one is dominating
 	public HashSet<BasicBlock> dominatorFrontiers;
-	private Function parentFunction;
+	public Function parentFunction;
 
 
 	public boolean isLoopHeader() {

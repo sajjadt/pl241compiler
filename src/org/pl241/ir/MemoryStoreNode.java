@@ -32,4 +32,9 @@ public class MemoryStoreNode extends AbstractNode {
         return true;
     }
 
+    public String printAllocation() {
+        return "[" + getAddressCalcNode().allocation +"]" + " = " + getValueNode().allocation;
+    }
+
+
 }

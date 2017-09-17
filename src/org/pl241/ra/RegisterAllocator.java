@@ -69,31 +69,35 @@ public class RegisterAllocator { // Allocate Registers for one function
             }
         }
 
-        Map<Integer, List<Move>> mapping = new HashMap<>();
-
+        // Map of curblock.id:nextblock.id to moves
+        Map<String, List<Move>> mapping = new HashMap<>();
         for (BasicBlock current: function.basicBlocks) {
             for (BasicBlock successor: current.getSuccessors()) {
-
                 // Intervals live at the beginning of the successor
                 ArrayList<LiveInterval> liveIntervals = liveIntervalsAt(intervalMap, successor.bFrom);
-                for (LiveInterval interval: liveIntervals) {
 
+                for (LiveInterval interval: liveIntervals) {
                     // It will be a Phi Node
                     if (interval.start() == successor.bFrom) {
                         AbstractNode node = successor.getPhiOperand(interval.varName, current.getIndex());
-                        if (node != null)
-                            moveFrom = liveIntervalAllocationAt(intervalMap, node.getOutputVirtualReg(), current.bTo);
+                        AbstractNode destNode = successor.getPhiNode(interval.varName);
+                        assert node != null;
+                        assert destNode != null;
+                        moveFrom = liveIntervalAllocationAt(intervalMap, node.getOutputVirtualReg(), current.bTo);
+                        moveTo = liveIntervalAllocationAt(intervalMap, destNode.getOutputVirtualReg(), successor.bFrom);
+
+                        System.out.println("at " + successor.bFrom + " From " + node + " to " + destNode+ " alloc" + moveFrom + " to " + moveTo);
                     } else {
                         moveFrom = liveIntervalAllocationAt(intervalMap, interval.varName, current.bTo);
+                        moveTo = liveIntervalAllocationAt(intervalMap, interval.varName, successor.bFrom);
+                        System.out.println("at " + successor.bFrom + "From " + interval.varName + " to " + interval.varName + " alloc" + moveFrom + " to " + moveTo);
                     }
 
-                    moveTo = liveIntervalAllocationAt(intervalMap, interval.varName, successor.bFrom);
+                    if (moveFrom != null && !moveFrom.equals(moveTo)) {
+                        if (!mapping.containsKey(current.getID()+":"+successor.getID()))
+                            mapping.put(current.getID()+":"+successor.getID(), new ArrayList<>());
 
-                    if (moveFrom!= null && !moveFrom.equals(moveTo)) {
-                        if (!mapping.containsKey(current.getID()))
-                            mapping.put(current.getID(), new ArrayList<>());
-
-                        mapping.get(current.getID()).add(new Move(moveFrom, moveTo, false));
+                        mapping.get(current.getID()+":"+successor.getID()).add(new Move(moveFrom, moveTo, false));
                     }
 
                 }
@@ -102,7 +106,7 @@ public class RegisterAllocator { // Allocate Registers for one function
 
         System.out.println("************ Moves ***********");
         // Reorder and insert moves
-        for (Integer blockID: mapping.keySet()) {
+        for (String blockID: mapping.keySet()) {
             // Reorder and insert temp reg if they from a cycle
             List<Move> moves = mapping.get(blockID);
             System.out.println("block " + blockID + " " + moves);
@@ -167,7 +171,10 @@ public class RegisterAllocator { // Allocate Registers for one function
 
             // Insert moves to basic block
             List<AbstractNode> moveNodes = new ArrayList<>();
-            BasicBlock current = function.getBlockByID(blockID);
+
+            String[] ids = blockID.split(":");
+            BasicBlock current = function.getBlockByID(Integer.parseInt(ids[0]));
+            BasicBlock successor = function.getBlockByID(Integer.parseInt(ids[1]));
             for (Move move: newMoves) {
                 assert (move.to.type != Allocation.Type.STACK &&
                         move.from.type != Allocation.Type.STACK) : "Move from/to non-registers are not implemented";
@@ -177,12 +184,41 @@ public class RegisterAllocator { // Allocate Registers for one function
                     moveNodes.add(new MoveNode(move.from, move.to));
             }
 
+            // add moves
 
-            AbstractNode lastNode = current.getNodes().get(current.getNodes().size()-1);
-            if (lastNode instanceof BranchNode || lastNode instanceof FunctionCallNode)
-                current.getNodes().addAll(current.getNodes().size()-1, moveNodes);
-            else
-                current.getNodes().addAll(current.getNodes().size(), moveNodes);
+            // if current node only has one successor
+            if (current.getSuccessors().size() < 2) {
+                AbstractNode lastNode = current.getNodes().get(current.getNodes().size()-1);
+                if (lastNode instanceof BranchNode || lastNode instanceof FunctionCallNode)
+                    current.getNodes().addAll(current.getNodes().size()-1, moveNodes);
+                else
+                    current.getNodes().addAll(current.getNodes().size(), moveNodes);
+            } else {
+                // Add two new basic blocks for move nodes
+                BasicBlock bnode = new BasicBlock(current.parentFunction, "dummy");
+
+                if (successor == current.fallThrough)
+                    current.fallThrough = bnode;
+                else if (successor == current.taken)
+                    current.taken = bnode;
+                else
+                    assert true;
+
+                successor.getPredecessors().remove(current);
+                successor.getPredecessors().add(bnode);
+                bnode.getPredecessors().add(current);
+                current.successors.remove(successor);
+                bnode.addSuccessor(successor);
+                current.addSuccessor(bnode);
+                bnode.getNodes().addAll(moveNodes);
+                BranchNode bn = new BranchNode(BranchNode.Type.BRA, successor.getEntry());
+                bn.fallThroughBlock = successor;
+                bnode.addNode(bn);
+
+                function.basicBlocks.add(bnode);
+            }
+
+
         }
 
 

@@ -30,4 +30,8 @@ public class MemoryLoadNode extends AbstractNode {
     public boolean visualize() {
         return true;
     }
+
+    public String printAllocation() {
+        return allocation +  " = [" + getAddressCalcNode().allocation +"]";
+    }
 }

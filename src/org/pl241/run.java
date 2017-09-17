@@ -20,7 +20,7 @@ class run
 {
 	public static void main(String[] args) throws IOException
 	{
-		// Settings
+		///////////////// Settings ///////////////////
         boolean visualize = true;
         boolean optimize = false;
         boolean allocateRegisters = true;
@@ -28,9 +28,11 @@ class run
         boolean execute = true;
         boolean invokePngGenScript = true;
         boolean printDisassembly = false;
-
         int numberOfRegisters = 16;
-		String testName = "test-loops";
+        /////////////////////////////////////////////
+
+        // Input
+		String testName = "test013";
         String testPath = "inputs" + File.separator + testName + ".txt";
 
         // Tokenize the input
@@ -91,8 +93,8 @@ class run
                 program.indexIR();
                 if (visualize)
                     program.visualize("Vis" + File.separator + testName + "_pass_3_cp.dot", false);
-
             }
+
         }
         catch (Exception e) {
             System.out.println(e.getMessage());

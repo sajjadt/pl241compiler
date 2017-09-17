@@ -1,3 +1,4 @@
+#out: 8
 main
 var a, b, c, d;
 {
@@ -19,12 +20,14 @@ var a, b, c, d;
 			let d <- d + 2
 		od
 	fi;
-	
+	# a = 2 b =2 and c =5,  d =5
 	while b < d do
 		if a > d then
 			let b <- c
 		else
-			let c <- b
+			let b <- c + 3
 		fi
-	od
+	od;
+
+	call OutputNum(b)
 }.

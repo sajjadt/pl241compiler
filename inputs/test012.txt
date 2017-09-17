@@ -1,6 +1,7 @@
 # From Brandis and Mossenbock
 # The third line in the then block, the two lines before the if and he 
-# lines after the fi are not part of the original test case. 
+# lines after the fi are not part of the original test case.
+#output: 10
 main
 var a, b, c;
 {

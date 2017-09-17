@@ -51,17 +51,20 @@ public class ArithmeticNode extends AbstractNode implements NodeInterface {
 
     @Override
     public String printAllocation() {
-        String ret = "";
+        String ret = this.allocation + " = ";
+
         Allocation al = this.operands.get(0).allocation;
         if (al != null)
             ret = ret + al.toString();
 
+        ret += operatorMapR.get(operator);
         if (this.operands.size() > 1) {
             al = this.operands.get(1).allocation;
             if (al != null)
-                ret +=  ", " + this.operands.get(1).allocation.toString();
+                ret +=  this.operands.get(1).allocation.toString();
         }
-        return this.allocation + " "+ operatorMapR.get(operator) + " " + ret;
+
+        return ret;
     }
 
     @Override
@@ -96,5 +99,6 @@ public class ArithmeticNode extends AbstractNode implements NodeInterface {
         operatorMapR.put( Type.MUL , "*" );
         operatorMapR.put( Type.DIV ,"/");
         operatorMapR.put( Type.CMP ,"cmp");
+        operatorMapR.put( Type.ADDA ,"++");
     }
 }

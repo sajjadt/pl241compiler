@@ -111,7 +111,7 @@ class LiveInterval implements Comparable<LiveInterval> {
 
 	@Override 
 	public String toString() {
-		StringBuilder ret = new StringBuilder("Declared @" + definitionPoint + " References@=");
+		StringBuilder ret = new StringBuilder(this.varName + " Declared @" + definitionPoint + " References@=");
 		for(int ref: referencesList) {
 			ret.append(ref).append(",");
 		}
@@ -119,6 +119,9 @@ class LiveInterval implements Comparable<LiveInterval> {
 		for(Range range: ranges) {
 			ret.append(range.start).append(":").append(range.finish).append(",");
 		}
+
+		if (allocatedLocation != null)
+		    ret.append(allocatedLocation.toString());
 		return ret.toString();
 	}
 

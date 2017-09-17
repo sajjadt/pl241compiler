@@ -1,5 +1,6 @@
 # While loop code generation test
 # Also ensures code gen can handle constants in the condition
+# expected out : 20
 main
 var i, j, k;
 {

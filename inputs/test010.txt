@@ -1,4 +1,5 @@
 # Basic while statement test
+# output: infinite loop 2 4 4 3 5 4 6 5
 main
 var a, b, c;
 {

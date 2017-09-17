@@ -193,8 +193,8 @@ public class Instruction {
             case POP:
                 return "Pop " + destinationOperand.toString();
             default :
-                return "x"
-;        }
+                return "NA";
+        }
     }
 
     // Lowers one IR instruction into DLX equivalent

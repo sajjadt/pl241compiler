@@ -8,15 +8,15 @@ var i, d;
 {
 	let i <- 0;
 	while i < 10 do
-		let y <- y + 2;
-		let z <- x + 2;
-		let d <- y + z;
+#		let y <- y + 2;
+#		let z <- x + 2;
+#		let d <- y + z;
 		let i <- i + 1
 	od;
 	return d
 };
 
-procedure bar( x, z );
+procedure bar(x, z);
 var i, j, e;
 {
 	let i <- 0;
@@ -36,8 +36,8 @@ var i, j, e;
 	let y <- 0;
 	let z <- 0;
 	
-	call bar( x, z +1 );
-	let c <- call foo;
+	call bar(x, z+1);
+	#let c <- call foo;
 	
 	call OutputNum(c)
 }.
