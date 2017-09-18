@@ -207,9 +207,9 @@ public class Instruction {
         AbstractNode node1 = null;
         AbstractNode node2 = null;
         if (node.getInputOperands().size() > 0)
-            node1 = node.getOperandAtIndex(0);
+            node1 = node.getOperandAtIndex(0).node;
         if (node.getInputOperands().size() > 1)
-            node2 = node.getOperandAtIndex(1);
+            node2 = node.getOperandAtIndex(1).node;
 
         Allocation src1 = null;
         Allocation src2 = null;
@@ -219,21 +219,21 @@ public class Instruction {
 
         if (node1 != null) {
             if (!(node1 instanceof ImmediateNode)) {
-                src1 = node.getOperandAtIndex(0).allocation;
+                src1 = node.getOperandAtIndex(0).getAllocation();
                 operand1 = new Operand(Operand.Type.REGISTER, src1.address);
             } else
-                operand1 = new Operand(Operand.Type.IMMEDIATE, ((ImmediateNode) node.getOperandAtIndex(0)).getValue());
+                operand1 = new Operand(Operand.Type.IMMEDIATE, ((ImmediateNode) node.getOperandAtIndex(0).node).getValue());
         }
         if (node2 != null) {
             if (!(node2 instanceof ImmediateNode)) {
-                src2 = node.getOperandAtIndex(1).allocation;
+                src2 = node.getOperandAtIndex(1).getAllocation();
                 operand2 = new Operand(Operand.Type.REGISTER, src2.address);
             } else
-                operand2 = new Operand(Operand.Type.IMMEDIATE, ((ImmediateNode) node.getOperandAtIndex(1)).getValue());
+                operand2 = new Operand(Operand.Type.IMMEDIATE, ((ImmediateNode) node.getOperandAtIndex(1).node).getValue());
         }
 
         if (node instanceof ArithmeticNode) {
-            Allocation dst =  node.allocation;
+            Allocation dst =  node.getAllocation();
             assert dst.type == Allocation.Type.GENERAL_REGISTER;
 
             boolean firstOperandIsImmediate = ((node1 != null) && node1 instanceof ImmediateNode);
@@ -279,7 +279,7 @@ public class Instruction {
                         new Operand(Operand.Type.REGISTER, dst.address)));
             }
         } else if (node instanceof VarSetNode) {
-            Allocation dst = node.allocation;
+            Allocation dst = node.getAllocation();
             assert dst.type == Allocation.Type.GENERAL_REGISTER;
 
             instructions.add(new Instruction(Type.MOV, operand1, null,
@@ -298,7 +298,7 @@ public class Instruction {
             }
 
             if (((BranchNode)node).isConditioned()) {
-                src1 = node.getOperandAtIndex(0).allocation;
+                src1 = node.getOperandAtIndex(0).getAllocation();
                 operand1 = new Operand(Operand.Type.REGISTER, src1.address);
                 instructions.add(new BranchInstruction(Instruction.Type.fromBranchType(((BranchNode) node).type), operand1, offset1));
             } else {
@@ -314,7 +314,7 @@ public class Instruction {
             }
         } else if (node instanceof AtomicFunctionNode) {
             if (((AtomicFunctionNode) node).type == AtomicFunctionNode.IOType.READ) {
-                Allocation dst = node.allocation;
+                Allocation dst = node.getAllocation();
                 assert dst.type == Allocation.Type.GENERAL_REGISTER;
                 instructions.add(new Instruction(Type.RDD, null, null, new Operand(Operand.Type.REGISTER, dst.address)));
             }
@@ -347,15 +347,15 @@ public class Instruction {
 
                 if (node.getInputOperands().size()>0) {
                     // Prepare return value
-                    AbstractNode retNode = node.getOperandAtIndex(0);
-                    if (retNode instanceof ImmediateNode) {
+                    NodeContainer retNode = node.getOperandAtIndex(0);
+                    if (retNode.node instanceof ImmediateNode) {
                         instructions.add(new Instruction(Type.ADDI,
                                 new Operand(Operand.Type.REGISTER, ZERO),
-                                new Operand(Operand.Type.IMMEDIATE, ((ImmediateNode) retNode).getValue()),
+                                new Operand(Operand.Type.IMMEDIATE, ((ImmediateNode) retNode.node).getValue()),
                                 new Operand(Operand.Type.REGISTER, SCRATCH_REGISTER)));
 
                     } else {
-                        Allocation retVal = retNode.allocation;
+                        Allocation retVal = retNode.getAllocation();
                         assert retVal.type == Allocation.Type.GENERAL_REGISTER;
 
                         instructions.add(new Instruction(Type.MOV,
@@ -390,25 +390,25 @@ public class Instruction {
         } else if (node instanceof FunctionCallNode) {
             instructions.addAll(generateCall((FunctionCallNode)node));
         } else if (node instanceof MemoryLoadNode) {
-            Allocation base = ((MemoryLoadNode) node).getAddressCalcNode().allocation;// allocator.getAllocationAt(((MemoryLoadNode) node).getAddressCalcNode().getOutputVirtualReg(), ((MemoryLoadNode) node).getAddressCalcNode().sourceIndex);
-            Allocation dst =  node.allocation; // allocator.getAllocationAt(node.getOutputVirtualReg(), node.sourceIndex);
+            Allocation base = ((MemoryLoadNode) node).getAddressCalcNode().getAllocation();// allocator.getAllocationAt(((MemoryLoadNode) node).getAddressCalcNode().getOutputVirtualReg(), ((MemoryLoadNode) node).getAddressCalcNode().sourceIndex);
+            Allocation dst =  node.getAllocation(); // allocator.getAllocationAt(node.getOutputVirtualReg(), node.sourceIndex);
             instructions.add(new Instruction(Type.LOAD,
                     new Operand(Operand.Type.REGISTER, base.address),
                     new Operand(Operand.Type.REGISTER, 0),
                     new Operand(Operand.Type.REGISTER, dst.address)));
         } else if (node instanceof MemoryStoreNode) {
-            Allocation base = ((MemoryStoreNode) node).getAddressCalcNode().allocation; //allocator.getAllocationAt(((MemoryStoreNode) node).getAddressCalcNode().getOutputVirtualReg(), ((MemoryStoreNode) node).getAddressCalcNode().sourceIndex);
+            Allocation base = ((MemoryStoreNode) node).getAddressCalcNode().getAllocation(); //allocator.getAllocationAt(((MemoryStoreNode) node).getAddressCalcNode().getOutputVirtualReg(), ((MemoryStoreNode) node).getAddressCalcNode().sourceIndex);
 
             Allocation src = null;
-            if (((MemoryStoreNode) node).getValueNode() instanceof ImmediateNode) {
+            if ( ((MemoryStoreNode) node).getValueNode().node instanceof ImmediateNode) {
                 // Move it to temp register
                 instructions.add(new Instruction(Type.ADDI,
                         new Operand(Operand.Type.REGISTER, (Integer)0),
-                        new Operand(Operand.Type.IMMEDIATE, ((ImmediateNode)((MemoryStoreNode) node).getValueNode()).getValue()),
+                        new Operand(Operand.Type.IMMEDIATE, ((ImmediateNode)((MemoryStoreNode) node).getValueNode().node).getValue()),
                         new Operand(Operand.Type.REGISTER, SCRATCH_REGISTER)));
                 src = new Allocation(Allocation.Type.GENERAL_REGISTER, SCRATCH_REGISTER);
             } else {
-                src = ((MemoryStoreNode) node).getValueNode().allocation; //allocator.getAllocationAt(node.getOperandAtIndex(0).getOutputVirtualReg(), node.sourceIndex);
+                src = ((MemoryStoreNode) node).getValueNode().getAllocation(); //allocator.getAllocationAt(node.getOperandAtIndex(0).getOutputVirtualReg(), node.sourceIndex);
             }
             assert src.type == Allocation.Type.GENERAL_REGISTER;
 
@@ -443,13 +443,13 @@ public class Instruction {
             instructions.add(new Instruction(Type.PSH, new Operand(Operand.Type.REGISTER, i), null, null));
         }
         //Pass parameters
-        for (AbstractNode node: callNode.getInputOperands()) {
+        for (NodeContainer node: callNode.getInputOperands()) {
             if (node.hasOutputVirtualRegister()) {
-                Allocation srcAllocation = node.allocation; // allocator.getAllocationAt(node.getOutputVirtualReg(), callNode.sourceIndex);
+                Allocation srcAllocation = node.getAllocation(); // allocator.getAllocationAt(node.getOutputVirtualReg(), callNode.sourceIndex);
                 assert srcAllocation.type == Allocation.Type.GENERAL_REGISTER;
                 instructions.add(new Instruction(Type.PSH, new Operand(Operand.Type.REGISTER, srcAllocation.address), null, null));
-            } else if (node instanceof ImmediateNode) {
-                instructions.add(new Instruction(Type.ADDI, new Operand(Operand.Type.REGISTER, ZERO), new Operand(Operand.Type.IMMEDIATE, ((ImmediateNode) node).getValue()), new Operand(Operand.Type.REGISTER, SCRATCH_REGISTER)));
+            } else if (node.node instanceof ImmediateNode) {
+                instructions.add(new Instruction(Type.ADDI, new Operand(Operand.Type.REGISTER, ZERO), new Operand(Operand.Type.IMMEDIATE, ((ImmediateNode) node.node).getValue()), new Operand(Operand.Type.REGISTER, SCRATCH_REGISTER)));
                 instructions.add(new Instruction(Type.PSH, new Operand(Operand.Type.REGISTER, SCRATCH_REGISTER), null, null));
             }
             assert true : "Unexpected parameter for function call";
@@ -459,7 +459,7 @@ public class Instruction {
         instructions.add(new CallInstruction(callNode.callTarget));
 
         //Discard parameters
-        for (AbstractNode node: callNode.getInputOperands()) {
+        for (NodeContainer node: callNode.getInputOperands()) {
             instructions.add(new Instruction(Type.POP, null, null, new Operand(Operand.Type.REGISTER, ZERO)));
         }
         //instructions.add(new Instruction(Type.ADDI, new Operand(Operand.Type.REGISTER, SP), new Operand(Operand.Type.IMMEDIATE, 4*callNode.getInputOperands().size()), new Operand(Operand.Type.REGISTER, SP)));
@@ -473,7 +473,7 @@ public class Instruction {
 
         // Move return value
         if (callNode.hasOutputVirtualRegister()){
-            Allocation retVal = callNode.allocation; //allocator.getAllocationAt(callNode.getOutputVirtualReg(), callNode.sourceIndex);
+            Allocation retVal = callNode.getAllocation(); //allocator.getAllocationAt(callNode.getOutputVirtualReg(), callNode.sourceIndex);
             assert retVal.type == Allocation.Type.GENERAL_REGISTER;
 
             instructions.add(new Instruction(Type.MOV, new Operand(Operand.Type.REGISTER, SCRATCH_REGISTER),

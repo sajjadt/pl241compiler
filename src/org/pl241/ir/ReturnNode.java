@@ -2,7 +2,7 @@ package org.pl241.ir;
 
 public class ReturnNode extends AbstractNode {
 
-	public ReturnNode (AbstractNode _returnValue) {
+	public ReturnNode (NodeContainer _returnValue) {
 		super();
 		this.returnValue = _returnValue;
 		if (_returnValue != null)
@@ -21,11 +21,11 @@ public class ReturnNode extends AbstractNode {
     public String printAllocation() {
         String ret =  super.toString() + " return ";
         if (returnValue != null)
-            ret += returnValue.allocation;
+            ret += returnValue.getAllocation();
         return ret;
     }
 
-    private AbstractNode returnValue;
+    private NodeContainer returnValue;
 
     // Node interface implementation
     public boolean isExecutable() {

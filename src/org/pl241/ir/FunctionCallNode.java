@@ -18,7 +18,7 @@ public class FunctionCallNode extends AbstractNode implements NodeInterface{
         ret += (callTarget + "(");
 
         String joinedOperands = this.getInputOperands().stream()
-                .map(AbstractNode::getOutputVirtualReg)
+                .map(NodeContainer::getOutputVirtualReg)
                 .collect(Collectors.joining(", ")); // "John, Anna, Paul"
 
         ret += joinedOperands;
@@ -36,7 +36,7 @@ public class FunctionCallNode extends AbstractNode implements NodeInterface{
 
     // Adds operands at the beginning since they are accessed on Stack
     @Override
-    public void addOperand(AbstractNode node) {
+    public void addOperand(NodeContainer node) {
         operands.add(0, node);
     }
 
@@ -45,18 +45,23 @@ public class FunctionCallNode extends AbstractNode implements NodeInterface{
     public String printAllocation() {
         String ret = "";
 
-        if (this.allocation != null)
-            ret += this.allocation.toString();
+        if (this.getAllocation() != null)
+            ret += this.getAllocation().toString();
 
         ret += this.callTarget + "(";
 
         if (this.operands.size() > 0) {
-            Allocation al = this.operands.get(0).allocation;
+            Allocation al = this.operands.get(0).getAllocation();
             if (al != null)
                 ret +=  ", " + al.toString();
         }
         ret += ")";
         return ret;
+    }
+
+    @Override
+    public boolean isControlFlow() {
+        return true;
     }
 
     public boolean hasOutputVirtualRegister() {
@@ -71,9 +76,4 @@ public class FunctionCallNode extends AbstractNode implements NodeInterface{
 
     public String callTarget;
     public boolean hasReturnValue;
-
-    @Override
-    public boolean isControlFlow() {
-        return true;
-    }
 }

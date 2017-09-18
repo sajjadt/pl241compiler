@@ -6,7 +6,6 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 
-import org.pl241.Program;
 import org.pl241.frontend.ParseTreeNodeVisitor;
 import org.pl241.frontend.Parser.AssignmentNode;
 import org.pl241.frontend.Parser.DesignatorNode;
@@ -37,8 +36,8 @@ public class IRBuilderVisitor implements ParseTreeNodeVisitor {
 
 	private static final Logger LOGGER = Logger.getLogger(IRBuilderVisitor.class.getName());
 	private Stack<BasicBlock> bblStack; 
-	private Stack<AbstractNode> expressionStack;
-    private Stack<AbstractNode> functionCallStack;
+	private Stack<NodeContainer> expressionStack;
+    private Stack<NodeContainer> functionCallStack;
     private Function currentFunction;
 	private Program program;
 	private Function mainFunction;
@@ -195,11 +194,11 @@ public class IRBuilderVisitor implements ParseTreeNodeVisitor {
 		if (node.children.size() > 1) {
 			// ARRAY
 			ArrayList<Integer> strides = new ArrayList<>();
-			expressionStack.push(new VarGetNode( node.getChild(0).getText()  ) ) ; // "load ARRAY l:" + lvalue + ctx.getText() ));
+			expressionStack.push(new NodeContainer(new VarGetNode( node.getChild(0).getText()))); // "load ARRAY l:" + lvalue + ctx.getText() ));
 		} else {
 			// Var
 			if(!lvalue)
-				expressionStack.push(new VarGetNode( node.getChild(0).getText() ) ) ; // "load Var l:" + lvalue +  ctx.getText() ) );
+				expressionStack.push(new NodeContainer(new VarGetNode( node.getChild(0).getText()))); // "load Var l:" + lvalue +  ctx.getText() ) );
 		}
 		BasicBlock bblOld = bblStack.peek();
 		BasicBlock bblAfterIf = new BasicBlock(currentFunction ,"after if");
@@ -286,10 +285,10 @@ public class IRBuilderVisitor implements ParseTreeNodeVisitor {
 	@Override
 	public void exit(StatSeqNode node) {
 		if (node.parent instanceof WhileStmtNode) {
-			bblStack.peek().addNode(new BranchNode());
+			bblStack.peek().addNode(new NodeContainer(new BranchNode()));
 		}
 		if (node.parent instanceof ProgramNode) {
-			bblStack.peek().addNode(new ReturnNode(null));
+			bblStack.peek().addNode(new NodeContainer(new ReturnNode(null)));
 		}
 		currentFunction.basicBlocks.add(bblStack.peek());
 		bblStack.pop();
@@ -320,13 +319,13 @@ public class IRBuilderVisitor implements ParseTreeNodeVisitor {
 
             // Need to calculate the access jumpAddress first
 			int index = 0;
-			AbstractNode offsetCalcNode = null;
-			AbstractNode tempOffsetCalcNode = null;
+			NodeContainer offsetCalcNode = null;
+			NodeContainer tempOffsetCalcNode = null;
 			
 			for (ParseTreeNode child : node.children) {
 				if (child instanceof ExpressionNode) {
 					// Add expression
-					bblStack.peek().addNode( expressionStack.peek() );
+					bblStack.peek().addNode(expressionStack.peek());
 					// Manipulate it further
 					int offset = 1 ;
 					for( int i = 0 ; i < index ; ++i ){
@@ -340,36 +339,36 @@ public class IRBuilderVisitor implements ParseTreeNodeVisitor {
 					}
 					tempOffsetCalcNode = offsetCalcNode ;
 					if( offset > 1){
-						offsetCalcNode = new ArithmeticNode(expressionStack.peek(), new ImmediateNode(Integer.toString(offset)), ArithmeticNode.Type.MUL) ;
+						offsetCalcNode = new NodeContainer(new ArithmeticNode(expressionStack.peek(), new NodeContainer(new ImmediateNode(Integer.toString(offset))), ArithmeticNode.Type.MUL));
 						bblStack.peek().addNode( offsetCalcNode );
 					}else {
-						offsetCalcNode =  expressionStack.peek();
+						offsetCalcNode = expressionStack.peek();
 					}
 					expressionStack.pop();
 					
 					if( tempOffsetCalcNode != null )
 					{
-						offsetCalcNode = new ArithmeticNode(tempOffsetCalcNode, offsetCalcNode , ArithmeticNode.Type.ADD) ;
-						bblStack.peek().addNode( offsetCalcNode );
+						offsetCalcNode = new NodeContainer(new ArithmeticNode(tempOffsetCalcNode, offsetCalcNode , ArithmeticNode.Type.ADD));
+						bblStack.peek().addNode(offsetCalcNode);
 					}
 					++index ;
 				}
 			}
 
-            AbstractNode offsetMulNode = new ArithmeticNode(offsetCalcNode, new ImmediateNode("4"), ArithmeticNode.Type.MUL) ;
-			AbstractNode fetchBase = new VarGetNode(varName) ;
-			AbstractNode calcAddress = new ArithmeticNode(fetchBase, offsetMulNode, ArithmeticNode.Type.ADDA);
+            NodeContainer offsetMulNode = new NodeContainer(new ArithmeticNode(offsetCalcNode, new NodeContainer(new ImmediateNode("4")), ArithmeticNode.Type.MUL));
+			NodeContainer fetchBase = new NodeContainer(new VarGetNode(varName));
+			NodeContainer calcAddress = new NodeContainer(new ArithmeticNode(fetchBase, offsetMulNode, ArithmeticNode.Type.ADDA));
 
 			bblStack.peek().addNode(offsetMulNode);
             bblStack.peek().addNode(fetchBase);
 			bblStack.peek().addNode(calcAddress);
 			if (lvalue) {
-                AbstractNode n = new MemoryStoreNode(calcAddress, null);
+                NodeContainer n = new NodeContainer(new MemoryStoreNode(calcAddress, null));
                 // This node should be inserted after right hand side
                 //bblStack.peek().addNode(n);
                 expressionStack.push(n);
 			} else{
-			    AbstractNode n = new MemoryLoadNode(calcAddress);
+			    NodeContainer n = new NodeContainer(new MemoryLoadNode(calcAddress));
 			    bblStack.peek().addNode(n);
 				expressionStack.push(n) ;
 			}
@@ -378,15 +377,15 @@ public class IRBuilderVisitor implements ParseTreeNodeVisitor {
             // It is not clear if this is being allocated on the stack or a register
             // For now we emit regular load/store nodes
             if (lvalue)
-				expressionStack.push(new VarSetNode(varName));
+				expressionStack.push(new NodeContainer(new VarSetNode(varName)));
 			else
-				expressionStack.push(new VarGetNode(varName));
+				expressionStack.push(new NodeContainer(new VarGetNode(varName)));
 		}
 	}
 
     @Override
     public void exit(ExpressionNode node) {
-        List<AbstractNode> nodesList = new ArrayList<>();
+        List<NodeContainer> nodesList = new ArrayList<>();
         List<String> operatorsList = new ArrayList<>();
 
         if (node.children.size() > 2) {
@@ -407,8 +406,8 @@ public class IRBuilderVisitor implements ParseTreeNodeVisitor {
             assert nodesList.size() == operatorsList.size() + 1;
 
             for (int i=0; i < operatorsList.size(); i++) {
-                AbstractNode op1;
-                AbstractNode op2 = nodesList.get(i + 1);
+                NodeContainer op1;
+                NodeContainer op2 = nodesList.get(i + 1);
 
                 if (i == 0) {
                     op1 = nodesList.get(i);
@@ -419,9 +418,11 @@ public class IRBuilderVisitor implements ParseTreeNodeVisitor {
                         bblStack.peek().addNode(op2);
                 } else {
                     op1 = expressionStack.pop();
+                    if (!op2.isControlFlow())
+                        bblStack.peek().addNode(op2);
                 }
 
-                AbstractNode anode = new ArithmeticNode(op1, op2, ArithmeticNode.operatorMap.get(operatorsList.get(i)));
+                NodeContainer anode = new NodeContainer(new ArithmeticNode(op1, op2, ArithmeticNode.operatorMap.get(operatorsList.get(i))));
                 bblStack.peek().addNode(anode);
                 // push the final into exp stack
                 expressionStack.push(anode);
@@ -431,7 +432,7 @@ public class IRBuilderVisitor implements ParseTreeNodeVisitor {
 
     @Override
     public void exit(TermNode node) {
-        List<AbstractNode> nodesList = new ArrayList<>();
+        List<NodeContainer> nodesList = new ArrayList<>();
         List<String> operatorsList = new ArrayList<>();
 
         if (node.children.size() > 2) {
@@ -452,8 +453,8 @@ public class IRBuilderVisitor implements ParseTreeNodeVisitor {
             assert nodesList.size() == operatorsList.size() + 1;
 
             for (int i=0; i < operatorsList.size(); i++) {
-                AbstractNode op1;
-                AbstractNode op2 = nodesList.get(i+1);
+                NodeContainer op1;
+                NodeContainer op2 = nodesList.get(i+1);
 
                 if (i == 0) {
                     op1 = nodesList.get(i);
@@ -463,11 +464,13 @@ public class IRBuilderVisitor implements ParseTreeNodeVisitor {
                     if (!op2.isControlFlow())
                         bblStack.peek().addNode(op2);
                 }
-                else
+                else {
                     op1 = expressionStack.pop();
+                    if (!op2.isControlFlow())
+                        bblStack.peek().addNode(op2);
+                }
 
-
-                AbstractNode anode = new ArithmeticNode(op1, op2, ArithmeticNode.operatorMap.get(operatorsList.get(i)));
+                NodeContainer anode = new NodeContainer(new ArithmeticNode(op1, op2, ArithmeticNode.operatorMap.get(operatorsList.get(i))));
                 bblStack.peek().addNode(anode);
                 // push the final into exp stack
                 expressionStack.push(anode);
@@ -573,41 +576,45 @@ public class IRBuilderVisitor implements ParseTreeNodeVisitor {
 	@Override
 	public void exit(FactorNode node) {
 		if (node.children.size() == 1 && node.children.get(0) instanceof TerminalNode)
-			expressionStack.push(new ImmediateNode(node.children.get(0).getText()));
+			expressionStack.push(new NodeContainer(new ImmediateNode(node.children.get(0).getText())));
 	}
 
 	@Override
 	public void exit(RelationNode node) {
-		bblStack.peek().addNode( expressionStack.peek() );
-		AbstractNode label1 = expressionStack.pop() ;
+		bblStack.peek().addNode(expressionStack.peek());
+		NodeContainer label1 = expressionStack.pop();
 		
-		bblStack.peek().addNode( expressionStack.peek() );
-		AbstractNode label2 = expressionStack.pop() ;
+		bblStack.peek().addNode(expressionStack.peek());
+        NodeContainer label2 = expressionStack.pop();
 
-		AbstractNode nNode = new ArithmeticNode(label2, label1,  ArithmeticNode.Type.CMP);
-		bblStack.peek().addNode( nNode );
-		bblStack.peek().addNode( new BranchNode( BranchNode.branchMapReversed.get(node.children.get(1).getText() ), nNode)  );
+        bblStack.peek().addNode(label1);
+        bblStack.peek().addNode(label2);
 
-        currentFunction.basicBlocks.add( bblStack.peek() );
+
+		NodeContainer nNode = new NodeContainer(new ArithmeticNode(label2, label1, ArithmeticNode.Type.CMP));
+		bblStack.peek().addNode(nNode);
+		bblStack.peek().addNode(new NodeContainer(new BranchNode(BranchNode.branchMapReversed.get(node.children.get(1).getText()), nNode)));
+
+        currentFunction.basicBlocks.add(bblStack.peek());
 		bblStack.pop();
 	}
 
 	@Override
 	public void exit(AssignmentNode node) {
-		AbstractNode exp = expressionStack.pop();
-		AbstractNode des = expressionStack.pop();
+		NodeContainer exp = expressionStack.pop();
+        NodeContainer des = expressionStack.pop();
 
-		assert des instanceof VarSetNode || des instanceof MemoryStoreNode;
+		assert des.node instanceof VarSetNode || des.node instanceof MemoryStoreNode;
 
 		// Function is used in the right side
         // It's return values is used
-		if(exp instanceof  FunctionCallNode)
-            ((FunctionCallNode)exp).hasReturnValue = true;
+		if(exp.node instanceof  FunctionCallNode)
+            ((FunctionCallNode)exp.node).hasReturnValue = true;
 
-        if (des instanceof VarSetNode)
-		    ((VarSetNode)des).setSrcOperand(exp);
+        if (des.node instanceof VarSetNode)
+		    ((VarSetNode)des.node).setSrcOperand(exp);
         else
-            ((MemoryStoreNode)des).setValueNode(exp);
+            ((MemoryStoreNode)des.node).setValueNode(exp);
 
         // They have been added to the previous block
         if (!exp.isControlFlow())
@@ -624,13 +631,11 @@ public class IRBuilderVisitor implements ParseTreeNodeVisitor {
 	@Override
 	public void exit(ReturnStmtNode node) {
 		//Pop ExpStack
-		if( node.children.size() > 1 ) {
-			LOGGER.log(Level.FINE,"poping ret" );
-			
-			AbstractNode exp = expressionStack.pop() ;
+		if (node.children.size() > 1) {
+			NodeContainer exp = expressionStack.pop();
 
             // Function call has been added to the previous block
-            if (!(exp instanceof FunctionCallNode))
+            if (!(exp.node instanceof FunctionCallNode))
 			    bblStack.peek().addNode(exp) ;
             else {
                // ((FunctionCallNode)functionCallStack.peek()).hasReturnValue = true;
@@ -638,12 +643,9 @@ public class IRBuilderVisitor implements ParseTreeNodeVisitor {
             }
 
 			ReturnNode retNode = new ReturnNode(exp);
-			bblStack.peek().addNode(retNode);
+			bblStack.peek().addNode(new NodeContainer(retNode));
 
-		} else {
-			LOGGER.log( Level.FINE,"Not poping ret" );
 		}
-
 	}
 
 	@Override
@@ -665,6 +667,7 @@ public class IRBuilderVisitor implements ParseTreeNodeVisitor {
 	@Override
 	public void exit(FuncCallNode node) {
         AbstractNode callNode  = null;
+        NodeContainer callContainer = null;
 
         String functionName = node.getChild(1).getText() ;
         boolean atomicCall = functionName.equals("InputNum") || functionName.equals("OutputNum") || functionName.equals("OutputNewLine");
@@ -690,14 +693,15 @@ public class IRBuilderVisitor implements ParseTreeNodeVisitor {
 		// Pop per each argument
 		for(ParseTreeNode child: node.children ){
 			if (child instanceof ExpressionNode) {
-				AbstractNode aanode =  expressionStack.pop();
+				NodeContainer aanode =  expressionStack.pop();
 
 				// They are added in exit(expression)
-				if (!(aanode instanceof ArithmeticNode))
+				if (!(aanode.node instanceof ArithmeticNode) &&
+						!(aanode.node instanceof FunctionCallNode))
                     bblStack.peek().addNode(aanode);
 
                 // Function call has been added to the previous block
-                if ((aanode instanceof FunctionCallNode))
+                if ((aanode.node instanceof FunctionCallNode))
                     functionCallStack.pop();
 
                 // Adds operands for function calls
@@ -710,6 +714,8 @@ public class IRBuilderVisitor implements ParseTreeNodeVisitor {
 			}
 		}
 
+		callContainer = new NodeContainer(callNode);
+
 		if (!atomicCall) {
 			// Split the Current Basic Block
 			BasicBlock bblAfterCall = new BasicBlock(currentFunction ,"After Call");
@@ -720,17 +726,17 @@ public class IRBuilderVisitor implements ParseTreeNodeVisitor {
 			bblStack.push(bblAfterCall);
 			bblStack.push(bblOld);
 
-			bblStack.peek().addNode(callNode);
-			currentFunction.basicBlocks.add( bblStack.peek() );
+			bblStack.peek().addNode(callContainer);
+			currentFunction.basicBlocks.add(bblStack.peek());
 			bblStack.pop();
 		}
 		else {
-            bblStack.peek().addNode(callNode);
+            bblStack.peek().addNode(callContainer);
 		}
 
-		functionCallStack.push(callNode);
+		functionCallStack.push(callContainer);
 		if (node.parent instanceof FactorNode) {
-			expressionStack.push(callNode);
+			expressionStack.push(callContainer);
 		}
 	}
 

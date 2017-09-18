@@ -34,7 +34,7 @@ public class ArithmeticNode extends AbstractNode implements NodeInterface {
         }
     }
 
-    public ArithmeticNode(AbstractNode _operand1, AbstractNode _operand2, Type _operator) {
+    public ArithmeticNode(NodeContainer _operand1, NodeContainer _operand2, Type _operator) {
         super(_operand1, _operand2);
         operator = _operator;
     }
@@ -51,17 +51,17 @@ public class ArithmeticNode extends AbstractNode implements NodeInterface {
 
     @Override
     public String printAllocation() {
-        String ret = this.allocation + " = ";
+        String ret = this.getAllocation() + " = ";
 
-        Allocation al = this.operands.get(0).allocation;
+        Allocation al = this.operands.get(0).getAllocation();
         if (al != null)
             ret = ret + al.toString();
 
         ret += operatorMapR.get(operator);
         if (this.operands.size() > 1) {
-            al = this.operands.get(1).allocation;
+            al = this.operands.get(1).getAllocation();
             if (al != null)
-                ret +=  this.operands.get(1).allocation.toString();
+                ret +=  this.operands.get(1).getAllocation().toString();
         }
 
         return ret;

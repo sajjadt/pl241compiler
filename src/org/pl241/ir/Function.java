@@ -1,7 +1,5 @@
 package org.pl241.ir;
 
-import org.pl241.Program;
-
 import java.io.PrintWriter;
 import java.util.*;
 
@@ -30,15 +28,15 @@ public class Function  {
 
     public void setBranchTargets() {
 		for (BasicBlock b: this.getBasicBlocks()) {
-			for (AbstractNode node: b.getNodes()) {
-				if (node instanceof BranchNode) {
+			for (NodeContainer container: b.getNodes()) {
+				if (container.node instanceof BranchNode) {
 					// rewrite address
-					if (!((BranchNode)node).isCall) {
+					if (!((BranchNode)container.node).isCall) {
                         if (b.getSuccessors().size() > 1) {
-							((BranchNode)node).fallThroughBlock = b.fallThrough;
-                            ((BranchNode) node).takenBlock = b.taken;
+							((BranchNode)container.node).fallThroughBlock = b.fallThrough;
+                            ((BranchNode)container.node).takenBlock = b.taken;
                         } else {
-                            ((BranchNode) node).fallThroughBlock = b.fallThrough;
+                            ((BranchNode)container.node).fallThroughBlock = b.fallThrough;
                         }
                     }
 				}
@@ -222,15 +220,14 @@ public class Function  {
 
 		for (String var: vars) {
 			Set<BasicBlock> workList = new HashSet<>();
-			Set<BasicBlock> everOnWorkList =  new HashSet<>();
-			Set<BasicBlock> alreadyHasPhiFunc =  new HashSet<>();
+			Set<BasicBlock> everOnWorkList = new HashSet<>();
+			Set<BasicBlock> alreadyHasPhiFunc = new HashSet<>();
 
 			for (BasicBlock b: getBasicBlocks()) {
 				if (b.hasAssignmentTo(var)) {
 					workList.add(b);
 				}
 			}
-
 			everOnWorkList.addAll(workList);
 
 			while (workList.size() > 0) {
@@ -298,31 +295,23 @@ public class Function  {
 		return blocks;
 	}
 
-
-    public ArrayList<AbstractNode> getNodesInLayoutOrder() {
-        List<BasicBlock> blocks = getBlocksInLayoutOrder();
-        ArrayList<AbstractNode> nodes = new ArrayList<>();
-        for (BasicBlock b: blocks)
-            nodes.addAll(b.getNodes());
-        return nodes;
-    }
-
 	// Insert branches to end of basic blocks
     public void insertBranches() {
 		for (BasicBlock block: getBasicBlocks()) {
+
+
 			if (block.successors.size() == 1 && block.fallThrough == null) {
+
                 block.fallThrough = block.successors.get(0);
-                if (!(block.getLastNode() instanceof ReturnNode) &&
-                        !(block.getLastNode() instanceof BranchNode)){
-                    BranchNode node = new BranchNode();
-                    block.addNode(node);
+                if ( block.getNodes().size() == 0 || !block.getLastNode().isControlFlow()){
+                    block.addNode(new NodeContainer(new BranchNode()));
                 }
 			}
 
 			// Return statement for procedures (they have no return)
-            if (block.successors.size() == 0 && !(block.getLastNode() instanceof ReturnNode)) {
+            if (block.successors.size() == 0 && !(block.getLastNode().node instanceof ReturnNode)) {
                 ReturnNode node = new ReturnNode(null);
-                block.addNode(node);
+                block.addNode(new NodeContainer(node));
             }
 		}		
 	}
@@ -330,7 +319,7 @@ public class Function  {
     public void removeUnreachableFlowEdges() {
         for (BasicBlock block: getBasicBlocks()) {
             if (block.successors.size() == 1
-                    && (block.getLastNode() instanceof ReturnNode)) {
+                    && (block.getLastNode().node instanceof ReturnNode)) {
                 block.taken = null;
                 block.fallThrough = null;
                 block.successors.clear();
@@ -338,7 +327,7 @@ public class Function  {
         }
     }
 
-    public void printVarInfo() {
+    void printVarInfo() {
         if (Objects.equals(name, "main"))
             System.out.println("Global vars");
         else
@@ -354,17 +343,20 @@ public class Function  {
         }
     }
 
+    public void insertGlobalAccesses(VarInfoTable globalVars) {
+        for (BasicBlock block: getBasicBlocks()) {
+            block.insertGlobalAccesses(this.parameters, this.localVariables, globalVars);
+        }
+    }
+
     // Unique across program
     public String name;
-
     private static int _sindex = 0;
     private int _index;
     public VarInfoTable localVariables;
     public Map<String, Integer> parameters;
     public List<BasicBlock> basicBlocks;
     private Program program;
-
-
 }
 	
 	

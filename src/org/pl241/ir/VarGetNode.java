@@ -4,12 +4,18 @@ import java.util.Objects;
 
 public class VarGetNode extends AbstractNode implements NodeInterface{
 	public String variableId;
+	public boolean accessGlobals;
+
 	public VarGetNode(String variableId) {
 		super();
 		this.variableId = variableId;
+		this.accessGlobals = false;
 	}
 	public String toString() {
-		return super.nodeId + " read-var=" + variableId;
+		String ret = super.nodeId + "=" + variableId ;
+        if (accessGlobals)
+            ret += "*G*";
+        return ret;
 	}
 
 	@Override

@@ -1,4 +1,5 @@
 # Brandis and Mossenbock test for while loops
+# output : 2 2
 main
 var a, b;
 {
@@ -7,6 +8,9 @@ var a, b;
 		let b <- a + 1;
 		let a <- a * 2
 	od;
-	let b <- a
+	let b <- a;
+
+	call OutputNum(a);
+	call OutputNum(b)
 }
 .

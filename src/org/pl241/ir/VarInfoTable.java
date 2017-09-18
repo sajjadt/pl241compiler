@@ -36,4 +36,8 @@ public class VarInfoTable {
 	}
 
 	private Map<String, Variable> variables;
+
+    public boolean containsVar(String name) {
+        return variables.keySet().contains(name);
+    }
 }

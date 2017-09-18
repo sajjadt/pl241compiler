@@ -1,4 +1,4 @@
-package org.pl241;
+package org.pl241.ir;
 
 import java.io.File;
 import java.io.FileNotFoundException;

@@ -5,9 +5,8 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 
-import org.pl241.ir.*;
 import org.pl241.ir.Function;
-import org.pl241.Program;
+import org.pl241.ir.Program;
 
 // Generate Assembly instructions
 // Handles initializer codes nad places fucntions in proper place
@@ -18,7 +17,7 @@ public class DLXCodeGenerator {
     public DLXCodeGenerator(LowLevelProgram program) {
         this.lowLevelProgram = program;
         this.irProgram = lowLevelProgram.getIRProgram();
-        int MEMORY_SIZE = 20000;
+        int MEMORY_SIZE = 20000 * 4;
         this.memLayout = new ArrayList<>(Collections.nCopies(MEMORY_SIZE /4, 0));
         this.functionMap = new HashMap<>();
         //this.globalVarMap = new HashMap<>();
@@ -27,22 +26,16 @@ public class DLXCodeGenerator {
     private ArrayList<Integer> initialize() {
         ArrayList<Integer> initCode = new ArrayList<>();
 
-        // Initialize globalMap
-        // Global index keeps track of variables on GLOBALS_ADDRESS
-        // it increases
-        int globalIndex = 0;
-        Function main = irProgram.getMainFunction();
-
-        for (Variable var: main.localVariables.getVars()) {
-            globalVarMap.put(var.name, globalIndex);
-            globalIndex += 1 * var.numElements();
-        }
-
         // Other initializations go here!
         int currentIndex;
         // Set SP
         int STACK_ADDRESS = 20000;
         initCode.add(DLX.assemble(DLX.ADDI, this.SP, this.ZERO, STACK_ADDRESS));
+        initCode.add(DLX.assemble(DLX.LSHI, this.SP, this.SP, 4));
+
+        int GLOBAL_ADDRESS = 10000;
+        initCode.add(DLX.assemble(DLX.ADDI, this.GLOBALP, this.ZERO, GLOBAL_ADDRESS));
+        initCode.add(DLX.assemble(DLX.LSHI, this.GLOBALP, this.GLOBALP, 4));
 
         // Reserve spot for jump to main
         int jumpToMainIndex = 1;
@@ -266,13 +259,14 @@ public class DLXCodeGenerator {
 	private ArrayList<Integer> memLayout;
 
 	// Constants
-	public static final int ZERO = 0 ;
-    public static final int SCRATCH_REGISTER = 27;
-    public static final int RA = 31; // RA contains the return address when we use JSP
-    public static final int FRAMEP = 28;
-    public static final int SP = 29; // Register 29 is the stack pointer
-    public static final int NUM_REGISTERS = 32;
-    private final int GLOBALS_ADDRESS = 10000 ; // Grows upwards
+	static final int ZERO = 0;
+    static final int SCRATCH_REGISTER = 27;
+    static final int FRAMEP = 28;
+    static final int SP = 29; // Register 29 is the stack pointer
+    static final int GLOBALP = 30 ; // Grows upwards
+    static final int RA = 31; // RA contains the return address when we use JSP
+    static final int NUM_REGISTERS = 32;
+
 
     // Input program representations
 	private LowLevelProgram lowLevelProgram;
@@ -280,5 +274,5 @@ public class DLXCodeGenerator {
 
 	// Contains a map between the function IDs and their address in the memory
 	private HashMap<String, Integer> functionMap;
-    private HashMap<String, Integer> globalVarMap = new HashMap<>();
+
 }

@@ -9,7 +9,7 @@ import java.util.Map;
 public class PhiFunctionNode extends AbstractNode {
 
     // Mapping from block index to instruction node
-	public Map<Integer, AbstractNode> rightOperands;
+	public Map<Integer, NodeContainer> rightOperands;
 
 	public String variableName;
 	public String originalVariableName;
@@ -29,17 +29,17 @@ public class PhiFunctionNode extends AbstractNode {
 		return this.sourceIndex +   ": " + variableName +  " phi:(" + oSet + ")";
 	}
 
-	public AbstractNode inputOf(BasicBlock block) {
+	public NodeContainer inputOf(BasicBlock block) {
 		return rightOperands.get(block.getIndex());
 	}
 	@Override
-	public List<AbstractNode> getInputOperands() {
+	public List<NodeContainer> getInputOperands() {
 	    return new ArrayList<> (rightOperands.values());
 	}
 
 	@Override
-    public AbstractNode getOperandAtIndex(int index) {
-        ArrayList<AbstractNode> nodes = new ArrayList<> (rightOperands.values());
+    public NodeContainer getOperandAtIndex(int index) {
+        ArrayList<NodeContainer> nodes = new ArrayList<> (rightOperands.values());
         if (nodes.size() > index) {
             return nodes.get(index);
         }
@@ -47,8 +47,8 @@ public class PhiFunctionNode extends AbstractNode {
     }
 
     @Override
-    public void setOperandAtIndex(int index, AbstractNode abstractNode) {
-        ArrayList<AbstractNode> nodes = new ArrayList<> (rightOperands.values());
+    public void setOperandAtIndex(int index, NodeContainer abstractNode) {
+        ArrayList<NodeContainer> nodes = new ArrayList<> (rightOperands.values());
         nodes.set(index, abstractNode);
     }
 

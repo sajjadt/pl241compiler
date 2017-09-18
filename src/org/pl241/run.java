@@ -14,6 +14,7 @@ import org.pl241.frontend.*;
 import org.pl241.frontend.Parser.ParseTreeNode;
 import org.pl241.ir.Function;
 import org.pl241.ir.IRBuilderVisitor;
+import org.pl241.ir.Program;
 import org.pl241.ra.RegisterAllocator;
 
 class run
@@ -27,12 +28,13 @@ class run
         boolean genCode = true;
         boolean execute = true;
         boolean invokePngGenScript = true;
-        boolean printDisassembly = false;
+        boolean printAssemblyTrace = false;
+        boolean supportGlobals = false;
         int numberOfRegisters = 16;
         /////////////////////////////////////////////
 
         // Input
-		String testName = "test013";
+		String testName = "test020";
         String testPath = "inputs" + File.separator + testName + ".txt";
 
         // Tokenize the input
@@ -66,6 +68,8 @@ class run
         try {
             for (Function f : program.getFunctions()) {
                 f.setProgram(program);
+                if (supportGlobals)
+                    f.insertGlobalAccesses(program.getMainFunction().localVariables);
                 f.insertBranches();
                 f.setBranchTargets();
                 f.removeUnreachableFlowEdges();
@@ -102,6 +106,7 @@ class run
             return;
         }
 
+
         // Allocate registers and execute on DLX emulator
         try {
             if (allocateRegisters) {
@@ -115,21 +120,17 @@ class run
                     // Returns splitted intervals with allocatin information
                     allocator.allocate(f);
                     allocator.toPhysical(f);
+
                     // Deconstructs SSA form
                     // Inserts additional moves if necessary
                     allocator.resolve(f);
-
-                    //if (visualize) {
-                    //    program.visualize("Vis" + File.separator + testName + "_pass_4_ir.dot", false);
-                    //    program.visualize("Vis" + File.separator + testName + "_pass_4_allocated.dot", true);
-                    //}
 
                     // At this point all nodes have been assigned an allocation
                     // Lower them to machine level instructions
                     // Emit branch instructions with proper offset values
                     // Also insert additional instructions such as memory operands access
-
-                    lowLevelProgram.lowerAndAddFunction(f, allocator);
+                    lowLevelProgram.addGlobals(program.getMainFunction().localVariables);
+                    lowLevelProgram.lowerAndAddFunction(f, program.getMainFunction().localVariables, allocator);
                 }
 
 
@@ -137,10 +138,7 @@ class run
                 program.visualize("Vis" + File.separator + testName + "_pass_6_alloc.dot", true);
 
 
-                if (invokePngGenScript) {
-                    String command = "bash ./genpng.sh";
-                    Runtime.getRuntime().exec(command);
-                }
+
 
                 if (genCode) {
                     // Executable has missing function call jumps
@@ -151,7 +149,7 @@ class run
                         DLX.load(executable);
                         System.out.println("MEM:" + executable);
                         System.out.println("Starting execution on DLX emulator...");
-                        DLX.execute(printDisassembly);
+                        DLX.execute(printAssemblyTrace);
                     }
                 }
             }
@@ -160,7 +158,10 @@ class run
             e.printStackTrace();
             return;
         }
-
+        if (invokePngGenScript) {
+            String command = "bash ./genpng.sh";
+            Runtime.getRuntime().exec(command);
+        }
 		System.out.println("All done...");
 	}
 }

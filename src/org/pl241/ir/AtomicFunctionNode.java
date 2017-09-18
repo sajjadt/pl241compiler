@@ -24,12 +24,12 @@ public class AtomicFunctionNode extends AbstractNode implements NodeInterface {
         super();
     }
 
-    public AtomicFunctionNode(IOType type , AbstractNode operand) {
+    public AtomicFunctionNode(IOType type , NodeContainer operand) {
         super();
         setParams(type, operand);
     }
 
-    public void setParams(IOType type , AbstractNode operand) {
+    public void setParams(IOType type , NodeContainer operand) {
         this.type = type;
         isAMemoryLoad = isAMemoryStore = false;
         if (type.equals(IOType.WRITE)){
@@ -72,13 +72,13 @@ public class AtomicFunctionNode extends AbstractNode implements NodeInterface {
     public String printAllocation() {
         String ret = "";
 
-        if (this.allocation != null)
-                ret += this.allocation.toString();
+        if (this.getAllocation() != null)
+                ret += this.getAllocation().toString();
 
         ret += this.type.toString();
 
         if (this.operands.size() > 0) {
-            Allocation al = this.operands.get(0).allocation;
+            Allocation al = this.operands.get(0).getAllocation();
             if (al != null)
                 ret +=  ", " + al.toString();
         }

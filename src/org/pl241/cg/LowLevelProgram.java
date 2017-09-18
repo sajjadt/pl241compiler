@@ -1,11 +1,7 @@
 package org.pl241.cg;
 
-import com.sun.xml.internal.fastinfoset.util.ValueArray;
-import org.pl241.Program;
-import org.pl241.ir.AbstractNode;
-import org.pl241.ir.BasicBlock;
-import org.pl241.ir.Function;
-import org.pl241.ir.Variable;
+import org.pl241.ir.Program;
+import org.pl241.ir.*;
 import org.pl241.ra.Allocation;
 import org.pl241.ra.RegisterAllocator;
 
@@ -16,6 +12,7 @@ import java.io.PrintWriter;
 import java.util.*;
 
 import static org.pl241.cg.DLXCodeGenerator.FRAMEP;
+import static org.pl241.cg.DLXCodeGenerator.GLOBALP;
 import static org.pl241.cg.DLXCodeGenerator.SP;
 
 ////////////////////////////////////////////////////////////
@@ -33,14 +30,14 @@ import static org.pl241.cg.DLXCodeGenerator.SP;
 // Translates function codes into lower level instructions
 public class LowLevelProgram {
 
+
     public LowLevelProgram() {
         lowLevelIR = new HashMap<>();
+        globalVarMap = new HashMap<>();
     }
 
 
-
-
-    public void lowerAndAddFunction(Function f, RegisterAllocator allocator) {
+    public void lowerAndAddFunction(Function f, VarInfoTable globals, RegisterAllocator allocator) {
         List<Instruction> instructions = new ArrayList<>();
         Map<Integer, Integer> blockMap = new HashMap<>();
 
@@ -52,6 +49,7 @@ public class LowLevelProgram {
         // Variables could be inside local function frame or global table
         // TODO: modify according to Stack allocation
         int displacement = 0;
+
         for (Variable var: f.localVariables.getVars()) {
             localVarMap.put(var.name, displacement);
             displacement += -4 * var.numElements();
@@ -65,11 +63,11 @@ public class LowLevelProgram {
             BasicBlock block = (BasicBlock) li.previous();
             List<Instruction> blockInstructions = new ArrayList<>();
 
-            List<AbstractNode> blockNodes = block.getNodes();
+            List<NodeContainer> blockNodes = block.getNodes();
             ListIterator bi = blockNodes.listIterator(blockNodes.size());
             while (bi.hasPrevious()) {
-                AbstractNode node = (AbstractNode) bi.previous();
-                List<Instruction> ints = Instruction.lowerIRNode(node, currentIndex, blockMap, localVarMap, f.name.equals("main"));
+                NodeContainer node = (NodeContainer) bi.previous();
+                List<Instruction> ints = Instruction.lowerIRNode(node.node, currentIndex, blockMap, localVarMap, f.name.equals("main"));
                 blockInstructions.addAll(0, ints);
                 currentIndex += ints.size();
             }
@@ -96,7 +94,6 @@ public class LowLevelProgram {
         // Transfer parameters to their allocated space
         // Add them to the beginning of the function
         for (String param: f.parameters.keySet()) {
-
             if(f.getEntryBlock().liveIn.contains(param)) {
                 Allocation allocation = allocator.getAllocationAt(param, 0);
                 assert allocation != null;
@@ -105,6 +102,26 @@ public class LowLevelProgram {
                 instructions.add(0, new Instruction(Instruction.Type.LOADI,
                         new Operand(Operand.Type.REGISTER, FRAMEP),
                         new Operand(Operand.Type.IMMEDIATE, f.parameters.get(param)),
+                        new Operand(Operand.Type.REGISTER, allocation.address)));
+
+            }
+        }
+
+        // Transfer address of globals  to their allocated space
+        // Add them to the beginning of the function
+        for (Variable global: globals.getVars()) {
+            if(f.getEntryBlock().liveIn.contains(global.name)) {
+                if (global.type == Variable.VariableType.ARRAY)
+                    continue;
+
+                Allocation allocation = allocator.getAllocationAt(global.name, 0);
+                assert allocation != null;
+                assert allocation.type == Allocation.Type.GENERAL_REGISTER;
+
+                assert globalVarMap.containsKey(global.name) : "global location " + global.name + " is not found in the memory";
+                instructions.add(0, new Instruction(Instruction.Type.LOADI,
+                        new Operand(Operand.Type.REGISTER, GLOBALP),
+                        new Operand(Operand.Type.IMMEDIATE, globalVarMap.get(global.name)),
                         new Operand(Operand.Type.REGISTER, allocation.address)));
 
             }
@@ -125,8 +142,6 @@ public class LowLevelProgram {
 
             }
         }
-
-        //
 
         if (!f.name.equals("main")){
             // Save SP in FrameP to access parameters/local variables
@@ -208,4 +223,13 @@ public class LowLevelProgram {
 
     private HashMap<String, List<Instruction>> lowLevelIR;
 
+    public void addGlobals(VarInfoTable vars) {
+        // Set up global allocation table
+        int globalIndex = 0;
+        for (Variable var: vars.getVars()) {
+            globalVarMap.put(var.name, globalIndex);
+            globalIndex += var.numElements() * 4;
+        }
+    }
+    private HashMap<String, Integer> globalVarMap;
 }

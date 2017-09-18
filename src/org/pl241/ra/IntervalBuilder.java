@@ -36,11 +36,11 @@ class IntervalBuilder {
 		    
 		    // Getting phi info from successors
 		    for (BasicBlock successor:block.getSuccessors()) {
-		    	for (AbstractNode node: successor.getNodes()) {
-		    		if (node instanceof PhiFunctionNode) {
-		    			if (((PhiFunctionNode)node).inputOf(block) != null) {
-		    				live.add(((PhiFunctionNode)node).inputOf(block).getOutputVirtualReg());
-		    				System.out.println("adding " + ((PhiFunctionNode)node).inputOf(block) + " to live set from succ phi function");
+		    	for (NodeContainer container: successor.getNodes()) {
+		    		if (container.node instanceof PhiFunctionNode) {
+		    			if (((PhiFunctionNode)container.node).inputOf(block) != null) {
+		    				live.add(((PhiFunctionNode)container.node).inputOf(block).getOutputVirtualReg());
+		    				System.out.println("adding " + ((PhiFunctionNode)container.node).inputOf(block) + " to live set from succ phi function");
 		    			}
 		    		}
 		    	}
@@ -58,12 +58,12 @@ class IntervalBuilder {
 		    // Process block operations in the reverse order
 		    ListIterator ii = block.getNodes().listIterator(block.getNodes().size());
 		    while (ii.hasPrevious()) {
-			    AbstractNode node =  (AbstractNode) ii.previous();
+			    NodeContainer node =  (NodeContainer) ii.previous();
 
 			    if (!node.isExecutable())
 	    			continue;
 
-	    		if (node instanceof PhiFunctionNode) //Phi nodes will be handled in special way
+	    		if (node.node instanceof PhiFunctionNode) //Phi nodes will be handled in special way
 	    		    continue;
 
 			    if (node.hasOutputVirtualRegister()) {
@@ -82,8 +82,8 @@ class IntervalBuilder {
 			    }
 
 			    if (!node.getInputOperands().isEmpty()) {
-			    	List<AbstractNode> opds = node.getInputOperands();
-			    	for(AbstractNode opd:opds) {
+			    	List<NodeContainer> opds = node.getInputOperands();
+			    	for(NodeContainer opd:opds) {
 			    		if (!opd.hasOutputVirtualRegister()) {
                            // System.out.println("Ignoring  " + opd);
                             continue;
@@ -101,8 +101,8 @@ class IntervalBuilder {
 		    }
 		    
 		    // is done in above step
-		    for (AbstractNode node: block.getNodes()) {
-		        if (node instanceof PhiFunctionNode) {
+		    for (NodeContainer node: block.getNodes()) {
+		        if (node.node instanceof PhiFunctionNode) {
 		            if (live.contains(node.getOutputVirtualReg())) {
                         live.remove(node.getOutputVirtualReg());
                         intervals.get(node.getOutputVirtualReg()).definitionPoint = node.getSourceIndex();

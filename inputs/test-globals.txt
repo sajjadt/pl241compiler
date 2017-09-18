@@ -1,0 +1,21 @@
+# expected: 16 16 20 32 40
+main
+var input;
+function foo ();
+var i, f, x;
+{
+    let x <- 4;
+	let i <- input;
+	call OutputNum(i);
+	return i + 4
+};
+{
+	let input <- 8;
+	let input <- input * 2;
+	call OutputNum(input);
+
+	call OutputNum(call foo);
+	let input <- input * 2;
+	call OutputNum(call foo + 4)
+}
+.

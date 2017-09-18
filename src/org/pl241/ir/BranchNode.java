@@ -35,7 +35,7 @@ public class BranchNode extends AbstractNode implements NodeInterface{
         type = Type.BRA;
     }
 
-    public BranchNode(Type _type, AbstractNode _operand) {
+    public BranchNode(Type _type, NodeContainer _operand) {
         super();
         type = _type;
         operands.add(_operand);
@@ -51,7 +51,7 @@ public class BranchNode extends AbstractNode implements NodeInterface{
             ret += ("(" + callTarget + ")");
         } else {
             if (operands.size() > 0)
-                ret += " " + getOperandAtIndex(0).nodeId;
+                ret += " " + getOperandAtIndex(0).displayId();
             if (takenBlock != null) ret += (" TakenBl:" + takenBlock.getID());
             if (fallThroughBlock != null) ret += (" FallThBl:" + fallThroughBlock.getID());
         }
@@ -67,7 +67,7 @@ public class BranchNode extends AbstractNode implements NodeInterface{
             ret += ("(" + callTarget + ")");
         } else {
             if (operands.size() > 0)
-                ret += " " + getOperandAtIndex(0).allocation;
+                ret += " " + getOperandAtIndex(0).getAllocation();
             if (takenBlock != null) ret += (", TakenBl " + takenBlock.getID());
             if (fallThroughBlock != null) ret += (", FallThBl " + fallThroughBlock.getID());
         }

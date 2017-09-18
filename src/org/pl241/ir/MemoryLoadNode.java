@@ -2,7 +2,7 @@ package org.pl241.ir;
 
 
 public class MemoryLoadNode extends AbstractNode {
-    public MemoryLoadNode(AbstractNode addressNode) {
+    public MemoryLoadNode(NodeContainer addressNode) {
         super();
         this.addOperand(addressNode);
     }
@@ -11,7 +11,7 @@ public class MemoryLoadNode extends AbstractNode {
         return sourceIndex + ": " + getOutputVirtualReg() +  " = Mem[" + this.getOperandAtIndex(0).getOutputVirtualReg() + "]";
     }
 
-    public AbstractNode getAddressCalcNode() {
+    public NodeContainer getAddressCalcNode() {
         return this.getOperandAtIndex(0);
     }
 
@@ -32,6 +32,6 @@ public class MemoryLoadNode extends AbstractNode {
     }
 
     public String printAllocation() {
-        return allocation +  " = [" + getAddressCalcNode().allocation +"]";
+        return getAllocation() +  " = [" + getAddressCalcNode().getAllocation() +"]";
     }
 }

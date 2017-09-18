@@ -21,7 +21,7 @@ var c, d;
 {
 	let c <- 1
 };
-function boo( a, b );
+function boo( a, y );
 var i;
 {
 	let i <- 0;

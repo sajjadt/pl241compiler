@@ -1,12 +1,17 @@
 package org.pl241.optimization;
 
 import org.pl241.ir.ArithmeticNode;
+import org.pl241.ir.NodeContainer;
 import org.pl241.ir.PhiFunctionNode;
 
 public class Expression {
 
-    public static Expression fromPhi(PhiFunctionNode node) {
-        Object[] operands = node.rightOperands.values().toArray();
+    public static Expression fromPhi(NodeContainer node) {
+        assert node.node instanceof  PhiFunctionNode;
+
+        PhiFunctionNode phiNode = (PhiFunctionNode)node.node;
+
+        Object[] operands = phiNode.rightOperands.values().toArray();
         return new Expression(operands[0], operands[1], ExpressionType.PHI);
     }
 

@@ -1,11 +1,8 @@
 package org.pl241.ir;
 
+import javax.xml.soap.Node;
 import java.io.PrintWriter;
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.List;
-import java.util.ListIterator;
-import java.util.Set;
+import java.util.*;
 
 public class BasicBlock {
 
@@ -31,17 +28,17 @@ public class BasicBlock {
 	}
 
 
-	public AbstractNode getEntry(){
-		for(AbstractNode node:nodes ){
-			if ( node instanceof VarGetNode || node instanceof ImmediateNode ){
+	public NodeContainer getEntry(){
+		for(NodeContainer container:nodes) {
+			if ( container.node instanceof VarGetNode || container.node instanceof ImmediateNode ){
 				continue;
 			}
-			return node;
+			return container;
 		}
 		return null ;
 	}
 
-	public AbstractNode getLastNode() {
+	public NodeContainer getLastNode() {
 	    if (nodes.size() > 0)
 		    return this.nodes.get(this.nodes.size() - 1);
 	    else
@@ -112,14 +109,14 @@ public class BasicBlock {
 		return _index;
 	}
 	
-	public void addNode (AbstractNode node) {
+	public void addNode (NodeContainer node) {
 	    //assert (!nodes.contains(node)) : "Duplicate node " + node.toString() + " added to " + this.toString() ;
         // TODO: modify IR-builder to prevent duplicate adds
         if(!nodes.contains(node))
             nodes.add(node);
 	}
 	
-	public List<AbstractNode> getNodes() {
+	public List<NodeContainer> getNodes() {
 		return nodes;
 	}
 
@@ -140,10 +137,10 @@ public class BasicBlock {
         if (isLoopHeader())
             pw.print("*Header*");
 
-		for (AbstractNode n: getNodes()) {
-            if (n.visualize())
+		for (NodeContainer n: getNodes()) {
+            if (n.node.visualize())
                 if (printRegAllocation)
-                    pw.print('|' + n.printAllocation());
+                    pw.print('|' + n.node.printAllocation());
                 else
 			        pw.print('|' + n.toString());
 
@@ -165,13 +162,13 @@ public class BasicBlock {
 
 
 	public boolean hasAssignmentTo(String variableName) {
-		for (AbstractNode node: getNodes()) {
-			if (node instanceof PhiFunctionNode)
-				if (((PhiFunctionNode)node).variableName.equals(variableName))
+		for (NodeContainer node: getNodes()) {
+			if (node.node instanceof PhiFunctionNode)
+				if (((PhiFunctionNode)node.node).variableName.equals(variableName))
 					return true;
 
-			if (node instanceof VarSetNode)
-				if (((VarSetNode)node).memAddress.equals(variableName))
+			if (node.node instanceof VarSetNode)
+				if (((VarSetNode)node.node).memAddress.equals(variableName))
 					return true;
 		}
 		return false;
@@ -184,48 +181,31 @@ public class BasicBlock {
 			phi.sourceIndex = this.lineIndex ;
 		else {
 		}
-		nodes.add(0,phi);	
+		nodes.add(0, new NodeContainer(phi));
 	}
 
-
-	public AbstractNode lastAssignment(Variable var) {
-		ListIterator<AbstractNode> li = nodes.listIterator(nodes.size());
-		while( li.hasPrevious() ){
-			AbstractNode node = li.previous();
-			if (node instanceof PhiFunctionNode)
-				if (((PhiFunctionNode)node).variableName.equals(var.name))
-					return node;
-            if (node instanceof VarSetNode)
-                if (((VarSetNode)node).memAddress.equals(var.name))
-                    return node;
-		}
-		return null;
-	}
-
-
-	public AbstractNode getPhiOperand(String variableName, int bblIndex) {
-        for (AbstractNode node: getNodes()) {
-            if (node instanceof PhiFunctionNode)
-                if (((PhiFunctionNode)node).variableName.equals(variableName))
-                    return ((PhiFunctionNode) node).rightOperands.get(bblIndex);
+	public NodeContainer getPhiOperand(String variableName, int bblIndex) {
+        for (NodeContainer container: getNodes()) {
+            if (container.node instanceof PhiFunctionNode)
+                if (((PhiFunctionNode)container.node).variableName.equals(variableName))
+                    return ((PhiFunctionNode) container.node).rightOperands.get(bblIndex);
         }
         return null;
     }
 
-
-    public AbstractNode getPhiNode(String variableName) {
-        for (AbstractNode node: getNodes()) {
-            if (node instanceof PhiFunctionNode && ((PhiFunctionNode)node).variableName.equals(variableName))
-                return node;
+    public NodeContainer getPhiNode(String variableName) {
+        for (NodeContainer container: getNodes()) {
+            if (container.node instanceof PhiFunctionNode && ((PhiFunctionNode)container.node).variableName.equals(variableName))
+                return container;
         }
         return null;
     }
 
-	public void addPhiOperand(Variable leftOperands, AbstractNode lastAssignment, int bblIndex) {
-		for (AbstractNode node: getNodes()) {
-			if (node instanceof PhiFunctionNode) {
-				if (((PhiFunctionNode)node).variableName.equals(leftOperands.name)) {
-					((PhiFunctionNode)node).rightOperands.put(bblIndex , lastAssignment);
+	public void addPhiOperand(Variable leftOperands, NodeContainer lastAssignment, int bblIndex) {
+		for (NodeContainer node: getNodes()) {
+			if (node.node instanceof PhiFunctionNode) {
+				if (((PhiFunctionNode)node.node).variableName.equals(leftOperands.name)) {
+					((PhiFunctionNode)node.node).rightOperands.put(bblIndex , lastAssignment);
                 }
 			}
 		}
@@ -233,36 +213,36 @@ public class BasicBlock {
 	
 	public void rename(){
 		// For each phi block
-		for (AbstractNode node: getNodes()) {
-			if (node instanceof PhiFunctionNode) {
-				String name = ((PhiFunctionNode)node).originalVariableName;
+		for (NodeContainer node: getNodes()) {
+			if (node.node instanceof PhiFunctionNode) {
+				String name = ((PhiFunctionNode)node.node).originalVariableName;
 				String newName = Variable.generateNewName(name);
-				((PhiFunctionNode)node).variableName = newName;
+				((PhiFunctionNode)node.node).variableName = newName;
 			}
 		}
 
-		for( AbstractNode node: getNodes()) {
+		for (NodeContainer node: getNodes()) {
 		    // RHS
-			if (node instanceof VarGetNode) {
-				String src = ((VarGetNode)node).variableId;
+			if (node.node instanceof VarGetNode) {
+				String src = ((VarGetNode)node.node).variableId;
 				String address = Variable.getTopmostName(src);
-				((VarGetNode)node).variableId = address;
+				((VarGetNode)node.node).variableId = address;
 			}
 
 			// LHS
-            if (node instanceof VarSetNode) {
-                String name = ((VarSetNode)node).originalMemAddress;
+            if (node.node instanceof VarSetNode) {
+                String name = ((VarSetNode)node.node).originalMemAddress;
                 String newName = Variable.generateNewName(name);
-                ((VarSetNode)node).memAddress = newName;
+                ((VarSetNode)node.node).memAddress = newName;
             }
 		}
 		
 		for (BasicBlock b: getSuccessors()) {
-			for (AbstractNode node: b.getNodes()) {
-				if (node instanceof PhiFunctionNode) {
-					String name = ((PhiFunctionNode)node).originalVariableName;
+			for (NodeContainer node: b.getNodes()) {
+				if (node.node instanceof PhiFunctionNode) {
+					String name = ((PhiFunctionNode)node.node).originalVariableName;
 					String newName = Variable.getTopmostName(name);
-					((PhiFunctionNode)node).rightOperands.put(getIndex(), new LabelNode(newName));
+					((PhiFunctionNode)node.node).rightOperands.put(getIndex(), new NodeContainer(new LabelNode(newName)));
 				}
 			}
 		}
@@ -272,13 +252,13 @@ public class BasicBlock {
 				b.rename();
 		}
 
-		for (AbstractNode node: getNodes()) {
-			if (node instanceof PhiFunctionNode) {
-				String name = ((PhiFunctionNode)node).originalVariableName;
+		for (NodeContainer node: getNodes()) {
+			if (node.node instanceof PhiFunctionNode) {
+				String name = ((PhiFunctionNode)node.node).originalVariableName;
 				Variable.popTopmostName(name);
 			}
-            if (node instanceof VarSetNode) {
-                String name = ((VarSetNode)node).originalMemAddress;
+            if (node.node instanceof VarSetNode) {
+                String name = ((VarSetNode)node.node).originalMemAddress;
                 Variable.popTopmostName(name);
             }
 		}
@@ -286,13 +266,13 @@ public class BasicBlock {
 
 	public int indexIR(int index) {
 	    bFrom = index;
-	    for (AbstractNode node: getNodes()) {
+	    for (NodeContainer node: getNodes()) {
             // Make sure that PhiNodes have the same index as block start index
-            if (node instanceof PhiFunctionNode) {
-                node.sourceIndex = index;
-            } else if (node.isExecutable()) {
+            if (node.node instanceof PhiFunctionNode) {
+                node.node.sourceIndex = index;
+            } else if (node.node.isExecutable()) {
                 index += 2; // Makes room for spills
-				node.sourceIndex = index;
+				node.node.sourceIndex = index;
 			}
 		}
 		bTo = index;
@@ -318,7 +298,7 @@ public class BasicBlock {
 	private static  int _sindex = 0;
 	private static  int _lindex = 0;
 	private Integer _index;
-	private List<AbstractNode> nodes;
+	private List<NodeContainer> nodes;
 	public ArrayList<BasicBlock> successors;
 	private ArrayList<BasicBlock> predecessors;
 
@@ -350,4 +330,39 @@ public class BasicBlock {
     public BasicBlock fallThrough;
 
 
+    public void insertGlobalAccesses(Map<String, Integer> parameters,  VarInfoTable localVariables, VarInfoTable globalVars) {
+
+        for(int i = 0; i < nodes.size(); i++) {
+            NodeContainer node = nodes.get(i);
+            if (node.node instanceof VarGetNode ) {
+                String name = ((VarGetNode)node.node).variableId;
+                if (!parameters.containsKey(name) &&
+                        !localVariables.getVars().contains(name)) {
+                    if (globalVars.containsVar(name)) {
+                        ((VarGetNode) node.node).accessGlobals = true;
+                        //nodes.remove(i);
+                        NodeContainer n = new NodeContainer(new VarGetNode(name));
+                        node.node = new MemoryLoadNode(n);
+                        nodes.add(i, n);
+                        //i++;
+                    }
+                }
+            }
+            if (node.node instanceof VarSetNode ) {
+                String name = ((VarSetNode)node.node).originalMemAddress;
+                if (!parameters.containsKey(name) &&
+                        !localVariables.getVars().contains(name)) {
+                    if (globalVars.containsVar(name)) {
+                        ((VarSetNode) node.node).accessGlobals = true;
+                        nodes.remove(i);
+                        NodeContainer n = new NodeContainer(new VarGetNode(name));
+                        nodes.add(i, n);
+                        NodeContainer n2 = new NodeContainer(new MemoryStoreNode(n, node.getOperandAtIndex(0)));
+                        nodes.add(i+1, n2);
+                        i++;
+                    }
+                }
+            }
+        }
+    }
 }

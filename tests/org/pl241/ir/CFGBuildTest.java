@@ -5,7 +5,6 @@ import java.nio.charset.Charset;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 
-import org.pl241.Program;
 import org.pl241.frontend.Parser;
 import org.pl241.frontend.Parser.ParseTreeNode;
 import org.pl241.frontend.Tokenizer;

@@ -2,20 +2,16 @@ package org.pl241.ir;
 
 public class VarSetNode extends AbstractNode implements NodeInterface {
 
+    public boolean accessGlobals;
+
 	VarSetNode(String _memAddress) {
 		super();
 		memAddress = _memAddress;
         originalMemAddress = memAddress;
+        this.accessGlobals = false;
     }
 
-    VarSetNode(String _memAddress, AbstractNode srcOperand) {
-        super();
-        memAddress = _memAddress;
-        originalMemAddress = memAddress;
-        super.addOperand(srcOperand);
-    }
-
-	void setSrcOperand(AbstractNode srcOperand) {
+	void setSrcOperand(NodeContainer srcOperand) {
         if (numInputOperands() > 0)
             super.operands.set(0, srcOperand);
         else
@@ -27,15 +23,17 @@ public class VarSetNode extends AbstractNode implements NodeInterface {
 		if (operands.size()>0) {
             ret += memAddress + "=" + getOperandAtIndex(0).getOutputVirtualReg();
         }
+        if (accessGlobals)
+            ret += "*G*";
 	    return ret;
 	}
 
     @Override
     public String printAllocation() {
-        String ret = allocation + "=";
+        String ret = getAllocation() + "=";
         if (operands.size()>0) {
-            if (operands.get(0).allocation != null)
-                 ret += getOperandAtIndex(0).allocation;
+            if (operands.get(0).getAllocation() != null)
+                 ret += getOperandAtIndex(0).getAllocation();
             else
                 ret += getOperandAtIndex(0).getOutputVirtualReg();
         }

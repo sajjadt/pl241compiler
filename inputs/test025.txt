@@ -1,5 +1,6 @@
 # Simple CSE test
 # (I don't like the ones in Muchnick)
+# expected output: 1 1 25 1
 main
 var a, b, c, d, e, f, g;
 {

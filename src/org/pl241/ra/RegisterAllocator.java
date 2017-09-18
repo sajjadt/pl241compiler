@@ -79,8 +79,8 @@ public class RegisterAllocator { // Allocate Registers for one function
                 for (LiveInterval interval: liveIntervals) {
                     // It will be a Phi Node
                     if (interval.start() == successor.bFrom) {
-                        AbstractNode node = successor.getPhiOperand(interval.varName, current.getIndex());
-                        AbstractNode destNode = successor.getPhiNode(interval.varName);
+                        NodeContainer node = successor.getPhiOperand(interval.varName, current.getIndex());
+                        NodeContainer destNode = successor.getPhiNode(interval.varName);
                         assert node != null;
                         assert destNode != null;
                         moveFrom = liveIntervalAllocationAt(intervalMap, node.getOutputVirtualReg(), current.bTo);
@@ -170,7 +170,7 @@ public class RegisterAllocator { // Allocate Registers for one function
             }
 
             // Insert moves to basic block
-            List<AbstractNode> moveNodes = new ArrayList<>();
+            List<NodeContainer> moveNodes = new ArrayList<>();
 
             String[] ids = blockID.split(":");
             BasicBlock current = function.getBlockByID(Integer.parseInt(ids[0]));
@@ -179,17 +179,17 @@ public class RegisterAllocator { // Allocate Registers for one function
                 assert (move.to.type != Allocation.Type.STACK &&
                         move.from.type != Allocation.Type.STACK) : "Move from/to non-registers are not implemented";
                 if (move.isExchange)
-                    moveNodes.add(new ExchangeNode(move.from, move.to));
+                    moveNodes.add(new NodeContainer(new ExchangeNode(move.from, move.to)));
                 else
-                    moveNodes.add(new MoveNode(move.from, move.to));
+                    moveNodes.add(new NodeContainer(new MoveNode(move.from, move.to)));
             }
 
             // add moves
 
             // if current node only has one successor
             if (current.getSuccessors().size() < 2) {
-                AbstractNode lastNode = current.getNodes().get(current.getNodes().size()-1);
-                if (lastNode instanceof BranchNode || lastNode instanceof FunctionCallNode)
+                NodeContainer lastNode = current.getNodes().get(current.getNodes().size()-1);
+                if (lastNode.node instanceof BranchNode || lastNode.node instanceof FunctionCallNode)
                     current.getNodes().addAll(current.getNodes().size()-1, moveNodes);
                 else
                     current.getNodes().addAll(current.getNodes().size(), moveNodes);
@@ -213,7 +213,7 @@ public class RegisterAllocator { // Allocate Registers for one function
                 bnode.getNodes().addAll(moveNodes);
                 BranchNode bn = new BranchNode(BranchNode.Type.BRA, successor.getEntry());
                 bn.fallThroughBlock = successor;
-                bnode.addNode(bn);
+                bnode.addNode(new NodeContainer(bn));
 
                 function.basicBlocks.add(bnode);
             }
@@ -226,9 +226,9 @@ public class RegisterAllocator { // Allocate Registers for one function
 
         // Remove Phi nodes
         for (BasicBlock current: function.basicBlocks) {
-            List<AbstractNode> found = new ArrayList<>();
-            for (AbstractNode node: current.getNodes()) {
-                if (node instanceof PhiFunctionNode)
+            List<NodeContainer> found = new ArrayList<>();
+            for (NodeContainer node: current.getNodes()) {
+                if (node.node instanceof PhiFunctionNode)
                     found.add(node);
             }
             current.getNodes().removeAll(found);
@@ -273,16 +273,16 @@ public class RegisterAllocator { // Allocate Registers for one function
 
     public void toPhysical(Function f) {
         for (BasicBlock block: f.basicBlocks) {
-            for (AbstractNode node: block.getNodes()) {
+            for (NodeContainer node: block.getNodes()) {
                 if (node.hasOutputVirtualRegister()) {
-                    node.setAllocation(liveIntervalAllocationAt(intervalMap, node.getOutputVirtualReg(), node.sourceIndex));
+                    node.setAllocation(liveIntervalAllocationAt(intervalMap, node.getOutputVirtualReg(), node.getSourceIndex()));
                 }
 
-                for (AbstractNode child: node.getInputOperands()) {
-                    if (child instanceof ImmediateNode)
-                        child.setAllocation(new Allocation(Allocation.Type.IMMEDIATE, ((ImmediateNode) child).getValue()));
+                for (NodeContainer child: node.getInputOperands()) {
+                    if (child.node instanceof ImmediateNode)
+                        child.setAllocation(new Allocation(Allocation.Type.IMMEDIATE, ((ImmediateNode) child.node).getValue()));
                     else
-                        child.setAllocation(liveIntervalAllocationAt(intervalMap, child.getOutputVirtualReg(), node.sourceIndex));
+                        child.setAllocation(liveIntervalAllocationAt(intervalMap, child.getOutputVirtualReg(), node.getSourceIndex()));
                 }
             }
         }

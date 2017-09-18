@@ -13,13 +13,13 @@ public class AbstractNode implements NodeInterface {
         allocation = null;
     }
 
-    AbstractNode(AbstractNode operand1, AbstractNode operand2) {
+    AbstractNode(NodeContainer operand1, NodeContainer operand2) {
         this();
         operands.add(operand1);
         operands.add(operand2);
     }
 
-    public AbstractNode getOperandAtIndex(int index) {
+    public NodeContainer getOperandAtIndex(int index) {
 		if (operands.size() > index) {
 			return operands.get(index);
 		}
@@ -59,10 +59,10 @@ public class AbstractNode implements NodeInterface {
         return nodeId;
     }
 
-    public List<AbstractNode> getInputOperands() {
+    public List<NodeContainer> getInputOperands() {
         return operands;
     }
-    public void addOperand(AbstractNode node) {
+    public void addOperand(NodeContainer node) {
         operands.add(node);
     }
 
@@ -91,26 +91,37 @@ public class AbstractNode implements NodeInterface {
         return null;
     }
 
-
-    private static int counter = 0;
-    public Allocation allocation;
-    List<AbstractNode> operands ;
-    public String nodeId;
-    public int sourceIndex; // In source code
-    public boolean removed;
-    public String removeReason;
-
     @Override
     public boolean visualize() {
         return false;
     }
 
-    public void setOperandAtIndex(int i, AbstractNode abstractNode) {
+    public void setOperandAtIndex(int i, NodeContainer node) {
         assert operands.size() > i;
-        operands.set(i, abstractNode);
+        operands.set(i, node);
     }
 
     public boolean isControlFlow() {
         return false;
     }
+
+    public Allocation getAllocation() {
+        return allocation;
+    }
+
+    public boolean isRemoved() {
+        return removed;
+    }
+
+    public void setRemoved(boolean removed) {
+        this.removed = removed;
+    }
+
+    private static int counter = 0;
+    private Allocation allocation;
+    List<NodeContainer> operands ;
+    public String nodeId;
+    public int sourceIndex; // In source code
+    private boolean removed;
+    public String removeReason;
 }

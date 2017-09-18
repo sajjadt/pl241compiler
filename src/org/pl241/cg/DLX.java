@@ -29,7 +29,7 @@ public class DLX {
 	private static int format;
 
 	// emulated memory
-	private static final int MemSize = 50000; // bytes in memory (divisible by 4)
+	private static final int MemSize = 1000000; // bytes in memory (divisible by 4)
 	private static int[] M = new int [MemSize/4];
 
 	public static void load(ArrayList<Integer> program ) {
@@ -294,7 +294,7 @@ public class DLX {
 	private static final int ANDI = 25;
 	private static final int BICI = 26;
 	private static final int XORI = 27;
-	private static final int LSHI = 28;
+	public static final int LSHI = 28;
 	private static final int ASHI = 29;
 	private static final int CHKI = 30;
 
